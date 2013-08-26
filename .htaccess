@@ -1,0 +1,12 @@
+
+
+RewriteEngine on
+
+RewriteBase /poi-client
+
+RewriteCond %{REQUEST_FILENAME}.php  -f
+RewriteRule ^([a-z0-9]+)$  $1.php  [NC,QSA]
+
+
+# default is the map
+RewriteRule ^$  map
