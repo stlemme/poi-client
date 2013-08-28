@@ -11,6 +11,6 @@ Usage
 * adjust configuration
 * adjust .htaccess
 
-Client Demo: http://localhost/poi-client/
-optional http://localhost/poi-client/?followMe=true
+* Client Demo: http://localhost/poi-client/
+* optional http://localhost/poi-client/?followMe=true
 
