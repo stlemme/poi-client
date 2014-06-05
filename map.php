@@ -1,9 +1,9 @@
-﻿<?php
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?php
 
-	require_once("config.php");
+	require_once(__DIR__ . "/config.php");
 
 ?>
-<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -25,6 +25,7 @@
 
 	<script type="text/javascript" src="js/OpenLayers.debug.js"></script>
 	<script type="text/javascript" src="js/persistence.js"></script>
+	<script type="text/javascript" src="js/fiware-poi.js"></script>
 	
 	<script type="text/javascript">
 	// <![CDATA[
@@ -32,97 +33,33 @@
 		/////////////////////////////////////////////////////////////////////////
 	
 		// var host = "<?php echo $config["host"]; ?>";
-		var api_tiles = <?php echo json_encode($config["api_tiles"]); ?>;
+		var api_tiles = <?php echo json_encode($config['api_tiles']); ?>;
 
-		var api_poi = "<?php echo $config["api_poi"]; ?>";
-		// var api_poi = "dummy/sb-hotel.php";
-		var api_poi_params = {
-			// tag: "geonames.org_feature_code_HTL",
-			// limit: 100
+		var api_poi = {
+			'url': '<?php echo $config['api_poi']; ?>',
+			// 'headers': {
+				// 'API-Key': 'kb18AmBG07N'
+			// },
+			'params': {
+				// tag: "geonames.org_feature_code_HTL",
+				'max_results': 100,
+				'component': ['fw_core', 'fw_xml3d']
+			}
 		};
-
+		
 		var marker = {
 			poi_black: "img/MB_0001_poi_black.png",
 			poi_blue: "img/MB_0001_poi_blue.png",
 			self_red_nocircle: "img/MB_0000_navigation_red_nocircle.png"
 		};
 		
-		var followMe = <?php echo ((isset($_GET["followMe"]) && ($_GET["followMe"] == "true")) ? "true" : "false"); ?>;
+		var followMe = <?php echo ((isset($_GET['followMe']) && ($_GET['followMe'] == 'true')) ? 'true' : 'false'); ?>;
 
 		/////////////////////////////////////////////////////////////////////////
 				
 		var map, poilayer, selflayer, selffeature, geolocate;
 		
 
-		/**
-		 * A specific format for parsing POI API JSON responses.
-		 */
-		OpenLayers.Format.POI = OpenLayers.Class(OpenLayers.Format, {
-		
-			// initialize: function() {
-				// var size = new OpenLayers.Size(24,24);
-				// var offset = new OpenLayers.Pixel(-(size.w/2), -(size.h/2));
-				// var icon = new OpenLayers.Icon("img/marker.png",size,offset);
-			// },
-			
-			read: function(response) {
-				if (response.status != "ok") {
-					throw new Error(
-						["POI failure response (",
-						 response.status,
-						 ') '].join(''));
-				}
-				
-				if (!response || !response.result || !OpenLayers.Util.isArray(response.result)) {
-					throw new Error("Unexpected POI response");
-				}
-				
-				var pois = response.result, poi, x, y, point, feature, features = [];
-				
-				for (var i = 0, l = pois.length; i < l; i++)
-				{
-					poi = pois[i];
-					
-					var wgs84 = null;
-					for (var j = 0, k = poi.features.length; j < k; j++)
-						if (poi.features[j].method == "wgs84") {
-							wgs84 = poi.features[j];
-							break;
-						}
-					
-					x = wgs84.long;
-					y = wgs84.lat;
-					point = new OpenLayers.Geometry.Point(x, y);
-
-					var label = "no label";
-					
-					for (var j = 0, k = poi.contents.length; j < k; j++)
-						if (poi.contents[j].type == "label") {
-							// TODO: check language
-							label = poi.contents[j].label;
-							break;
-						}
-
-					// TODO: retrieve thumbnail, symbol, category, etc.
-					feature = new OpenLayers.Feature.Vector(point, {
-						title: label,
-						tooltip: label,
-						contents: poi.contents,
-						poi: poi
-					});
-					
-					feature.id = "POI_" + poi.id;
-					
-					features.push(feature);
-				}
-				
-				console.log("Retrieved POIs: " + response.count_query_mongo + " (query_mongo), " + response.count_query_approximate + " (query_approximate), " + response.count_return + " (return), " + response.count_total + " (total)");
-				
-				return features;
-			}
-		});
-
-		
 		function mapEvent(event) {
 			var mapView = {
 				"lon":event.object.center.lon,
@@ -165,7 +102,6 @@
 			);
 			
 			// base layer are open street map tiles
-			
 			var mapnik = new OpenLayers.Layer.OSM("MapQuest", api_tiles, {numZoomLevels: 20});
 			map.addLayer(mapnik);
 			
@@ -188,7 +124,6 @@
 
 			
 			// poi layer
-			
 			var defaultStyle = new OpenLayers.Style({
 				externalGraphic: marker.poi_black,
 				pointRadius: 20,
@@ -201,24 +136,15 @@
 				externalGraphic: marker.poi_blue,
 			});
 			
-			poilayer = new OpenLayers.Layer.Vector("POI", {
-				projection: "EPSG:4326",
-				strategies: [new OpenLayers.Strategy.BBOX({
-					resFactor: 1,
-					ratio: 1
-				})],
-				protocol: new OpenLayers.Protocol.Script({
-					url: api_poi,
-					params: api_poi_params,
-					callbackKey: "jsoncallback",
-					format: new OpenLayers.Format.POI()
-				}),
+			poilayer = new OpenLayers.Layer.FIWARE.POI("POI", api_poi.url, {
+				api: {
+					params: api_poi.params
+				},
 				styleMap: new OpenLayers.StyleMap({
 					"default": defaultStyle,
 					"select": selectStyle
 				})
 			});
-			
 			map.addLayer(poilayer);
 			
 			
@@ -239,12 +165,12 @@
 					"selectedpoi", 
 					new OpenLayers.LonLat(center.x, center.y),
 					null,
-					'<div class="poi-json">' + JSON.stringify(feature.attributes.poi, null, "  ") + '</div>',
+					'<div class="poi-json">' + JSON.stringify(feature.attributes.contents, null, "  ") + '</div>',
 					null,
 					true
 				);
 				
-				console.log("POI selected: " + feature.attributes.title + " (" + feature.attributes.poi.id +")");
+				console.log("POI selected: " + feature.attributes.title + " (" + feature.id +")");
 				
 				map.addPopup(popup, true);
 			}});

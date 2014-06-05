@@ -4,7 +4,7 @@
 		"host" => $_SERVER["HTTP_HOST"],
 		"basepath" => "/poi-client",
 		
-		"api_poi" => "dummy/sb-hotel.php",
+		"api_poi" => "dummy/sample-data.php",
 		"api_tiles" => array(
 			'http://localhost/api/tiles/${z}/${x}/${y}.png'
 		),
