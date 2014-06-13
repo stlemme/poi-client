@@ -9,4 +9,4 @@ RewriteRule ^([a-z0-9]+)$  $1.php  [NC,QSA]
 
 
 # default is the map
-RewriteRule ^$  map
+RewriteRule ^$  map  [R]

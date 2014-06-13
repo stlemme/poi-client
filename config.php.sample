@@ -1,14 +1,16 @@
 <?php
 
 	$config = array(
-		"host" => $_SERVER["HTTP_HOST"],
-		"basepath" => "/poi-client",
+		'host' => $_SERVER['HTTP_HOST'],
+		'basepath' => '/poi-client',
 		
-		"api_poi" => "dummy/sample-data.php",
-		"api_tiles" => array(
-			'http://localhost/api/tiles/${z}/${x}/${y}.png'
+		'api_poi' => 'dummy/sample-data.php',
+		'api_tiles' => array(
+			'http://' . $_SERVER['HTTP_HOST'] . '/api/tiles/osm/${z}/${x}/${y}.png'
 		),
 		
+		'ground_tiles' => 'http://' . $_SERVER['HTTP_HOST'] . '/api/ground-tiles/osm/'
+
 	);
 
 ?>
