@@ -31,12 +31,14 @@
 	// <![CDATA[
 	
 		/////////////////////////////////////////////////////////////////////////
+		
+		var global = <?php echo json_encode($config); ?>;
 	
 		// var host = "<?php echo $config["host"]; ?>";
-		var api_tiles = <?php echo json_encode($config['api_tiles']); ?>;
+		var api_tiles = global.api.img_tiles;;
 
 		var api_poi = {
-			'url': '<?php echo $config['api_poi']; ?>',
+			'url': global.api.poi,
 			// 'headers': {
 				// 'API-Key': 'kb18AmBG07N'
 			// },
