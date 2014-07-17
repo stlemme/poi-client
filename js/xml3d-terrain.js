@@ -3,10 +3,12 @@ var XML3D = XML3D || {};
 	
 (function() {
 
-	XML3D.Terrain = function( group, tf ) {
+	XML3D.Terrain = function( group, tf_trans, tf_scale ) {
 	
 		this.ground = ground || null;
-		this.tf = tf || null;
+		this.tf_trans = tf_trans || null;
+		this.tf_scale = tf_scale || null;
+		this.tile_size = 1;
 	
 		this.deg2rad = function (angle) {
 			return angle * 0.017453292519943295; // (angle / 180) * Math.PI;
@@ -18,6 +20,14 @@ var XML3D = XML3D || {};
 		
 		this.lat2ytile_fract = function (lat, zoom) {
 			return (1 - Math.log(Math.tan(this.deg2rad(lat)) + 1 / Math.cos(this.deg2rad(lat))) / Math.PI) /2 * Math.pow(2, zoom);
+		}
+		
+		this.project_lon = function(lon, zoom) {
+			return this.tile_size * this.lon2xtile_fract(lon, zoom);
+		}
+
+		this.project_lat = function(lat, zoom) {
+			return this.tile_size * this.lat2ytile_fract(lat, zoom);
 		}
 
 		this.lon2xtile = function (lon, zoom) { return Math.floor(this.lon2xtile_fract(lon, zoom)); }
@@ -57,12 +67,12 @@ var XML3D = XML3D || {};
 
 			console.log("Tile size: " + T);
 			// scale by T -> 1 unit = 1 meter
-			var s = T;
+			this.tile_size = T;
 			var x = this.lon2xtile_fract(config.origin.lon, config.zoom);
 			var y = this.lat2ytile_fract(config.origin.lat, config.zoom);
 			
-			this.tf.setAttribute("translation", -s*x + " 0 " + -s*y);
-			this.tf.setAttribute("scale", s + " 1 " + s);
+			this.tf_trans.setAttribute("translation", -this.tile_size*x + " 0 " + -this.tile_size*y);
+			this.tf_scale.setAttribute("scale", this.tile_size + " 1 " + this.tile_size);
 		}
 	
 	};
