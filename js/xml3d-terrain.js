@@ -3,7 +3,7 @@ var XML3D = XML3D || {};
 	
 (function() {
 
-	XML3D.Terrain = function( group, tf_trans, tf_scale ) {
+	XML3D.Terrain = function( group, tf_trans, tf_scale) {
 	
 		this.ground = ground || null;
 		this.tf_trans = tf_trans || null;
@@ -45,19 +45,24 @@ var XML3D = XML3D || {};
 				"max": this.lat2ytile(config.south, config.zoom)
 			};
 			
+			var layers = config.layers || ["plane"];
+
+			
 			for (var x = xtile.min; x <= xtile.max; x++)
 			{
 				for (var y = ytile.min; y <= ytile.max; y++)
 				{
 					var tile_uri = api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
-					var tile_id = "tile_" + z + "_" + x + "_" + y;
+					var tile_id = "tile_" + z + "_" + x + "_" + y + '_';
 					
-					var tile = XML3D.createElement("model");
-					tile.setAttribute("id", tile_id);
-					tile.setAttribute("src", tile_uri + "#plane");
-					tile.setAttribute("transform", tile_uri + "#tf");
+					layers.forEach(function(layer) { 
+						var tile = XML3D.createElement("model");
+						tile.setAttribute("id", tile_id + layer);
+						tile.setAttribute("src", tile_uri + "#" + layer);
+						tile.setAttribute("transform", tile_uri + "#tf");
 
-					this.ground.appendChild(tile);
+						this.ground.appendChild(tile);
+					});
 				}
 			}
 
