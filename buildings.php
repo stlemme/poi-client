@@ -33,7 +33,7 @@
 		
 		var global = <?php echo json_encode($config); ?>;
 	
-		var api_tiles = global.api.ground_tiles;
+		var api_tiles = global.api.ground_tiles.gis;
 		var api_poi = global.api.poi;
 
 		var default_config = {
@@ -51,7 +51,7 @@
 		var controller, terrain, poi;
 		
 		function build_config(lat, lon, layers) {
-			var d = 0.002;
+			var d = 0.02;
 			var zoom = 16;
 			return {
 				"zoom": zoom,
@@ -152,13 +152,13 @@
 			
 			
 			<!-- Light and View -->
-			<view id="defaultView" position="0 10 0"></view>
+			<view id="defaultView" position="0 25 0"></view>
 			
 			<lightshader id="light1" script="urn:xml3d:lightshader:directional">
 				<float3 name="intensity">0.9 0.9 0.9</float3>
 			</lightshader>
 			
-			<group style="transform: rotateX(-30deg)" >
+			<group style="transform: rotateX(-60deg)" >
 				<light shader="#light1"></light>
 			</group>
 

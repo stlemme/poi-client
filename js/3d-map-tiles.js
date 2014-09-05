@@ -9,22 +9,12 @@ var XML3D = XML3D || {};
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+// ported from http://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
 var Triangulate = function(contour) {
-
+	
 	this.contour = contour;
 	// TODO: check whether the first and the last point are the same
 	this.points = (this.contour.length / 3) - 1;
-
-  // triangulate a contour/polygon, places results in STL vector
-  // as series of triangles.
-  // this.Process = function(contour, result);
-
-  // decide if point Px/Py is inside triangle defined by
-  // (Ax,Ay) (Bx,By) (Cx,Cy)
-  // this.InsideTriangle = function(Ax, Ay, Bx, By, Cx, Cy, Px, Py) {
-  // }
-
-  // this.Snip = function(contour, u, v, w, n, V) {}
 };
 
 
@@ -41,13 +31,13 @@ Triangulate.prototype.GetY = function(idx) {
 Triangulate.prototype.EPSILON = 0.0000000001;
 
 // compute area of a contour/polygon
-Triangulate.prototype.Area = function()
+Triangulate.prototype.Area = function(V)
 {
-	var n = this.points;
+	var n = V.length; // this.points;
 	var A = 0.0;
 
 	for (var p=n-1, q=0; q<n; p=q++)
-		A += this.GetX(p)*this.GetY(q) - this.GetX(q)*this.GetY(p);
+		A += this.GetX(V[p])*this.GetY(V[q]) - this.GetX(V[q])*this.GetY(V[p]);
 	
 	return 0.5*A;
 }
@@ -112,7 +102,7 @@ Triangulate.prototype.Snip = function(
 }
 
 Triangulate.prototype.Process = function(
-	result
+	result, U
 ) {
 
 	// allocate and initialize list of Vertices in polygon
@@ -121,13 +111,19 @@ Triangulate.prototype.Process = function(
 		return false;
 
 	// TODO: use typed array
-	var V = new Array(n);
-
-	// we want a counter-clockwise polygon in V
-	if (0.0 < this.Area(contour)) {
-		for (var v=0; v<n; v++) V[v] = v;
+	if (U == null) {
+		U = new Array(n);
+		for (var v=0; v<n; v++) U[v] = v;
 	} else {
-		for (var v=0; v<n; v++) V[v] = (n-1)-v;
+		this.points = n = U.length;
+	}
+
+	var V = new Array(n);
+	// we want a counter-clockwise polygon in V
+	if (0.0 < this.Area(U)) {
+		for (var v=0; v<n; v++) V[v] = U[v];
+	} else {
+		for (var v=0; v<n; v++) V[v] = U[(n-1)-v];
 	}
 
 	var nv = n;
@@ -156,10 +152,9 @@ Triangulate.prototype.Process = function(
 			a = V[u]; b = V[v]; c = V[w];
 
 			// output Triangle
-			// TODO: output indices only
-			result.push_back(a);
-			result.push_back(b);
-			result.push_back(c);
+			result.push(a);
+			result.push(c);
+			result.push(b);
 
 			m++;
 
@@ -178,18 +173,23 @@ Triangulate.prototype.Process = function(
 
 Xflow.registerOperator("xflow.triangulatePolygon", {
     outputs: [
-		{type: 'int', name: 'index'}
+		{type: 'int', name: 'index', customAlloc: true}
 	],
+	
     params:  [
         { type: 'float3', source: 'contour' }
     ],
-    // alloc: function(sizes, contour)
-    // {
-		// var points = (contour.length / 3) - 1;
-		// console.log("alloc position.length: " + position.length);
-		// console.log("alloc points: " + points);
-        // sizes['index'] = 2 * 3 * points;
-    // },
+	
+    alloc: function(sizes, contour)
+    {
+		// TODO: go for "noAlloc: true"
+		var tri = new Triangulate(contour);
+
+		var result = new Array();
+		tri.Process(result);
+		
+        sizes['index'] = result.length;
+    },
 	
     evaluate: function(index, contour, info)
 	{
@@ -198,16 +198,9 @@ Xflow.registerOperator("xflow.triangulatePolygon", {
 		var result = new Array();
 		tri.Process(result);
 		
-		console.log(result);
-		
-        for (var i = 0; i < contour.length; i+=3)
-		{
-			index[i  ] = 0;
-			index[i+1] = 1;
-			index[i+2] = 2;
-		}
-		
-		// index.assign(result);
+		// TODO: check if index.length == result.length
+        for (var i = 0; i < index.length; i++)
+			index[i] = result[i];
 		
         return true;
     }
@@ -232,13 +225,27 @@ Xflow.registerOperator("xflow.extrudePolygon", {
     {
 		var points = (contour.length / 3) - 1;
         sizes['position'] = 2 * points;
-        sizes['index'] = 2 * 3 * points;
+		
+		var wall_points = 2 * 3 * points;
+
+		// TODO: use noAlloc: true for indices
+		var tri = new Triangulate(contour);
+		var result = new Array();
+		tri.Process(result);
+		var roof_points = result.length;
+		
+        sizes['index'] = wall_points + roof_points;
     },
 	
     evaluate: function(position, index, contour, height, info)
 	{
-		var points = (position.length / 3);
+		var points = (contour.length / 3) - 1;
+		var nv = (position.length / 3);
+		// TODO: check 2*points == nv
+		// console.log("points:" + points);
+		// console.log("nv:" + nv);
 
+		// clone contour points
         for (var i = 0; i < points; i++)
 		{
             position[6*i  ] = contour[3*i  ];
@@ -250,20 +257,39 @@ Xflow.registerOperator("xflow.extrudePolygon", {
             position[6*i+5] = contour[3*i+2];
         }
 
+		// generate indices for the walls
         for (var i = 0; i < points; i++)
 		{
-			var tp = 2* i;
-			var np = (2*(i+1))%points;
+			var tp =  2* i;
+			var np = (2*(i+1)) % nv;
 			
 			// TODO: check order in terms of cracks caused by interpolation issues
             index[6*i  ] = tp+1;
             index[6*i+1] = np;
             index[6*i+2] = tp;
 			
-            index[6*i+3] = np  ;
+            index[6*i+3] = np;
             index[6*i+4] = tp+1;
             index[6*i+5] = np+1;
 		}
+		
+		// generate indices for the roof
+		// console.log("position.length:" + position.length);
+		var tri = new Triangulate(position);
+		var result = new Array();
+		// use every odd point from position, which is the upper contour
+		var V = new Array();
+		for (var i = 1; i < nv; i+=2) V.push(i);
+		tri.Process(result, V);
+		
+		// console.log("V:" + V);
+		// console.log("result:" + result);
+		// console.log("index.length:" + index.length);
+		
+		var offset = 6*points;
+		// console.log("offset:" + offset);
+		for (var i = 0; i < result.length; i++)
+			index[offset+i] = result[i];
 		
         return true;
     }
@@ -302,6 +328,52 @@ Xflow.registerOperator("xflow.deindex", {
     }
 });
 
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+
+Xflow.registerOperator("xflow.planeXZ", {
+    outputs: [
+		{type: 'float3', name: 'out_position'}
+	],
+    params:  [
+        {type: 'float2', source: 'in_position'}
+    ],
+    evaluate: function(out_position, in_position, info)
+	{
+        for (var i = 0; i < info.iterateCount; i++)
+		{
+            out_position[3*i  ] = in_position[2*i  ];
+            out_position[3*i+1] = 0.0;
+            out_position[3*i+2] = in_position[2*i+1];
+        }
+        return true;
+    }
+});
+
+
+// Xflow.registerOperator("xflow.add", {
+    // outputs: [  {type: 'float3', name: 'result'}],
+    // params:  [  {type: 'float3', source: 'value1'},
+                // {type: 'float3', source: 'value2'}],
+    // evaluate: function(result, value1, value2, info) {
+        // throw "Not used!";
+
+        // for (var i = 0; i < info.iterateCount; i++) {
+            // result[i] = value1[i] + value2[i];
+		// }
+
+        // return true;
+    // },
+
+    // evaluate_core: function(result, value1, value2){
+        // result[0] = value1[0] - value2[0];
+        // result[1] = value1[1] - value2[1];
+        // result[2] = value1[2] - value2[2];
+    // }
+// });
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

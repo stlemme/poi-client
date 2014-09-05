@@ -29,7 +29,7 @@
 		
 		var global = <?php echo json_encode($config); ?>;
 	
-		var api_tiles = global.api.ground_tiles;
+		var api_tiles = global.api.ground_tiles.osmde;
 		var api_poi = global.api.poi;
 
 		var default_config = {
@@ -144,6 +144,11 @@
 
 		}
 		
+		function launch_app(config) {
+			console.log(config);
+			terrain.load(api_tiles, config);
+			poi.load(config);
+		}
 
 		function geo_success(position) {
 			// do_something(position.coords.latitude, position.coords.longitude);
@@ -151,21 +156,22 @@
 				position.coords.latitude,
 				position.coords.longitude
 			);
-			console.log(config);
-			
-			terrain.load(api_tiles, config);
-			
-			poi.load(config);
+			launch_app(config);
 		}
 
 		function geo_error() {
-			alert("Sorry, no position available.");
+			alert("Sorry, no position available - use default.");
+			var config = build_config(
+				default_config.origin.lat,
+				default_config.origin.lon
+			);
+			launch_app(config);
 		}
 
 		var geo_options = {
 			enableHighAccuracy: true, 
 			maximumAge        : 30000, 
-			timeout           : 27000
+			timeout           : 10000
 		};
 		
 		function onload()
