@@ -4,8 +4,8 @@ RewriteEngine on
 
 RewriteBase /poi-client
 
-RewriteCond %{REQUEST_FILENAME}.php  -f
-RewriteRule ^([a-z0-9]+)$  $1.php  [NC,QSA]
+RewriteCond %{REQUEST_FILENAME}.html  -f
+RewriteRule ^([a-z0-9\-_]+)$  $1.html  [NC,QSA]
 
 
 # default is the map

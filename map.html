@@ -1,10 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<?php
-
-	require_once(__DIR__ . "/config.php");
-
-?>
-<html xmlns="http://www.w3.org/1999/xhtml">
+﻿<html>
 
 <head>
 	<title>POI-Client Demo</title>
@@ -26,26 +20,24 @@
 	<script type="text/javascript" src="js/OpenLayers.debug.js"></script>
 	<script type="text/javascript" src="js/persistence.js"></script>
 	<script type="text/javascript" src="js/fiware-poi.js"></script>
+	<script type="text/javascript" src="config.js"></script>
 	
 	<script type="text/javascript">
 	// <![CDATA[
 	
 		/////////////////////////////////////////////////////////////////////////
 		
-		var global = <?php echo json_encode($config); ?>;
-	
-		// var host = "<?php echo $config["host"]; ?>";
 		var api_tiles = global.api.img_tiles;;
 
 		var api_poi = {
-			'url': global.api.poi,
-			// 'headers': {
-				// 'API-Key': 'kb18AmBG07N'
+			"url": global.api.poi,
+			// "headers": {
+				// "API-Key": "kb18AmBG07N"
 			// },
-			'params': {
-				// tag: "geonames.org_feature_code_HTL",
-				'max_results': 100,
-				'component': ['fw_core', 'fw_xml3d']
+			"params": {
+				"category": "HTL",
+				"max_results": 100,
+				"component": ["fw_core", "fw_xml3d"]
 			}
 		};
 		
@@ -55,10 +47,20 @@
 			self_red_nocircle: "img/MB_0000_navigation_red_nocircle.png"
 		};
 		
-		var followMe = <?php echo ((isset($_GET['followMe']) && ($_GET['followMe'] == 'true')) ? 'true' : 'false'); ?>;
+		function getParameterByName(name) {
+			name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+			var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+			results = regex.exec(location.search);
+			return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+		}
+		
+		var p = getParameterByName('followMe');
+		console.log(p);
+		var followMe = (p == 'true');
+		console.log(followMe);
 
 		/////////////////////////////////////////////////////////////////////////
-				
+		
 		var map, poilayer, selflayer, selffeature, geolocate;
 		
 
@@ -69,7 +71,7 @@
 				"zoom":event.object.zoom
 			};
 			
-			if(!store("mapView", mapView))
+			if (!store("mapView", mapView))
 				console.log("mapView update failed.");
 		}
 
@@ -87,7 +89,6 @@
 
 		window.onload = function init()
 		{
-		
 			// the map
 			
 			map = new OpenLayers.Map(
@@ -260,8 +261,6 @@
 			firstGeolocation = true;
 			geolocate.activate();
 		}
-		
-		
 		
 	// ]]>
 	</script>
