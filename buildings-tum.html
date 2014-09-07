@@ -1,0 +1,102 @@
+﻿<html>
+
+<head>
+	<title>POI-Client Demo</title>
+
+	<link rel="stylesheet" type="text/css" media="all" href="styles.css"/>
+
+	<script type="text/javascript" src="js/xml3d-dev.js"></script>
+	<script type="text/javascript" src="js/camera.js"></script>
+    <script type="text/javascript" src="js/xml3d-terrain.js"></script>
+    <script type="text/javascript" src="js/3d-map-tiles.js"></script>
+    <script type="text/javascript" src="config.js"></script>
+	
+	<script type="text/javascript">
+	// <![CDATA[
+	
+		/////////////////////////////////////////////////////////////////////////
+	
+		var api_tiles = global.api.ground_tiles.tum;
+		var api_poi = global.api.poi;
+
+		var default_config = {
+			"zoom": 17,
+			"west": 11.665127,
+			"south": 48.261953,
+			"east": 11.679954,
+			"north": 48.269359,
+			"origin": {
+				"lon": 11.672079,
+				"lat": 48.265109
+			},
+			"layers": ["plane", "buildings"]
+		};
+		
+		var terrain, poi;
+		
+
+		function onload()
+		{
+			var ground = document.getElementById("ground");
+			var ground_tf_trans = document.getElementById("ground_tf_translation");
+			var ground_tf_scale = document.getElementById("ground_tf_scale");
+			
+			terrain = new XML3D.Terrain(ground, ground_tf_trans, ground_tf_scale);
+			
+			var config = default_config; // build_config(
+			//	48.2641768, //default_config.origin.lat, // 64.993295416111, // latitude,
+			//	11.6710156, // default_config.origin.lon, // 25.559692382812, // longitude
+			//	["buildings"]
+			// );
+			console.log(config);
+			
+			terrain.load(api_tiles, config);
+
+			// var wpid = navigator.geolocation.getCurrentPosition(geo_success, geo_error, geo_options);
+			
+			var camController = XML3D.Xml3dSceneController.controllers[0];
+			camController.detach();
+			camController.mode = "walk";
+			camController.useKeys = true;
+			camController.attach();
+		}
+		
+		window.addEventListener('load', onload, false);
+		
+	// ]]>
+	</script>
+</head>
+
+<body>
+	<div id="myxml3d">
+		<xml3d activeView="#defaultView" style="width: 100%; height: 100%; background-color:0xeeeeee;" >
+
+			<!-- Asset Instance -->
+			<transform id="ground_tf_translation" translation="0 0 0"></transform>
+			<transform id="ground_tf_scale" translation="0 0 0"></transform>
+			
+			<group transform="#ground_tf_translation">
+				<group transform="#ground_tf_scale">
+					<group id="ground"></group>
+				</group>
+				<group id="pois"></group>
+			</group>
+			
+			
+			<!-- Light and View -->
+			<view id="defaultView" position="0 25 0"></view>
+			
+			<lightshader id="light1" script="urn:xml3d:lightshader:directional">
+				<float3 name="intensity">0.9 0.9 0.9</float3>
+			</lightshader>
+			
+			<group style="transform: rotateX(-60deg)" >
+				<light shader="#light1"></light>
+			</group>
+
+		</xml3d>
+		<div id="logo"><img src="img/xml3dlogo.png"/></div>
+	</div>
+</body>
+
+</html>

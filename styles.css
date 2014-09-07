@@ -18,3 +18,18 @@ div#logo {
 	z-index: 2;
 }
 
+div.olControlAttribution, div.attribution {
+	display: block;
+	position: absolute;
+	background: rgba(255, 255, 255, 0.6);
+	bottom: 0px;
+	right: 0px;
+	border-top-left-radius: 4px;
+	padding: 2px 4px;
+	color: black;
+	font-size: smaller;
+}
+
+div.attribution a {
+	color: inherit;
+}

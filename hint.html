@@ -1,0 +1,147 @@
+﻿<html>
+
+<head>
+	<title>POI-Client Demo</title>
+
+	<link rel="stylesheet" type="text/css" media="all" href="styles.css"/>
+
+	<script type="text/javascript" src="js/xml3d-dev.js"></script>
+	<script type="text/javascript" src="js/camera.js"></script>
+	<script type="text/javascript" src="js/overlay-shader.js"></script>
+	
+	<script type="text/javascript">
+	// <![CDATA[
+	
+		XML3D.POI = function( group, terrain, anim_tf )
+		{
+			this.group = group || null;
+			this.terrain = terrain || null;
+			this.anim_tf = anim_tf || null;
+			
+			this.idGen = 0;
+			
+			this.anim = {
+				"angle": 0,
+				"pos": 0,
+				"rotspeed": 0.8,
+				"movespeed": 6.0,
+				"movedist": 18.0
+			};
+		}
+		
+		XML3D.POI.prototype.addPOI = function (x, y)
+		{
+			var id = this.idGen++;
+			
+			// var x = this.terrain.project_lon(lon, config.zoom);
+			// var y = this.terrain.project_lat(lat, config.zoom);
+
+			var t = XML3D.createElement("transform");
+			t.setAttribute("id", "poi_tf_" + id);
+			t.setAttribute("translation", x + " 20 " + y);
+			t.setAttribute("rotation", "0 1 0 " + (id % Math.PI));
+			
+			this.group.appendChild(t);
+			
+			var m = XML3D.createElement("model");
+			m.setAttribute("id", "poi_" + id);
+			m.setAttribute("src", "#asset_hint");
+			m.setAttribute("transform", "#poi_tf_" + id);
+			m.setAttribute("ondblclick", "alert('Hello World!');");
+
+			this.group.appendChild(m);
+		}
+
+		
+		XML3D.POI.prototype.animate = function(delta)
+		{
+			var twoPI = 2*Math.PI;
+			this.anim.angle = (this.anim.angle + (this.anim.rotspeed * delta)) % twoPI;
+			this.anim.pos = (this.anim.pos + (this.anim.movespeed * delta)) % twoPI;
+			var up = 0.5 * this.anim.movedist * (Math.sin(this.anim.pos) + 1.0);
+			this.anim_tf.setAttribute("rotation", "0 1 0 " + this.anim.angle);
+			this.anim_tf.setAttribute("translation", "0 " + up + " 0");
+		}
+	
+		var pois;
+		
+		function onload()
+		{
+			var camController = XML3D.Xml3dSceneController.controllers[0];
+			camController.detach();
+			camController.mode = "walk";
+			camController.useKeys = true;
+			camController.attach();
+			
+			poi_group = document.getElementById("pois");
+			poi_anim_tf = document.getElementById("poi_animation");
+			
+			pois = new XML3D.POI(poi_group, null, poi_anim_tf);
+
+			pois.addPOI(0, 0);
+			pois.addPOI(30, 20);
+			pois.addPOI(-20, 50);
+		}
+		
+
+		
+		window.addEventListener('load', onload, false);
+
+		// XML3D.options.setValue("renderer-faceculling", "none");
+
+		var lastTime = new Date().getTime();
+		(function animloop(){
+			var t = new Date().getTime();
+			var delta = (t - lastTime) / 1000;
+			lastTime = t;
+			window.requestAnimationFrame(animloop);
+			if (pois) pois.animate(delta);
+		})();
+		
+	// ]]>
+	</script>
+</head>
+
+<body>
+	<div id="myxml3d">
+		<xml3d activeView="#defaultView" style="width: 100%; height: 100%; background-color:0xeeeeee;" >
+
+			<shader id="red_shader" script="urn:xml3d:shader:overlay">
+				<float3 name="diffuseColor">0 0.44 0.74</float3>
+				<texture name="diffuseTexture">
+					<img src="resources/poi-marker2.png"/>
+				</texture>
+			</shader>
+
+			<asset id="asset_hint">
+				<transform id="poi_animation" translation="0 0 0" rotation="0 1 0 0" scale="0.4 0.4 0.4"></transform>
+				<assetmesh meshtype="triangles" shader="#red_shader" transform="#poi_animation">
+					<data src="resources/basic.xml#mesh_tetraeder"/>
+				</assetmesh>
+			</asset>
+
+			
+			<!-- <transform id="poi_animation" translation="0 0 0" rotation="0 1 0 0"></transform> -->
+			<group id="pois"></group>
+			
+			
+			<!-- Light and View -->
+			<view id="defaultView" position="0 25 155"></view>
+			
+			<lightshader id="light1" script="urn:xml3d:lightshader:directional">
+				<float3 name="intensity">0.9 0.9 0.9</float3>
+			</lightshader>
+			
+			<group style="transform: rotateX(-60deg)" >
+				<light shader="#light1"></light>
+			</group>
+
+		</xml3d>
+		<div id="logo"><img src="img/xml3dlogo.png"/></div>
+		<div id="attribution" class="attribution">
+			Data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors
+		</div>
+	</div>
+</body>
+
+</html>
