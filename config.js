@@ -7,8 +7,8 @@ var global = {
 		"ground_tiles": {
 			"osmde": "http://130.206.80.175/api/3d-map-tiles/filab",
 			"gis": "http://130.206.80.175/api/3d-map-tiles/oulu",
-			"sb": "http://localhost/api/3d-map-tiles/sb",
-			"tum": "http://localhost/api/3d-map-tiles/tum"
+			"sb": "http://" + window.location.host + "/api/3d-map-tiles/sb",
+			"tum": "http://" + window.location.host + "/api/3d-map-tiles/tum"
 		}
 	}
 };

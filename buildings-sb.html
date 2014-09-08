@@ -5,8 +5,13 @@
 
 	<link rel="stylesheet" type="text/css" media="all" href="styles.css"/>
 
+	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 	<script type="text/javascript" src="js/xml3d-dev.js"></script>
 	<script type="text/javascript" src="js/camera.js"></script>
+	<script type="text/javascript" src="js/overlay-shader.js"></script>
+	<script type="text/javascript" src="js/xml3d-geo.js"></script>
+	<script type="text/javascript" src="js/xml3d-poi.js"></script>
+	<script type="text/javascript" src="js/xml3d-animation.js"></script>
     <script type="text/javascript" src="js/xml3d-terrain.js"></script>
     <script type="text/javascript" src="js/3d-map-tiles.js"></script>
     <script type="text/javascript" src="config.js"></script>
@@ -16,43 +21,58 @@
 	
 		/////////////////////////////////////////////////////////////////////////
 	
-		var api_tiles = global.api.ground_tiles.sb;
-		var api_poi = global.api.poi;
-
-		var default_config = {
-			"zoom": 16,
-			"west": 7.027427,
-			"south": 49.249020,
-			"east": 7.053348,
-			"north": 49.261289,
+		var config = {
 			"origin": {
 				"lon": 7.041700,
 				"lat": 49.254104
 			},
-			"layers": ["plane", "buildings"]
+			"level": 17,
+			
+			"api_tiles": global.api.ground_tiles.sb,
+			"layers": ["plane", "buildings"],
+			
+			"bbox": {
+				"west": 7.027427,
+				"south": 49.249020,
+				"east": 7.053348,
+				"north": 49.261289
+			},
+			
+			"api_poi": global.api.poi
 		};
 		
-		var terrain, poi;
+		var geo, terrain, pois;
+		var animator;
 		
 
 		function onload()
 		{
-			var ground = document.getElementById("ground");
-			var ground_tf_trans = document.getElementById("ground_tf_translation");
+			var geo_tf = document.getElementById("geo_tf");
+			geo = new XML3D.Geo(geo_tf, config.level, config.origin);
+			
+			
+			var ground_group = document.getElementById("ground");
 			var ground_tf_scale = document.getElementById("ground_tf_scale");
 			
-			terrain = new XML3D.Terrain(ground, ground_tf_trans, ground_tf_scale);
+			terrain = new XML3D.Terrain(geo, ground_group, ground_tf_scale);
+			geo.registerMoveCallback(function (pos) {
+				terrain.load(config.api_tiles, config.layers, config.bbox);
+			});
+
 			
-			var config = default_config; // build_config(
-			//	48.2641768, //default_config.origin.lat, // 64.993295416111, // latitude,
-			//	11.6710156, // default_config.origin.lon, // 25.559692382812, // longitude
-			//	["buildings"]
-			// );
-			console.log(config);
+			var pois_group = document.getElementById("pois");
+			pois = new XML3D.POI(geo, pois_group);
+			geo.registerMoveCallback(function (pos) {
+				pois.loadOverpass(config.bbox);
+			});
 			
-			terrain.load(api_tiles, config);
+
+			animator = new XML3D.Animator();
+			animator.registerAnimation(pois);
+
 
 			// var wpid = navigator.geolocation.getCurrentPosition(geo_success, geo_error, geo_options);
+
 			
 			var camController = XML3D.Xml3dSceneController.controllers[0];
 			camController.detach();
@@ -72,18 +92,16 @@
 		<xml3d activeView="#defaultView" style="width: 100%; height: 100%; background-color:0xeeeeee;" >
 
 			<!-- Asset Instance -->
-			<transform id="ground_tf_translation" translation="0 0 0"></transform>
-			<transform id="ground_tf_scale" translation="0 0 0"></transform>
+			<transform id="geo_tf"></transform>
+			<transform id="ground_tf_scale"></transform>
 			
-			<group transform="#ground_tf_translation">
-				<group transform="#ground_tf_scale">
-					<group id="ground"></group>
-				</group>
+			<group transform="#geo_tf">
+				<group id="ground" transform="#ground_tf_scale"></group>
 				<group id="pois"></group>
 			</group>
 			
 			<!-- Light and View -->
-			<view id="defaultView" position="0 25 0"></view>
+			<view id="defaultView" position="0 35 0"></view>
 			
 			<lightshader id="light1" script="urn:xml3d:lightshader:directional">
 				<float3 name="intensity">0.9 0.9 0.9</float3>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xml3d xmlns="http://www.w3.org/1999/xhtml">
+
 	<defs>
 		<shader id="red_shader" script="urn:xml3d:shader:diffuse">
 			<float3 name="diffuseColor">1 0 0</float3>
@@ -9,7 +10,12 @@
 			<float name="ambientIntensity">0.5686</float>
 			<float name="transparency">0.0</float>
 		</shader>
+		
+		<shader id="poi_shader" script="urn:xml3d:shader:overlay">
+			<float3 name="diffuseColor">0 0.44 0.74</float3>
+		</shader>
 	</defs>
+	
 	<data id="mesh_ground">
 		<int name="index">0 1 2 1 2 3</int>
 		<float3 name="position">
@@ -53,15 +59,15 @@
 			0.0 0.0
 			0.0 0.0
 			0.0 0.0
+			0.08225666947240201 1
 			0.9177433305275979 1
-			0.08225666947240201 1
-			0.5 0
-			0.08225666947240201 1
 			0.5 0
 			0.9177433305275979 1
-			0.08225666947240201 1
 			0.5 0
+			0.08225666947240201 1
 			0.9177433305275979 1
+			0.5 0
+			0.08225666947240201 1
 		</float2>
 	</data>
 	
@@ -78,9 +84,26 @@
 		</assetmesh>
 	</asset>
 
-	<asset id="asset_hint">
-		<assetmesh meshtype="triangles" shader="#red_shader">
-			<data src="#mesh_tetraeder"/>
+	<asset id="asset_poi">
+		<assetdata name="config">
+			<float3 name="diffuseColor">0 0.44 0.74</float3>
+			<texture name="diffuseTexture">
+				<img src="poi-marker2.png"/>
+			</texture>
+		</assetdata>
+		
+		<assetdata name="tf">
+			<!-- <transform scale="0.4 0.4 0.4"></transform> -->
+			<float4x4 name="meshTransform">
+				0.4 0 0 0
+				0 0.4 0 0
+				0 0 0.4 0
+				0 0 0 1
+			</float4x4>
+		</assetdata>
+		
+		<assetmesh meshtype="triangles" shader="#poi_shader" includes="config tf">
+			<data src="#mesh_tetraeder"></data>
 		</assetmesh>
 	</asset>
 
