@@ -1,7 +1,7 @@
 poi-client
 ==========
 
-A set of web application to take advantage of the following enablers:
+A set of web applications to take advantage of the following enablers:
 * POI Data Provider GE
 * POI Storage SE
 * 3D-UI GE
