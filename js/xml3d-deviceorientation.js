@@ -82,7 +82,7 @@ var XML3D = XML3D || {};
 					return;
 
 				deviceQuat = createQuaternion( alpha, beta, gamma, orient );
-				console.log(deviceQuat);
+				// console.log(deviceQuat);
 				this.view.orientation.setQuaternion(new XML3DVec3(deviceQuat.x, deviceQuat.y, deviceQuat.z), deviceQuat.w);
 				//console.log(this.view.orientation);
 			};

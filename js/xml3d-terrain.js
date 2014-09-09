@@ -7,6 +7,7 @@ XML3D.Terrain = function(geo, group, tf_scale) {
 	this.geo = geo || null;
 	this.ground = ground || null;
 	this.tf_scale = tf_scale || null;
+	this.tileCount = 0;
 };
 
 
@@ -33,6 +34,8 @@ XML3D.Terrain.prototype.load = function( api_tiles, layers, bbox ) {
 			});
 		}
 	}
+	
+	this.tileCount = (max.x-min.x+1)*(max.y-min.y+1);
 
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
 }
