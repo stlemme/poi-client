@@ -50,3 +50,64 @@ div.olControlAttribution, div.attribution {
 div.attribution a {
 	color: inherit;
 }
+
+div#page_container {
+	width: 670px;
+	margin: 50px auto;
+	font-family: Lucida Sans;
+}
+
+div#page_sheet {
+	font-family: Lucida Sans;
+	background-color: efefef;
+	padding: 35px;
+	padding-bottom: 15px;
+	border-radius: 10px;
+}
+
+div.heading {
+	font-size: 45px;
+	font-weight: bold;
+	margin-bottom: 50px;
+	letter-spacing: 7px;
+	text-align: center;
+}
+
+div.item {
+	margin-bottom: 20px;
+}
+
+div.thumb {
+	display: inline-block;
+	width: 300px;
+	height: 200px;
+	border: 2px solid 666666;
+}
+
+div.description {
+	display: inline-block;
+	height: 200px;
+	width: 270px;
+	vertical-align: top;
+	margin-left: 20px;
+}
+
+div.description .title {
+	font-size: 20px;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+div.description li {
+	margin-bottom: 7px;
+}
+
+div.footer {
+	text-align: center;
+	margin-top: 25px;
+}
+
+div.footer a {
+	text-decoration: underline;
+	color: inherit;
+}
