@@ -1,0 +1,39 @@
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<defs>
+<transform translation="136207 0 89748" id="tf"/>
+</defs>
+<asset id="plane">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
+<texture name="diffuseTexture">
+<img src="89748-1b329aa827a5de1a90318a257a9f4093efebe209.png"/>
+</texture>
+</assetmesh>
+</asset>
+<asset id="buildings">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.65247260444448 0.07103719303268 0.74648035556311 -0.034380778030027 0.83786666666856 0.0470532279287 0.74385891554994 0.15247104311129 0.65247260444448 0.07103719303268</float2>
+<float name="height">
+18.068662322158</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.10750435554655 -0.0025880353641696 0.21549311999115 -0.0025880353641696 0.21549311999115 0.11175413311867 0.10750435554655 0.11175413311867 0.10750435554655 -0.0025880353641696</float2>
+<float name="height">
+19.673312976804</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+-0.026625991129549 0.66661705076694 0.066362311103148 0.53264282122836 0.15148629332543 0.59165399163612 0.058570808905642 0.7257396296045 -0.026625991129549 0.66661705076694</float2>
+<float name="height">
+18.215372207675</float>
+</data>
+</assetmesh>
+</asset>
+</xml3d>

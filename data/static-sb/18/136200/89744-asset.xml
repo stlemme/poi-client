@@ -1,0 +1,39 @@
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<defs>
+<transform translation="136200 0 89744" id="tf"/>
+</defs>
+<asset id="plane">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
+<texture name="diffuseTexture">
+<img src="89744-4fcb4b95199af5ea1152db04e54dea8e66290e8a.png"/>
+</texture>
+</assetmesh>
+</asset>
+<asset id="buildings">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.57050680887187 -0.0028169544239063 0.69771946666879 -0.023009599404759 0.7726489600027 0.44744363708014 0.64543630223488 0.46774767016177 0.6313096533413 0.37894536033855 0.61674609777401 0.28768856612442 0.57050680887187 -0.0028169544239063</float2>
+<float name="height">
+14</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.18646584890666 0.20223280019127 0.25629809778184 0.70570591755677 0.39581695999368 0.68640601361403 0.35758762666956 0.41074017364008 0.34484451555181 0.31914874941867 0.32598471111851 0.18282115863985 0.18646584890666 0.20223280019127</float2>
+<float name="height">
+14</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.34484451555181 0.31914874941867 0.35758762666956 0.41074017364008 0.3816903111001 0.40795115567744 0.61055658667465 0.38139969744952 0.6313096533413 0.37894536033855 0.61674609777401 0.28768856612442 0.59977955554496 0.28969666347257 0.35365546666435 0.31814470127574 0.34484451555181 0.31914874941867</float2>
+<float name="height">
+4</float>
+</data>
+</assetmesh>
+</asset>
+</xml3d>

@@ -1,0 +1,39 @@
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<defs>
+<transform translation="136202 0 89742" id="tf"/>
+</defs>
+<asset id="plane">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
+<texture name="diffuseTexture">
+<img src="89742-54ea28307ca7487cf06df26e00d36f50ea37b49b.png"/>
+</texture>
+</assetmesh>
+</asset>
+<asset id="buildings">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.19696469334303 -0.024572548558353 0.20883399111335 0.056870315616834 0.081621333345538 0.075948010227876 0.069460764440009 -0.0052716945065185 0.19696469334303 -0.024572548558353</float2>
+<float name="height">
+14</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+-0.12634623999475 -0.10579240156221 0.096840248908848 -0.12330823720549 0.13048206223175 0.24251496951911 -0.099112391122617 0.2566837365157 -0.12634623999475 -0.10579240156221</float2>
+<float name="height">
+12</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.50534798222361 0.19989708147477 0.38767445334815 0.28647160483524 0.32541525331908 0.20190525494399 0.44301596443984 0.11521903329412 0.50534798222361 0.19989708147477</float2>
+<float name="height">
+10.593561022819</float>
+</data>
+</assetmesh>
+</asset>
+</xml3d>

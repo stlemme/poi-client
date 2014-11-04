@@ -1,0 +1,47 @@
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<defs>
+<transform translation="136201 0 89742" id="tf"/>
+</defs>
+<asset id="plane">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
+<texture name="diffuseTexture">
+<img src="89742-fad6ea2211bcac902d1b4b19b56d9aa78decba05.png"/>
+</texture>
+</assetmesh>
+</asset>
+<asset id="buildings">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+-0.040136533323675 0.4403195521154 0.28557738664676 0.4031684918009 0.29307761776727 0.46285561853438 0.31135487998836 0.60844731047109 -0.013339591096155 0.65061862522271 -0.040136533323675 0.4403195521154</float2>
+<float name="height">
+70</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.31135487998836 0.60844731047109 -0.013339591096155 0.65061862522271 0.068361955549335 1.2931135771796 0.39291079109535 1.2509427544428 0.31135487998836 0.60844731047109</float2>
+<float name="height">
+4</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.36422058666358 0.45415357417369 0.62119452442857 0.42280389016378 0.59782001777785 0.22923871997045 0.43325184000423 0.24920887564076 0.33982663109782 0.26047694910085 0.35096775111742 0.34872485064261 0.36422058666358 0.45415357417369</float2>
+<float name="height">
+15</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.23766328889178 0.012578800306073 0.253537564422 0.14210628008004 0.27909660444129 0.35039832402254 0.28557738664676 0.4031684918009 0.29307761776727 0.46285561853438 0.36422058666358 0.45415357417369 0.35096775111742 0.34872485064261 0.33982663109782 0.26047694910085 0.33451093334588 0.21852846592083 0.30749553776695 0.0043229471630184 0.23766328889178 0.012578800306073</float2>
+<float name="height">
+4</float>
+</data>
+</assetmesh>
+</asset>
+</xml3d>
