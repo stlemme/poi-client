@@ -15,8 +15,8 @@ var XML3D = XML3D || {};
 			SCREEN_ORIENTATION: 'orientationchange'
 		};
 
-
-		var deviceQuat = new THREE.Quaternion();
+		// TODO: figure out device dependent issues
+		var deviceQuat; // = XML3D.math.quat.create();
 
 		var fireEvent = function () {
 			var eventData;
@@ -46,25 +46,32 @@ var XML3D = XML3D || {};
 			fireEvent( CONTROLLER_EVENT.CALIBRATE_COMPASS );
 		}.bind( this );
 
-
 		var createQuaternion = function () {
 
-			var finalQuaternion = new THREE.Quaternion();
-			var deviceEuler = new THREE.Euler();
-			var screenTransform = new THREE.Quaternion();
-			var worldTransform = new THREE.Quaternion( - Math.sqrt(0.5), 0, 0, Math.sqrt(0.5) ); // - PI/2 around the x-axis
+			var finalQuaternion = XML3D.math.quat.create();
+			var screenTransform = XML3D.math.quat.create();
+			var worldTransform = XML3D.math.quat.fromValues( - Math.sqrt(0.5), 0, 0, Math.sqrt(0.5) ); // - PI/2 around the x-axis
 			var minusHalfAngle = 0;
 
 			return function ( alpha, beta, gamma, screenOrientation ) {
-				deviceEuler.set( beta, alpha, - gamma, 'YXZ' );
-				finalQuaternion.setFromEuler( deviceEuler );
+				XML3D.math.quat.identity(finalQuaternion);
+				XML3D.math.quat.rotateY(finalQuaternion, finalQuaternion, alpha);
+				XML3D.math.quat.rotateX(finalQuaternion, finalQuaternion, beta);
+				XML3D.math.quat.rotateZ(finalQuaternion, finalQuaternion, -gamma);
 				minusHalfAngle = - screenOrientation / 2;
-				screenTransform.set( 0, Math.sin( minusHalfAngle ), 0, Math.cos( minusHalfAngle ) );
-				finalQuaternion.multiply( screenTransform );
-				finalQuaternion.multiply( worldTransform );
+				XML3D.math.quat.set(screenTransform, 0, Math.sin( minusHalfAngle ), 0, Math.cos( minusHalfAngle ) );
+				XML3D.math.quat.multiply(finalQuaternion, finalQuaternion, screenTransform);
+				XML3D.math.quat.multiply(finalQuaternion, finalQuaternion, worldTransform);
 				return finalQuaternion;
 			}
 
+		}();
+		
+		var deg2rad = function () {
+			var a = Math.PI/180;
+			return function(b) {
+				return b*a
+			}
 		}();
 
 		this.updateDeviceMove = function () {
@@ -72,10 +79,10 @@ var XML3D = XML3D || {};
 			var alpha, beta, gamma, orient;
 
 			return function () {
-				alpha  = THREE.Math.degToRad( this.deviceOrientation.alpha || 0 ); // Z
-				beta   = THREE.Math.degToRad( this.deviceOrientation.beta  || 0 ); // X'
-				gamma  = THREE.Math.degToRad( this.deviceOrientation.gamma || 0 ); // Y''
-				orient = THREE.Math.degToRad( this.screenOrientation       || 0 ); // O
+				alpha  = deg2rad( this.deviceOrientation.alpha || 0 ); // Z
+				beta   = deg2rad( this.deviceOrientation.beta  || 0 ); // X'
+				gamma  = deg2rad( this.deviceOrientation.gamma || 0 ); // Y''
+				orient = deg2rad( this.screenOrientation       || 0 ); // O
 
 				// only process non-zero 3-axis data
 				if ( alpha === 0 || beta === 0 || gamma === 0)
@@ -83,8 +90,7 @@ var XML3D = XML3D || {};
 
 				deviceQuat = createQuaternion( alpha, beta, gamma, orient );
 				// console.log(deviceQuat);
-				this.view.orientation.setQuaternion(new XML3DVec3(deviceQuat.x, deviceQuat.y, deviceQuat.z), deviceQuat.w);
-				//console.log(this.view.orientation);
+				this.view.orientation.set(deviceQuat);
 			};
 
 		}();
