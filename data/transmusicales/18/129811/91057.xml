@@ -1,0 +1,4 @@
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<model src="91057-asset.xml#plane" transform="91057-asset.xml#tf"/>
+<model src="91057-asset.xml#buildings" transform="91057-asset.xml#tf"/>
+</xml3d>

@@ -10,7 +10,8 @@ var global = {
 			"sb": "http://130.206.80.175/api/3d-map-tiles/sb",
 			"static-sb": "data/static-sb",
 			"tum": "http://130.206.80.175/api/3d-map-tiles/tum",
-			"static-tum": "data/static-tum"
+			"static-tum": "data/static-tum",
+			"transmusicales": "data/transmusicales"
 		}
 	}
 };

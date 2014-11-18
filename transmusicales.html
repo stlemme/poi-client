@@ -24,20 +24,22 @@
 	
 		var config = {
 			"origin": {
-				"lon": 7.041700,
-				"lat": 49.254104
+				"lon": -1.733,
+				"lat": 48.058
+				
+				// -1.7358,48.0558,-1.729,48.0603
 			},
 			"level": 18,
 			
-			"api_tiles": global.api.ground_tiles['static-sb'],
+			"api_tiles": global.api.ground_tiles['transmusicales'],
 			"layers": ["plane", "buildings"],
 			
-			"bbox": {
-				"west": 7.027427,
-				"south": 49.249020,
-				"east": 7.053348,
-				"north": 49.261289
-			},
+			// "bbox": {
+			//	"west": 7.027427,
+			//	"south": 49.249020,
+			//	"east": 7.053348,
+			//	"north": 49.261289
+			// },
 			
 			"api_poi": global.api.poi
 		};
@@ -77,9 +79,11 @@
 				pois.loadOverpass(bboxAroundPosition(pos));
 			});
 			
-			geo.goToMyPosition(function () {
-				geo.setOrigin(config.origin);
-			});
+			// geo.goToMyPosition(function () {
+			//	geo.setOrigin(config.origin);
+			// });
+			// DEBUG: hardcoded position
+			geo.setOrigin(config.origin);
 
 			animator = new XML3D.Animator();
 			animator.registerAnimation(pois);
