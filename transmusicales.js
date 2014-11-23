@@ -137,7 +137,7 @@ function onload()
 	
 	var view = document.getElementById("defaultView");
 	controller = new XML3D.DeviceOrientationController(view);
-	// controller.connect();
+	controller.connect();
 	
 	// DEBUG: mouse controller
 	var camController = XML3D.Xml3dSceneController.controllers[0];
