@@ -10,6 +10,7 @@
 	<!-- <script type="text/javascript" src="js/camera.js"></script> -->
 	<script type="text/javascript" src="js/overlay-shader.js"></script>
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
+	<script type="text/javascript" src="js/xml3d-progress.js"></script>
 	<script type="text/javascript" src="js/xml3d-poi.js"></script>
 	<script type="text/javascript" src="js/xml3d-animation.js"></script>
     <script type="text/javascript" src="js/xml3d-terrain.js"></script>
@@ -47,6 +48,7 @@
 		var geo, terrain, pois;
 		var animator;
 		var controller;
+		var busy;
 		
 		function bboxAroundPosition( pos ) {
 			var d = 0.004;
@@ -90,11 +92,7 @@
 
 			var xml3d = document.getElementById("myxml3dcanvas");
 			var loader = document.getElementById("loader");
-			xml3d.addEventListener('framedrawn', function( evt ) {
-				var obj = evt.detail.count.objects;
-				if (obj > (terrain.tileCount/4))
-					loader.style.display = "none";
-			}, false);
+			busy = new XML3D.BusyIndicator(xml3d, loader);
 			
 			var view = document.getElementById("defaultView");
 			controller = new XML3D.DeviceOrientationController(view);
