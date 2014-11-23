@@ -7,6 +7,7 @@
 
 	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 	<script type="text/javascript" src="js/xml3d-dev-20141123.js"></script>
+	<script type="text/javascript" src="js/xml3d-progress.js"></script>
 	<script type="text/javascript" src="js/camera.js"></script>
 	<script type="text/javascript" src="js/overlay-shader.js"></script>
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
@@ -40,6 +41,7 @@
 		
 		var geo, terrain, pois;
 		var animator;
+		var busy;
 		
 		function onload()
 		{
@@ -67,11 +69,8 @@
 			
 			var xml3d = document.getElementById("myxml3dcanvas");
 			var loader = document.getElementById("loader");
-			xml3d.addEventListener('framedrawn', function( evt ) {
-				var obj = evt.detail.count.objects;
-				if (obj > (terrain.tileCount/4))
-					loader.style.display = "none";
-			}, false);
+			busy = new XML3D.BusyIndicator(xml3d, loader);
+
 			
 			// var camController = XML3D.Xml3dSceneController.controllers[0];
 			// camController.detach();
