@@ -28,9 +28,14 @@ function mapStatus2Color(status) {
 
 function buildPOI(poi_data)
 {
+	var serviceName = ""
+	
+	for (var i in poi_data.services)
+		serviceName += poi_data.services[i].name;
+
 	return {
 		fw_core: {
-			category: 'cafe', // poi_data.services[0].name,
+			category: serviceName,
 			location: {
 				wgs84: {
 					latitude: poi_data.lat,
@@ -44,7 +49,7 @@ function buildPOI(poi_data)
 function updatePOI(id, status)
 {
 	color = poi_id2color[id];
-	if (color === 'undefined')
+	if (color === undefined)
 		return false;
 	color.setScriptValue(mapStatus2Color(status));
 }
@@ -54,6 +59,8 @@ function createPOI(poi_data)
 	var id = poi_data.uuid;
 	
 	var model = pois.addPOI(id, buildPOI(poi_data));
+	if (model === undefined)
+		return false;
 
 	var ad = XML3D.createElement("assetdata");
 	ad.setAttribute("name", "config");
@@ -65,6 +72,7 @@ function createPOI(poi_data)
 
 	poi_id2color[id] = color;
 	updatePOI(id, 0);
+	return true;
 }
 
 function loadTransmusicales()
@@ -72,7 +80,6 @@ function loadTransmusicales()
 	config.fetchJSON(
 		config.api_poi.location,
 		function( data ) {
-			// console.log(data);
 			$.each( data, function( idx, poi_data ) {
 				createPOI(poi_data);
 			});

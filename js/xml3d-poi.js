@@ -142,9 +142,10 @@ XML3D.POI.prototype.addPOI = function ( poi_id, poi_data )
 
 XML3D.POI.prototype.deriveTypeName = function(category)
 {
-	if (category == "cafe")
-		return "cafe";
+	if (category in this.types)
+		return category;
 	
+	console.log('no visualization for POI category "' + category + '"');
 	return null;
 }
 

@@ -40,7 +40,10 @@ XML3D.shaders.register("overlay", {
         "       color *=  fragVertexColor;",
         "  #if HAS_DIFFUSETEXTURE",
         "    vec4 texDiffuse = texture2D(diffuseTexture, fragTexCoord);",
-        "    color = mix(color, texDiffuse.rgb, texDiffuse.a);",
+		"    float cy = step(0.0, fragTexCoord.y) * step(fragTexCoord.y, 1.0);",
+		"    float cx = step(0.0, fragTexCoord.x) * step(fragTexCoord.x, 1.0);",
+		"    float alpha = texDiffuse.a * cx * cy;",
+        "    color = mix(color, texDiffuse.rgb, alpha);",
         "  #endif",
         "    gl_FragColor = vec4(color, 1.0);",
         "}"
