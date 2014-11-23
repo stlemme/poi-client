@@ -102,7 +102,7 @@
 			</float4x4>
 		</assetdata>
 		
-		<assetmesh meshtype="triangles" shader="#poi_shader" includes="config tf">
+		<assetmesh meshtype="triangles" shader="#poi_shader" includes="config, tf">
 			<data src="#mesh_tetraeder"></data>
 		</assetmesh>
 	</asset>
