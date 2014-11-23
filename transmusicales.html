@@ -8,7 +8,7 @@
 	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 	<script type="text/javascript" src="js/xml3d-dev-20141123.js"></script>
 	<script type="text/javascript" src="js/xml3d-progress.js"></script>
-	<!-- <script type="text/javascript" src="js/camera.js"></script> -->
+	<script type="text/javascript" src="js/camera.js"></script>
 	<script type="text/javascript" src="js/overlay-shader.js"></script>
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
 	<script type="text/javascript" src="js/xml3d-poi.js"></script>
@@ -16,7 +16,10 @@
     <script type="text/javascript" src="js/xml3d-terrain.js"></script>
     <script type="text/javascript" src="js/xml3d-deviceorientation.js"></script>
     <script type="text/javascript" src="js/3d-map-tiles.js"></script>
+	
     <script type="text/javascript" src="config.js"></script>
+    <script type="text/javascript" src="status2color.js"></script>
+    <script type="text/javascript" src="transmusicales.js"></script>
 	
 	<script type="text/javascript">
 	// <![CDATA[
@@ -35,72 +38,18 @@
 			"api_tiles": global.api.ground_tiles['transmusicales'],
 			"layers": ["plane", "buildings"],
 			
-			// "bbox": {
-			//	"west": 7.027427,
-			//	"south": 49.249020,
-			//	"east": 7.053348,
-			//	"north": 49.261289
-			// },
+			"api_poi": {
+				"location": "http://dev.loicortola.com:81/location/LesTransmusicales2014.json",
+				"update": "http://dev.loicortola.com:81/update/LesTransmusicales2014.json"
+			},
 			
-			"api_poi": global.api.poi
+			"status2color": status2color,
+			
+			"fetchJSON": function (url, handler) {
+				var req = $.getJSON(url);
+				req.done(handler);
+			}
 		};
-		
-		var geo, terrain, pois;
-		var animator;
-		var controller;
-		var busy;
-		
-		function bboxAroundPosition( pos ) {
-			var d = 0.004;
-			return {
-				"west": pos.lon-d,
-				"south": pos.lat-d,
-				"east": pos.lon+d,
-				"north": pos.lat+d
-			};
-		}
-
-		function onload()
-		{
-			var geo_tf = document.getElementById("geo_tf");
-			geo = new XML3D.Geo(geo_tf, config.level, null);
-			
-			
-			var ground_group = document.getElementById("ground");
-			var ground_tf_scale = document.getElementById("ground_tf_scale");
-			
-			terrain = new XML3D.Terrain(geo, ground_group, ground_tf_scale);
-			geo.registerMoveCallback(function (pos) {
-				terrain.load(config.api_tiles, config.layers, bboxAroundPosition(pos));
-			});
-
-			
-			var pois_group = document.getElementById("pois");
-			pois = new XML3D.POI(geo, pois_group);
-			geo.registerMoveCallback(function (pos) {
-				pois.loadOverpass(bboxAroundPosition(pos));
-			});
-			
-			// geo.goToMyPosition(function () {
-			//	geo.setOrigin(config.origin);
-			// });
-			// DEBUG: hardcoded position
-			geo.setOrigin(config.origin);
-
-			animator = new XML3D.Animator();
-			animator.registerAnimation(pois);
-
-			var xml3d = document.getElementById("myxml3dcanvas");
-			var loader = document.getElementById("loader");
-			busy = new XML3D.BusyIndicator(xml3d, loader);
-
-			
-			var view = document.getElementById("defaultView");
-			controller = new XML3D.DeviceOrientationController(view);
-			controller.connect();
-		}
-		
-		window.addEventListener('load', onload, false);
 		
 	// ]]>
 	</script>

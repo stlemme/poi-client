@@ -2,11 +2,11 @@ var XML3D = XML3D || {};
 	
 (function() {
 
-XML3D.POI = function( geo, group )
+XML3D.POI = function( geo, group, scale )
 {
 	this.group = group || null;
 	this.geo = geo || null;
-	this.scale = 0.6;
+	this.scale = scale || 0.6;
 	
 	this.idGen = 0;
 	
@@ -20,8 +20,21 @@ XML3D.POI = function( geo, group )
 	};
 
 	this.initAnimations();
-	this.initType("hint");
-	this.initType("cafe");
+	
+	this.types = {
+		"hint": "asset_poi",
+		"cafe": "asset_poi",
+		
+		"restaurant": "asset_tramus_poi",
+		"atm": "asset_tramus_poi",
+		"merchandising": "asset_tramus_poi",
+		"bar": "asset_tramus_poi",
+		"stage": "asset_tramus_poi",
+		"shuttle": "asset_tramus_poi"
+	};
+	
+	for (var typeName in this.types)
+		this.initType(typeName, this.types[typeName]);
 }
 
 
@@ -100,7 +113,7 @@ XML3D.POI.prototype.addPOI = function ( poi_id, poi_data )
 {
 	// console.log(poi_data);
 	
-	var id = this.idGen++;
+	var seed = this.idGen++;
 	
 	var loc = poi_data.fw_core.location.wgs84;
 	var typeName = this.deriveTypeName(poi_data.fw_core.category);
@@ -113,7 +126,7 @@ XML3D.POI.prototype.addPOI = function ( poi_id, poi_data )
 	var t = XML3D.createElement("transform");
 	t.setAttribute("id", "poi_tf_" + poi_id);
 	t.setAttribute("translation", coord.x + " 20 " + coord.y);
-	t.setAttribute("rotation", "0 1 0 " + (id % Math.PI));
+	t.setAttribute("rotation", "0 1 0 " + (seed % Math.PI));
 	
 	this.group.appendChild(t);
 	
@@ -124,6 +137,7 @@ XML3D.POI.prototype.addPOI = function ( poi_id, poi_data )
 	m.setAttribute("ondblclick", "alert('Hello World!');");
 
 	this.group.appendChild(m);
+	return m;
 }
 
 XML3D.POI.prototype.deriveTypeName = function(category)
@@ -164,10 +178,12 @@ XML3D.POI.prototype.initAnimations = function() {
 }
 
 
-XML3D.POI.prototype.initType = function(typeName) {
+XML3D.POI.prototype.initType = function(typeName, baseAsset) {
+	var asset_id = baseAsset || "asset_poi";
+	
 	var a = XML3D.createElement("asset");
 	a.setAttribute("id", "asset_" + typeName);
-	a.setAttribute("src", "resources/basic.xml#asset_poi");
+	a.setAttribute("src", "resources/basic.xml#" + asset_id);
 
 	var ad = XML3D.createElement("assetdata");
 	ad.setAttribute("name", "tf");
