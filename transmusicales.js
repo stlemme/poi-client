@@ -28,8 +28,8 @@ function mapStatus2Color(status) {
 
 function buildPOI(poi_data)
 {
-	var serviceName = ""
-	
+	var serviceName = "";
+
 	for (var i in poi_data.services)
 		serviceName += poi_data.services[i].name;
 
@@ -57,7 +57,7 @@ function updatePOI(id, status)
 function createPOI(poi_data)
 {
 	var id = poi_data.uuid;
-	
+
 	var model = pois.addPOI(id, buildPOI(poi_data));
 	if (model === undefined)
 		return false;
@@ -65,7 +65,7 @@ function createPOI(poi_data)
 	var ad = XML3D.createElement("assetdata");
 	ad.setAttribute("name", "config");
 	model.appendChild(ad);
-	
+
 	var color = XML3D.createElement("float3");
 	color.setAttribute("name", "diffuseColor");
 	ad.appendChild(color);
@@ -77,14 +77,21 @@ function createPOI(poi_data)
 
 function loadTransmusicales()
 {
-	config.fetchJSON(
-		config.api_poi.location,
-		function( data ) {
-			$.each( data, function( idx, poi_data ) {
-				createPOI(poi_data);
-			});
-		}
-	);
+	if(EVENTRIBE) {
+		var data = JSON.parse(EVENTRIBE.loadLocations());
+		$.each(data, function( idx, poi_data ) {
+			createPOI(poi_data);
+		});
+	} else {
+		config.fetchJSON(
+				config.api_poi.location,
+				function (data) {
+					$.each(data, function (idx, poi_data) {
+						createPOI(poi_data);
+					});
+				}
+		);
+	}
 }
 
 function updateTransmusicales()
@@ -100,27 +107,36 @@ function updateTransmusicales()
 	);
 }
 
-function onload()
+// Called by the Eventribe client when data is updated
+window.updateStatus = function(data) {
+	console.log(data);
+	$.each( data, function( id, status ) {
+		updatePOI(id, status);
+	});
+	EVENTRIBE.successUpdate();
+}
+
+	function onload()
 {
 	var geo_tf = document.getElementById("geo_tf");
 	geo = new XML3D.Geo(geo_tf, config.level, null);
-	
-	
+
+
 	var ground_group = document.getElementById("ground");
 	var ground_tf_scale = document.getElementById("ground_tf_scale");
-	
+
 	terrain = new XML3D.Terrain(geo, ground_group, ground_tf_scale);
 	geo.registerMoveCallback(function (pos) {
 		terrain.load(config.api_tiles, config.layers, bboxAroundPosition(pos));
 	});
 
-	
+
 	var pois_group = document.getElementById("pois");
 	pois = new XML3D.POI(geo, pois_group, 0.2);
 	geo.registerMoveCallback(function (pos) {
 		loadTransmusicales();
 	});
-	
+
 	// geo.goToMyPosition(function () {
 	//	geo.setOrigin(config.origin);
 	// });
@@ -134,11 +150,11 @@ function onload()
 	var loader = document.getElementById("loader");
 	busy = new XML3D.BusyIndicator(xml3d, loader);
 
-	
+
 	var view = document.getElementById("defaultView");
 	controller = new XML3D.DeviceOrientationController(view);
 	controller.connect();
-	
+
 	// DEBUG: mouse controller
 	var camController = XML3D.Xml3dSceneController.controllers[0];
 	camController.detach();
@@ -149,6 +165,11 @@ function onload()
 
 
 window.addEventListener('load', onload, false);
-window.setInterval(updateTransmusicales, 2000);
+if(EVENTRIBE) {
+	// Request first update
+	EVENTRIBE.requestUpdates();
+} else {
+	window.setInterval(updateTransmusicales, 2000);
+}
 
 })();
