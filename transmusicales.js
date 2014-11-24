@@ -75,52 +75,71 @@ function createPOI(poi_data)
 	return true;
 }
 
-function loadTransmusicales()
+
+function loadTransmusicales(data)
 {
-	if(EVENTRIBE) {
-		var data = JSON.parse(EVENTRIBE.loadLocations());
-		$.each(data, function( idx, poi_data ) {
-			createPOI(poi_data);
-		});
-	} else {
-		config.fetchJSON(
-				config.api_poi.location,
-				function (data) {
-					$.each(data, function (idx, poi_data) {
-						createPOI(poi_data);
-					});
-				}
-		);
-	}
+	// console.log(data);
+	$.each(data, function (idx, poi_data) {
+		createPOI(poi_data);
+	});
 }
 
-function updateTransmusicales()
-{
-	config.fetchJSON(
-		config.api_poi.update,
-		function( data ) {
-			console.log(data);
-			$.each( data, function( id, status ) {
-				updatePOI(id, status);
-			});
-		}
-	);
-}
-
-// Called by the Eventribe client when data is updated
-window.updateStatus = function(data) {
-	console.log(data);
+function updateTransmusicales(data) {
+	// console.log(data);
 	$.each( data, function( id, status ) {
 		updatePOI(id, status);
 	});
-	EVENTRIBE.successUpdate();
 }
 
-	function onload()
+
+var evtribe;
+
+function setupEventribe() {
+	
+	if (typeof EVENTRIBE !== 'undefined') {
+	
+		evtribe = {
+			load: function(handler) {
+				var data = JSON.parse(EVENTRIBE.loadLocations());
+				handler.call(data);
+			},
+			
+			requestUpdates: function(handler) {
+				// TODO: pass handler via EVENTRIBE.requestUpdates(handler) instead of hardcoded naming convention
+				window.updateStatus = function(data) {
+					handler.call(data);
+					EVENTRIBE.successUpdate();
+				};
+				// Request first update
+				EVENTRIBE.requestUpdates();
+			}
+		};
+		
+	} else {
+	
+		evtribe = {
+			load: function(handler) {
+				config.fetchJSON(config.api_poi.location, handler);
+			},
+			
+			requestUpdates: function(handler) {
+				window.setInterval(function() {
+					config.fetchJSON(config.api_poi.update, handler); },
+					2000
+				);
+			}
+		};
+	
+	}
+}
+
+
+function onload()
 {
 	var geo_tf = document.getElementById("geo_tf");
 	geo = new XML3D.Geo(geo_tf, config.level, null);
 
+	setupEventribe();
 
 	var ground_group = document.getElementById("ground");
 	var ground_tf_scale = document.getElementById("ground_tf_scale");
@@ -134,7 +153,7 @@ window.updateStatus = function(data) {
 	var pois_group = document.getElementById("pois");
 	pois = new XML3D.POI(geo, pois_group, 0.2);
 	geo.registerMoveCallback(function (pos) {
-		loadTransmusicales();
+		evtribe.load(loadTransmusicales);
 	});
 
 	// geo.goToMyPosition(function () {
@@ -161,15 +180,12 @@ window.updateStatus = function(data) {
 	camController.mode = "walk";
 	camController.useKeys = false;
 	camController.attach();
+
+	evtribe.requestUpdates(updateTransmusicales);
 }
 
 
 window.addEventListener('load', onload, false);
-if(EVENTRIBE) {
-	// Request first update
-	EVENTRIBE.requestUpdates();
-} else {
-	window.setInterval(updateTransmusicales, 2000);
-}
+
 
 })();
