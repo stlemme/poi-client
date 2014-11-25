@@ -156,11 +156,18 @@ function onload()
 		evtribe.load(loadTransmusicales);
 	});
 
-	// geo.goToMyPosition(function () {
-	//	geo.setOrigin(config.origin);
-	// });
+	geo.goToMyPosition({
+		'success': function (pos) {
+			// TODO: bound pos to venue location - otherwise use default
+			return config.origin;
+		},
+		'error': function () {
+			// console.log("No pos");
+			return config.origin;
+		}
+	});
 	// DEBUG: hardcoded position
-	geo.setOrigin(config.origin);
+	//geo.setOrigin(config.origin);
 
 	animator = new XML3D.Animator();
 	animator.registerAnimation(pois);

@@ -72,23 +72,34 @@ XML3D.Geo.prototype.registerMoveCallback = function ( cb ) {
 }
 
 
-XML3D.Geo.prototype.goToMyPosition = function ( fail ) {
+XML3D.Geo.prototype.goToMyPosition = function ( options ) {
 	var scope = this;
+	options = options || {};
 	
 	var geo_success = function (position) {
-		scope.setOrigin({
+		var pos = {
 			"lat": position.coords.latitude,
 			"lon": position.coords.longitude
-		});
+		};
+
+		if (options.success !== 'undefined')
+			pos = options.success.call(scope, pos);
+
+		scope.setOrigin(pos);
 	}
 
 	var geo_error = function () {
 		console.log("Sorry, no position available.");
-		if (fail !== null)
-			fail.call();
+		
+		var pos = null;
+		if (options.error !== 'undefined')
+			pos = options.error.call(scope);
+		
+		if (pos != null)
+			scope.setOrigin(pos);
 	}
 
-	var geo_options = {
+	var geo_options = options.geo_options || {
 		enableHighAccuracy: true, 
 		maximumAge        : 30000, 
 		timeout           : 2000
