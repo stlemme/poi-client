@@ -199,9 +199,13 @@ function onload()
 		}
 	};
 	// geo.goToMyPosition(geoOperator);
+	
+	// initial position is somewhere at the venue - this position needs to fix the scaling
+	geo.setOrigin(config.origin);
+	geo.fixTileSize = true;
+	
+	// then request real position to be updated frequently
 	geo.watchMyPosition(geoOperator);
-	// DEBUG: hardcoded position
-	// geo.setOrigin(config.origin);
 
 	animator = new XML3D.Animator();
 	animator.registerAnimation(pois);
