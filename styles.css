@@ -6,6 +6,8 @@ html, body, #myxml3d {
 	height: 100%;
 	margin: 0px;
 	padding: 0px;
+	background: #d1e8ff;
+	background: linear-gradient(to top, #d1e8ff 0%,#8bbced 100%);
 }
 
 div#logo {
@@ -32,7 +34,6 @@ div#loader {
 /*     width: 200;
     height: 200; */
 	z-index: 2;
-	background: lightblue;
 }
 
 div#loader img {
