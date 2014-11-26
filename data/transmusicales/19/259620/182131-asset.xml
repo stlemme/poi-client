@@ -1,0 +1,14 @@
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<defs>
+<transform translation="259620 0 182131" id="tf"/>
+</defs>
+<asset id="plane">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
+<texture name="diffuseTexture">
+<img src="182131-6ae0b232dddfe6e6fce3b374aabe935ab6011c8c.png"/>
+</texture>
+</assetmesh>
+</asset>
+<asset id="buildings"/>
+</xml3d>

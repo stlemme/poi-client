@@ -1,0 +1,39 @@
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<defs>
+<transform translation="259618 0 182122" id="tf"/>
+</defs>
+<asset id="plane">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
+<texture name="diffuseTexture">
+<img src="182122-ff62afaa719c6da8cd5c23d6037d3759a40b5b68.png"/>
+</texture>
+</assetmesh>
+</asset>
+<asset id="buildings">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+1.5489109333139 -0.40218079145416 0.61538702220423 -0.70723869022913 0.24984177778242 0.41711345949443 1.2005506844434 0.72761570112198 1.5489109333139 -0.40218079145416</float2>
+<float name="height">
+15.454123534939</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.23673457777477 0.41275552718434 0.28188160000718 0.27330160376732 0.23527822221513 0.25804882036755 0.19013119998272 0.39750276273116 0.23673457777477 0.41275552718434</float2>
+<float name="height">
+18.9065683628</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.52363662223797 0.86380062368698 0.6998556444596 0.99018008389976 0.72752639997634 0.95095888737706 0.74791537775309 0.96621157653863 0.78869333333569 0.90737976398668 0.59062897777767 0.76792645541718 0.52363662223797 0.86380062368698</float2>
+<float name="height">
+18.631478971164</float>
+</data>
+</assetmesh>
+</asset>
+</xml3d>
