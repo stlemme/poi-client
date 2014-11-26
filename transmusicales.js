@@ -48,7 +48,7 @@ function buildPOI(poi_data)
 
 function updatePOI(id, status)
 {
-	console.log("poi: "+ id + " status: "+status);
+	// console.log("poi: "+ id + " status: "+status);
 	color = poi_id2color[id];
 	if (color === undefined)
 		return false;
@@ -72,7 +72,7 @@ function createPOI(poi_data)
 	ad.appendChild(color);
 
 	poi_id2color[id] = color;
-	//TODO as we call many times updatePOI, it always resets the map to grey...
+
 	updatePOI(id, 0);
 	return true;
 }
@@ -87,7 +87,7 @@ function loadTransmusicales(data)
 }
 
 function updateTransmusicales(data) {
-	console.log("UT"+data);
+	// console.log("UT"+data);
 	$.each( data, function( id, status ) {
 		updatePOI(id, status);
 	});
@@ -160,7 +160,7 @@ function onload()
 
 	terrain = new XML3D.Terrain(geo, ground_group, ground_tf_scale);
 	geo.registerMoveCallback(function (pos) {
-		// console.log("terrain.load()");
+		console.log("terrain.load()");
 		terrain.load(config.api_tiles, config.layers, bboxAroundPosition(pos));
 	});
 
@@ -173,17 +173,33 @@ function onload()
 		evtribe.load(loadTransmusicales);
 	});
 
-	geo.goToMyPosition({
+	var insideVenueRegion = function(pos, region) {
+		if (pos.lat < region[0])
+			return false;
+		if (pos.lat > region[2])
+			return false;
+		if (pos.lon < region[1])
+			return false;
+		if (pos.lon > region[3])
+			return false;
+		return true;
+	};
+	
+	var geoOperator = {
 		'success': function (pos) {
-			// TODO: bound pos to venue location - otherwise use default
-			// console.log("setOrigin()");
+			// bound pos to venue location - otherwise use default
+			if (insideVenueRegion(pos, config.venue))
+				return pos;
+			console.log("use default position");
 			return config.origin;
 		},
 		'error': function () {
 			// console.log("No pos");
 			return config.origin;
 		}
-	});
+	};
+	// geo.goToMyPosition(geoOperator);
+	geo.watchMyPosition(geoOperator);
 	// DEBUG: hardcoded position
 	// geo.setOrigin(config.origin);
 
@@ -206,7 +222,7 @@ function onload()
 	camController.useKeys = false;
 	camController.attach();
 
-	// Do first load - this fails if no position can be acquired
+	// Do first load - this fails if no position was acquired before
 	// evtribe.load(loadTransmusicales);
 	// Init update requests with unique tag
 	evtribe.requestUpdates("transmusicales", updateTransmusicales);

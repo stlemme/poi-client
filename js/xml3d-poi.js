@@ -126,6 +126,7 @@ XML3D.POI.prototype.addPOI = function ( poi_id, poi_data )
 	var t = XML3D.createElement("transform");
 	t.setAttribute("id", "poi_tf_" + poi_id);
 	t.setAttribute("translation", coord.x + " 20 " + coord.y);
+	// t.setAttribute("translation", this.geo.xtile(loc.longitude) + " 20 " + this.geo.ytile(loc.latitude));
 	t.setAttribute("rotation", "0 1 0 " + (seed % Math.PI));
 	
 	this.group.appendChild(t);
