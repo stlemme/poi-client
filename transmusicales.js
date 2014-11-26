@@ -220,11 +220,11 @@ function onload()
 	controller.connect();
 
 	// DEBUG: mouse controller
-	var camController = XML3D.Xml3dSceneController.controllers[0];
-	camController.detach();
-	camController.mode = "walk";
-	camController.useKeys = false;
-	camController.attach();
+	// var camController = XML3D.Xml3dSceneController.controllers[0];
+	// camController.detach();
+	// camController.mode = "walk";
+	// camController.useKeys = false;
+	// camController.attach();
 
 	// Do first load - this fails if no position was acquired before
 	// evtribe.load(loadTransmusicales);
