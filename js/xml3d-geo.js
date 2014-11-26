@@ -77,6 +77,7 @@ XML3D.Geo.prototype.goToMyPosition = function ( options ) {
 	options = options || {};
 	
 	var geo_success = function (position) {
+		// console.log("position available.");
 		var pos = {
 			"lat": position.coords.latitude,
 			"lon": position.coords.longitude
@@ -85,6 +86,7 @@ XML3D.Geo.prototype.goToMyPosition = function ( options ) {
 		if (options.success !== 'undefined')
 			pos = options.success.call(scope, pos);
 
+		// console.log(pos);
 		scope.setOrigin(pos);
 	}
 

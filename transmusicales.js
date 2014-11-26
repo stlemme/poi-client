@@ -48,6 +48,7 @@ function buildPOI(poi_data)
 
 function updatePOI(id, status)
 {
+	console.log("poi: "+ id + " status: "+status);
 	color = poi_id2color[id];
 	if (color === undefined)
 		return false;
@@ -71,6 +72,7 @@ function createPOI(poi_data)
 	ad.appendChild(color);
 
 	poi_id2color[id] = color;
+	//TODO as we call many times updatePOI, it always resets the map to grey...
 	updatePOI(id, 0);
 	return true;
 }
@@ -85,7 +87,7 @@ function loadTransmusicales(data)
 }
 
 function updateTransmusicales(data) {
-	// console.log(data);
+	console.log("UT"+data);
 	$.each( data, function( id, status ) {
 		updatePOI(id, status);
 	});
@@ -95,41 +97,51 @@ function updateTransmusicales(data) {
 var evtribe;
 
 function setupEventribe() {
-	
+
 	if (typeof EVENTRIBE !== 'undefined') {
-	
+
 		evtribe = {
 			load: function(handler) {
+				if (this.loaded) return;
 				var data = JSON.parse(EVENTRIBE.loadLocations());
-				handler.call(data);
+				handler(data);
+				this.loaded = true;
 			},
-			
-			requestUpdates: function(handler) {
-				// TODO: pass handler via EVENTRIBE.requestUpdates(handler) instead of hardcoded naming convention
-				window.updateStatus = function(data) {
-					handler.call(data);
-					EVENTRIBE.successUpdate();
-				};
-				// Request first update
-				EVENTRIBE.requestUpdates();
-			}
+			requestUpdates: function(tag, handler) {
+				// Reference handler with tag as a string key
+				this.handlers[tag] = handler;
+				// Request first update. Will enable update push later on
+				EVENTRIBE.requestUpdates(tag);
+			},
+			// referenced via window.evtribe.updateStatus() and called from Java side
+			updateStatus: function(tag, data) {
+				// Executing handler with tag key
+				console.log("in update status with tag: "+tag+" and data:"+data);
+				this.handlers[tag](data);
+			},
+			handlers: {},
+			loaded: false
 		};
-		
+
 	} else {
-	
+
 		evtribe = {
 			load: function(handler) {
+				if (this.loaded) return;
 				config.fetchJSON(config.api_poi.location, handler);
+				this.loaded = true;
 			},
-			
-			requestUpdates: function(handler) {
+
+			requestUpdates: function(tag, handler) {
 				window.setInterval(function() {
 					config.fetchJSON(config.api_poi.update, handler); },
 					2000
 				);
-			}
+			},
+			
+			loaded: false
 		};
-	
+
 	}
 }
 
@@ -140,12 +152,15 @@ function onload()
 	geo = new XML3D.Geo(geo_tf, config.level, null);
 
 	setupEventribe();
+	// Reference evtribe globally
+	window.evtribe = evtribe;
 
 	var ground_group = document.getElementById("ground");
 	var ground_tf_scale = document.getElementById("ground_tf_scale");
 
 	terrain = new XML3D.Terrain(geo, ground_group, ground_tf_scale);
 	geo.registerMoveCallback(function (pos) {
+		// console.log("terrain.load()");
 		terrain.load(config.api_tiles, config.layers, bboxAroundPosition(pos));
 	});
 
@@ -153,12 +168,15 @@ function onload()
 	var pois_group = document.getElementById("pois");
 	pois = new XML3D.POI(geo, pois_group, 0.2);
 	geo.registerMoveCallback(function (pos) {
+		// TODO: @Stefan: Why?
+		// we request (nearby) POIs, when a (new) position was determined
 		evtribe.load(loadTransmusicales);
 	});
 
 	geo.goToMyPosition({
 		'success': function (pos) {
 			// TODO: bound pos to venue location - otherwise use default
+			// console.log("setOrigin()");
 			return config.origin;
 		},
 		'error': function () {
@@ -167,7 +185,7 @@ function onload()
 		}
 	});
 	// DEBUG: hardcoded position
-	//geo.setOrigin(config.origin);
+	// geo.setOrigin(config.origin);
 
 	animator = new XML3D.Animator();
 	animator.registerAnimation(pois);
@@ -188,7 +206,10 @@ function onload()
 	camController.useKeys = false;
 	camController.attach();
 
-	evtribe.requestUpdates(updateTransmusicales);
+	// Do first load - this fails if no position can be acquired
+	// evtribe.load(loadTransmusicales);
+	// Init update requests with unique tag
+	evtribe.requestUpdates("transmusicales", updateTransmusicales);
 }
 
 
