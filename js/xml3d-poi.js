@@ -35,6 +35,8 @@ XML3D.POI = function( geo, group, scale )
 	
 	for (var typeName in this.types)
 		this.initType(typeName, this.types[typeName]);
+		
+	this.initPins();
 }
 
 
@@ -112,8 +114,9 @@ XML3D.POI.prototype.loadOverpass = function ( bbox )
 XML3D.POI.prototype.addPOI = function ( poi_id, poi_data )
 {
 	// console.log(poi_data);
-	
+
 	var seed = this.idGen++;
+	var vertical = 20;
 	
 	var loc = poi_data.fw_core.location.wgs84;
 	var typeName = this.deriveTypeName(poi_data.fw_core.category);
@@ -125,7 +128,7 @@ XML3D.POI.prototype.addPOI = function ( poi_id, poi_data )
 	
 	var t = XML3D.createElement("transform");
 	t.setAttribute("id", "poi_tf_" + poi_id);
-	t.setAttribute("translation", coord.x + " 20 " + coord.y);
+	t.setAttribute("translation", coord.x + " " + vertical + " " + coord.y);
 	// t.setAttribute("translation", this.geo.xtile(loc.longitude) + " 20 " + this.geo.ytile(loc.latitude));
 	t.setAttribute("rotation", "0 1 0 " + (seed % Math.PI));
 	
@@ -138,6 +141,18 @@ XML3D.POI.prototype.addPOI = function ( poi_id, poi_data )
 	m.setAttribute("ondblclick", "alert('Hello World!');");
 
 	this.group.appendChild(m);
+	
+	// add line to pins
+	this.pin_vertices.append(coord.x);
+	this.pin_vertices.append(0);
+	this.pin_vertices.append(coord.y);
+
+	this.pin_vertices.append(coord.x);
+	this.pin_vertices.append(vertical);
+	this.pin_vertices.append(coord.y);
+	
+	this.pin_positions.setScriptValue(this.pin_vertices);
+	
 	return m;
 }
 
@@ -179,6 +194,19 @@ XML3D.POI.prototype.initAnimations = function() {
 	this.animate(0);
 }
 
+
+XML3D.POI.prototype.initPins = function() {
+	var m = XML3D.createElement("mesh");
+	m.setAttribute("shader", "resources/basic.xml#pin_shader");
+	m.setAttribute("type", "lines");
+	
+	this.pin_positions = XML3D.createElement("float3");
+	this.pin_positions.setAttribute("name", "position");
+	m.appendChild(this.pin_positions);
+	this.group.appendChild(m);
+	
+	this.pin_vertices = [];
+}
 
 XML3D.POI.prototype.initType = function(typeName, baseAsset) {
 	var asset_id = baseAsset || "asset_poi";

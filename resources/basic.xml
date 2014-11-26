@@ -14,6 +14,11 @@
 		<shader id="poi_shader" script="urn:xml3d:shader:overlay">
 			<float3 name="diffuseColor">0 0.44 0.74</float3>
 		</shader>
+		
+		<shader id="pin_shader" script="urn:xml3d:shader:flat" >
+			<float3 name="diffuseColor">1 1 1</float3>
+			<bool name="useVertexColor">true</bool>
+		</shader>
 	</defs>
 	
 	<data id="mesh_ground">
