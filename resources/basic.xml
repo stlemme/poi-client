@@ -16,8 +16,7 @@
 		</shader>
 		
 		<shader id="pin_shader" script="urn:xml3d:shader:flat" >
-			<float3 name="diffuseColor">1 1 1</float3>
-			<bool name="useVertexColor">true</bool>
+			<float3 name="diffuseColor">0 0 0</float3>
 		</shader>
 	</defs>
 	
@@ -170,6 +169,10 @@
 		<assetmesh meshtype="triangles" shader="#poi_shader" includes="config, tf">
 			<data src="#mesh_tetraeder_with_icon"></data>
 		</assetmesh>
+
+		<!-- <assetmesh meshtype="lines" shader="#pin_shader">
+			<float3 name="position">0 10 0  0 -20 0 </float3>
+		</assetmesh> -->
 	</asset>
 
 </xml3d>

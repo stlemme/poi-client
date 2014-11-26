@@ -36,7 +36,7 @@ XML3D.POI = function( geo, group, scale )
 	for (var typeName in this.types)
 		this.initType(typeName, this.types[typeName]);
 		
-	this.initPins();
+	// this.initPins();
 }
 
 
@@ -142,16 +142,30 @@ XML3D.POI.prototype.addPOI = function ( poi_id, poi_data )
 
 	this.group.appendChild(m);
 	
-	// add line to pins
-	this.pin_vertices.append(coord.x);
-	this.pin_vertices.append(0);
-	this.pin_vertices.append(coord.y);
-
-	this.pin_vertices.append(coord.x);
-	this.pin_vertices.append(vertical);
-	this.pin_vertices.append(coord.y);
 	
-	this.pin_positions.setScriptValue(this.pin_vertices);
+	m = XML3D.createElement("mesh");
+	m.setAttribute("shader", "resources/basic.xml#pin_shader");
+	m.setAttribute("type", "lines");
+	m.setAttribute("transform", "#poi_tf_" + poi_id);
+	
+	var fl = XML3D.createElement("float3");
+	fl.setAttribute("name", "position");
+	m.appendChild(fl);
+	
+	fl.textContent = "0 10 0  0 -20 0";
+
+	this.group.appendChild(m);
+	
+	// add line to pins
+	// this.pin_vertices.append(coord.x);
+	// this.pin_vertices.append(0);
+	// this.pin_vertices.append(coord.y);
+
+	// this.pin_vertices.append(coord.x);
+	// this.pin_vertices.append(vertical);
+	// this.pin_vertices.append(coord.y);
+	
+	// this.pin_positions.setScriptValue(this.pin_vertices);
 	
 	return m;
 }
@@ -195,18 +209,18 @@ XML3D.POI.prototype.initAnimations = function() {
 }
 
 
-XML3D.POI.prototype.initPins = function() {
-	var m = XML3D.createElement("mesh");
-	m.setAttribute("shader", "resources/basic.xml#pin_shader");
-	m.setAttribute("type", "lines");
+// XML3D.POI.prototype.initPins = function() {
+	// var m = XML3D.createElement("mesh");
+	// m.setAttribute("shader", "resources/basic.xml#pin_shader");
+	// m.setAttribute("type", "lines");
 	
-	this.pin_positions = XML3D.createElement("float3");
-	this.pin_positions.setAttribute("name", "position");
-	m.appendChild(this.pin_positions);
-	this.group.appendChild(m);
+	// this.pin_positions = XML3D.createElement("float3");
+	// this.pin_positions.setAttribute("name", "position");
+	// m.appendChild(this.pin_positions);
+	// this.group.appendChild(m);
 	
-	this.pin_vertices = [];
-}
+	// this.pin_vertices = [];
+// }
 
 XML3D.POI.prototype.initType = function(typeName, baseAsset) {
 	var asset_id = baseAsset || "asset_poi";
