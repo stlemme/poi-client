@@ -1,0 +1,31 @@
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<defs>
+<transform translation="259618 0 182123" id="tf"/>
+</defs>
+<asset id="plane">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
+<texture name="diffuseTexture">
+<img src="182123-fab9adcf627447ac6dbd566a21b1cb486d44fd70.png"/>
+</texture>
+</assetmesh>
+</asset>
+<asset id="buildings">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.85568568887538 1.0142842517234 0.90957084443653 0.99903170502512 0.89646364445798 0.95327405253192 0.84403484442737 0.96852660545846 0.85568568887538 1.0142842517234</float2>
+<float name="height">
+15.326665316395</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.84403484442737 0.96852660545846 0.89646364445798 0.95327405253192 0.87461831109249 0.87701125693275 0.82073315556045 0.89226382016204 0.84403484442737 0.96852660545846</float2>
+<float name="height">
+12.018944934019</float>
+</data>
+</assetmesh>
+</asset>
+</xml3d>

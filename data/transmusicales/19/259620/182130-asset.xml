@@ -1,0 +1,23 @@
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<defs>
+<transform translation="259620 0 182130" id="tf"/>
+</defs>
+<asset id="plane">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
+<texture name="diffuseTexture">
+<img src="182130-b9b73bf0c8dbf2e270d0519d92f728e3daed7ceb.png"/>
+</texture>
+</assetmesh>
+</asset>
+<asset id="buildings">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.35136284443433 0.40056122693932 0.37903360000928 0.40927647077478 0.39796622222639 0.41363409248879 0.41835519997403 0.34609093726613 0.37175182224018 0.33301806380041 0.35136284443433 0.40056122693932</float2>
+<float name="height">
+15.045937306735</float>
+</data>
+</assetmesh>
+</asset>
+</xml3d>

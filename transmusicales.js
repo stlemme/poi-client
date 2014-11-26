@@ -9,12 +9,12 @@ var controller;
 var busy;
 
 function bboxAroundPosition( pos ) {
-	var d = 0.004;
+	var d = 0.002;
 	return {
-		"west": pos.lon-d,
-		"south": pos.lat-d,
-		"east": pos.lon+d,
-		"north": pos.lat+d
+		"west": Math.max(pos.lon-d, config.venue[1]),
+		"south": Math.max(pos.lat-d, config.venue[0]),
+		"east": Math.min(pos.lon+d, config.venue[3]),
+		"north": Math.min(pos.lat+d, config.venue[2])
 	};
 }
 
