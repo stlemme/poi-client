@@ -73,7 +73,7 @@ function createPOI(poi_data)
 
 	poi_id2color[id] = color;
 
-	updatePOI(id, 0);
+	updatePOI(id, poi_data.status);
 	return true;
 }
 
