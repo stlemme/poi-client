@@ -166,7 +166,7 @@ function onload()
 
 
 	var pois_group = document.getElementById("pois");
-	pois = new XML3D.POI(geo, pois_group, 0.2);
+	pois = new XML3D.POI(geo, pois_group, 0.15);
 	geo.registerMoveCallback(function (pos) {
 		// TODO: @Stefan: Why?
 		// we request (nearby) POIs, when a (new) position was determined
