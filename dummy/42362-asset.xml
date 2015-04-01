@@ -12,7 +12,7 @@
 </assetmesh>
 </asset>
 <asset id="buildings">
-<!--
+
 <assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
 <data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude_simple_roof']">
 <float2 name="contour">
@@ -20,12 +20,12 @@
 <float name="height">
 14.423442596767</float>
 <int name="indexrotation">
-0</float>
+0</int>
 <float name="roofheight">
-5.0</float>
+10.0</float>
 </data>
 </assetmesh>
--->
+<!--
 <assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
 <data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
@@ -314,5 +314,6 @@
 17.217760019571</float>
 </data>
 </assetmesh>
+-->
 </asset>
 </xml3d>

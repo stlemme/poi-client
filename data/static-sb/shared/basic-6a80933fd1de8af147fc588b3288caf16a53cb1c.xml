@@ -60,23 +60,27 @@
 		</compute>
 	</dataflow>
 	
-	<!--
+
 	<dataflow id="dataflow_extrude_simple_roof" out="position, normal">
 		<float2 name="contour" param="true"/>
 		<float name="height" param="true"/>
 		<int name="indexrotation" param="true"/>
 		<float name="roofheight" param="true"/>
 		<compute>
+
 			pos0 = xflow.rotateIndex(contour,indexrotation);
-			pos1 = xflow.ensureCCWContour(contour);
+
+			pos1 = xflow.ensureCCWContour(pos0);
 			pos2 = xflow.planeXZ(pos1);
 			pos3, index = xflow.extrudePolygon(pos2, height);
+
 			pos4= xflow.simpleRoof(pos3,roofheight);
+
 			position = xflow.deindex(pos4, index);
 			normal = xflow.generateFaceNormal(position);
 		</compute>
 	</dataflow>
-	-->
+
 	
 	
 	

@@ -530,20 +530,18 @@ XML3D.shaders.register("normaldebug", {
 
 XML3D.options.setValue("renderer-faceculling", "back");
 
-})();
-
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-/*
+
 
 Xflow.registerOperator("xflow.rotateIndex", {
     outputs: [
 		{type: 'float2', name: 'out_contour'}
 	],
     params:  [
-        {type: 'float2', source: 'in_contour'}
+        {type: 'float2', source: 'in_contour'},
 		{type: 'int', source: 'rotation'}
     ],
 	
@@ -591,7 +589,7 @@ Xflow.registerOperator("xflow.simpleRoof", {
 		{type: 'float3', name: 'out_positions'}
 	],
     params:  [
-        {type: 'float3', source: 'in_positions'}
+        {type: 'float3', source: 'in_positions'},
 		{type: 'float', source: 'height'}
     ],
 	
@@ -611,26 +609,43 @@ Xflow.registerOperator("xflow.simpleRoof", {
 		var y1=in_positions[5];
 		
 		var x2=in_positions[tn-3];
-		var y2=in_postions[tn-1];
+		var y2=in_positions[tn-1];
+		
+		
+
+		
 		
 		var max_distance=0.0;
 		// find max distance to line
-		for(var i=0,i<tn,i+=6){ //+=6-> only every second point taken into account since every second point is a roof point
-			max_distance=Math.max(max_distance,get_distance(in_positions[i+3],in_positions[i+5],x1,y1,x2,y1));
+		
+		for(var i=0;i<tn;i+=6){ //+=6-> only every second point taken into account since every second point is a roof point
+			var x0=in_positions[i+3];
+			var y0=in_positions[i+5];
+			var distance=get_distance(x0,y0,x1,y1,x2,y2);
+			if(distance>max_distance){
+			max_distance=distance;
+			}
 		}
 		var height_factor=-height[0]/max_distance;
 		
-		for(var i=0,i<tn,i+=6){ 
-			out_points[i]=in_points[i];
-			out_points[i+1]=in_points[i+1];
-			out_points[i+2]=in_points[i+2];
+		for(var i=0;i<tn;i+=6){ 
+		
+			out_positions[i]=in_positions[i];
+			out_positions[i+1]=in_positions[i+1];
+			out_positions[i+2]=in_positions[i+2];
 			
 			
-			out_points[i+3]=in_points[i+3];
+			out_positions[i+3]=in_positions[i+3];
 			
-			out_points[i+4]=in_points[i+4]+height[0]+get_distance(in_positions[i+3],in_positions[i+5],x1,y1,x2,y1)*height_factor;
+			var x0=in_positions[i+3];
+			var y0=in_positions[i+5];
 			
-			out_points[i+5]=in_points[i+5];
+			var distance=get_distance(x0,y0,x1,y1,x2,y2);
+			
+			out_positions[i+4]=in_positions[i+4]+height[0]+distance*height_factor;
+			
+			out_positions[i+5]=in_positions[i+5];
+			
 		}
 			
 		
@@ -641,8 +656,10 @@ Xflow.registerOperator("xflow.simpleRoof", {
 
 function get_distance(x0,y0,x1,y1,x2,y2){ //1,2 define line, 0 is the point
 
-return Math.sign((x2-x1)*(y1-y0)-(x1-x0)*(y2-y1))/Math.sqrt(Math.Pow((x2-x1),2)+Math.Pow((y2-y1),2));
+return Math.abs((x2-x1)*(y1-y0)-(x1-x0)*(y2-y1))/Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2));
 
 
 }
-/*
+
+})();
+
