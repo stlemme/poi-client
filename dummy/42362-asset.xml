@@ -4,304 +4,310 @@
 <transform translation="69176 0 42362" id="tf"/>
 </defs>
 <asset id="plane">
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_surface" type="triangles">
-<data src="http://130.206.80.175/api/3d-map-tiles/basic.xml#mesh_ground"/>
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
 <texture name="diffuseTexture">
 <img src="http://a.tile.openstreetmap.org/17/69176/42362.png"/>
 </texture>
 </assetmesh>
 </asset>
 <asset id="buildings">
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<!--
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude_simple_roof']">
 <float2 name="contour">
 0.73662691554637 0.14377628078364 0.75151815111167 0.1406509118533 0.74977052444592 0.11650589216151 0.82808604443562 0.10921335642342 0.82892344889115 0.11846690982929 0.97841834666906 0.10523003770504 0.98216846221476 0.17141433077632 0.83434837333334 0.18238374822249 0.83609599999909 0.19758159267076 0.75610567111289 0.20530307473382 0.74256156444608 0.20340334523644 0.73662691554637 0.14377628078364</float2>
 <float name="height">
 14.423442596767</float>
+<int name="indexrotation">
+0</float>
+<float name="roofheight">
+5.0</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+-->
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.44550144000095 0.91223791467928 0.44637525333383 0.96892178257258 0.44659370665613 0.98087133890658 0.40104618667101 0.98111645795871 0.40108259554836 0.91407631232869 0.44550144000095 0.91223791467928</float2>
 <float name="height">
 15.615045379668</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.96487424000225 0.89863376794528 0.92067384888651 0.88570369394438 0.90563697778271 0.93497275657137 0.92915712000104 0.94214250041114 0.91990926222934 0.97241473037866 0.89394972444279 0.96450963729876 0.88615822221618 0.99000202183379 0.93268878222443 1.0042189177184 0.96487424000225 0.89863376794528</float2>
 <float name="height">
 19.523627725208</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.04460316443874 0.98859258776065 0.10092771555355 0.99073737871367 0.1027481600031 0.94287785864435 0.084616533335065 0.94214250041114 0.086327751108911 0.89697920907201 0.048098417770234 0.89550848999352 0.0467876977782 0.93019292622921 0.04460316443874 0.98859258776065</float2>
 <float name="height">
 15.417137656089</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.44386303999636 0.84967103663803 0.49177713778045 0.84691343325539 0.49341553777049 0.90408768348425 0.44524657778675 0.90310720437265 0.44386303999636 0.84967103663803</float2>
 <float name="height">
 14.88118594274</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.81516088888748 0.85181583906524 0.78264775111165 0.84495247066661 0.76138496000203 0.84581039182376 0.75031665778079 0.86027248693426 0.74008576000051 1.0414156730767 0.78934698666853 1.0578386057459 0.82145962666254 0.98301613049262 0.83605959110719 0.94716744791367 0.8474919822329 0.91707902822964 0.79819434667297 0.89722432890994 0.81516088888748 0.85181583906524</float2>
 <float name="height">
 10.961016878002</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.44637525333383 0.96892178257258 0.49556366221805 0.96941202088783 0.49370680889115 0.91346351313405 0.49341553777049 0.90408768348425 0.44524657778675 0.90310720437265 0.44550144000095 0.91223791467928 0.44637525333383 0.96892178257258</float2>
 <float name="height">
 14.788570806751</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 -0.039901866664877 0.98540604089794 0.04460316443874 0.98859258776065 0.0467876977782 0.93019292622921 -0.037680924448068 0.92700637219241 -0.039901866664877 0.98540604089794</float2>
 <float name="height">
 19.362804661208</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.19726563555014 0.99423032358027 0.23818922667124 0.99600743570772 0.23993685333699 0.95108935749158 0.21470549333026 0.95017015998019 0.21499676445092 0.92381981774815 0.19985066667141 0.9232682986767 0.19726563555014 0.99423032358027</float2>
 <float name="height">
 14.595655689293</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.30987832888786 0.84801647464337 0.39933496888261 0.84764879418799 0.39958983111137 0.88012721453561 0.40108259554836 0.88754209347826 0.34210019555758 0.88748081350059 0.30842197334277 0.88760337345593 0.30987832888786 0.84801647464337</float2>
 <float name="height">
 13.744791733913</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.19726563555014 0.99423032358027 0.19985066667141 0.9232682986767 0.21499676445092 0.92381981774815 0.216453119996 0.88423297421832 0.30842197334277 0.88760337345593 0.30987832888786 0.84801647464337 0.20294542222109 0.84409454949491 0.20243569777813 0.85867920565943 0.1865614222188 0.85806640514784 0.18725319112127 0.83894702182442 0.14563783111225 0.83747629944992 0.1454193777754 0.84354302872089 0.10693518222251 0.84213358669513 0.10489628443611 0.89808224832814 0.13908423110843 0.89936912740814 0.17829660444113 0.90077856632706 0.17749560889206 0.92228782029269 0.15619640889054 0.92155246147013 0.15575950221682 0.93356331950781 0.15357496889192 0.99263705054182 0.19726563555014 0.99423032358027</float2>
 <float name="height">
 12.30125106047</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.052977208892116 0.83931470241805 0.10693518222251 0.84213358669513 0.10489628443611 0.89808224832814 0.086327751108911 0.89697920907201 0.048098417770234 0.89550848999352 0.052977208892116 0.83931470241805</float2>
 <float name="height">
 18.941322699628</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.10092771555355 0.99073737871367 0.15357496889192 0.99263705054182 0.15575950221682 0.93356331950781 0.13780991999374 0.93288924088847 0.13908423110843 0.89936912740814 0.10489628443611 0.89808224832814 0.1027481600031 0.94287785864435 0.10092771555355 0.99073737871367</float2>
 <float name="height">
 18.689776993678</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 1.0145723733294 0.91315711352217 0.96487424000225 0.89863376794528 0.93268878222443 1.0042189177184 0.9331985066674 1.0210095519506 0.98508117333404 1.0346136344815 0.9910522311111 1.0056896306487 1.0145723733294 0.91315711352217</float2>
 <float name="height">
 10.061367028421</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.23818922667124 0.99600743570772 0.28999907555408 0.99796838686598 0.29283896888955 0.92443261670996 0.24102911999216 0.9224716599856 0.23993685333699 0.95108935749158 0.23818922667124 0.99600743570772</float2>
 <float name="height">
 16.338206374244</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 -0.016709404444555 0.82785532184062 0.052977208892116 0.83931470241805 0.048098417770234 0.89550848999352 -0.02431886222621 0.88392657426448 -0.016709404444555 0.82785532184062</float2>
 <float name="height">
 15.629920435897</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.39933496888261 0.84764879418799 0.44386303999636 0.84967103663803 0.44524657778675 0.90310720437265 0.44550144000095 0.91223791467928 0.40108259554836 0.91407631232869 0.40108259554836 0.89826608820294 0.4176122311037 0.89704048902786 0.41815836443857 0.88012721453561 0.39958983111137 0.88012721453561 0.39933496888261 0.84764879418799</float2>
 <float name="height">
 18.323645167203</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.32786432000285 0.98105517819931 0.40104618667101 0.98111645795871 0.40108259554836 0.91407631232869 0.40108259554836 0.89826608820294 0.40108259554836 0.88754209347826 0.34210019555758 0.88748081350059 0.34206378666568 0.93595323448244 0.32786432000285 0.93595323448244 0.32786432000285 0.98105517819931</float2>
 <float name="height">
 16.985485901584</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.28999907555408 0.99796838686598 0.32717255110038 0.99809094630473 0.32786432000285 0.98105517819931 0.32786432000285 0.93595323448244 0.32571619555529 0.92529053523322 0.29283896888955 0.92443261670996 0.28999907555408 0.99796838686598</float2>
 <float name="height">
 15.116435091531</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.27285048889462 0.6489167437976 0.27266844444966 0.63586398414918 0.21401372444234 0.63659935106261 0.21412295111804 0.6468332051445 0.17629411556118 0.64732344954973 0.1772407466633 0.72190177180164 0.27135772444308 0.71896031369397 0.27285048889462 0.6489167437976</float2>
 <float name="height">
 12.154068589282</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.63275235556648 0.63261611334747 0.65987697777746 0.70982953534985 0.65430641778221 0.72796852811007 0.64389347555698 0.73771210345149 0.5160618666705 0.74095996108372 0.43199374222604 0.7495392057026 0.43206655999529 0.71865391178289 0.43115633778507 0.6468944856897 0.43476081777771 0.57862786187616 0.41473592889088 0.58193702015706 0.40971150223049 0.50846135122993 0.47371832888166 0.50625523951021 0.48209237333504 0.56747476982127 0.47371832888166 0.65878290988621 0.55483733332949 0.65069387959375 0.63275235556648 0.63261611334747</float2>
 <float name="height">
 16.650485404139</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.93126883555669 0.3140776769942 1.0142082844395 0.35924198344583 1.0479593244527 0.29342585802078 1.0490151822305 0.23943690044689 1.0130796088924 0.24060124918469 0.99192604444397 0.27565424988279 0.96356351999566 0.26174336191616 0.93126883555669 0.3140776769942</float2>
 <float name="height">
 19.354353495573</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.19460778667417 0.43443394466885 0.19369756444939 0.47677911782375 0.17909760000475 0.47677911782375 0.17978936889267 0.55399300378485 0.27510784000333 0.55466709225584 0.27579960889125 0.5073582953919 0.32174762665818 0.50668420569855 0.32283989334246 0.43988795782207 0.19460778667417 0.43443394466885</float2>
 <float name="height">
 16.246921655837</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.75610567111289 0.20530307473382 0.93126883555669 0.3140776769942 0.96356351999566 0.26174336191616 0.83434837333334 0.18238374822249 0.83609599999909 0.19758159267076 0.75610567111289 0.20530307473382</float2>
 <float name="height">
 14.666411827629</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.49308785777248 0.44497428367322 0.48438613333565 0.41696883863915 0.47091484443808 0.37345922509849 0.55203384888591 0.36475729363156 0.56328419555211 0.40207752841525 0.63275235556648 0.63261611334747 0.55483733332949 0.65069387959375 0.50255416889559 0.47824986066553 0.49308785777248 0.44497428367322</float2>
 <float name="height">
 18.499568113358</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.79065770666057 0.40489646022615 0.69275420444319 0.41598834110482 0.70717212444288 0.58163061662344 0.79651953777648 0.57433821166342 0.78315747555462 0.46243937085092 0.79593699556426 0.46023325521674 0.79065770666057 0.40489646022615</float2>
 <float name="height">
 10.118399462718</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 1.1505231644405 0.67894419413642 1.1288234666717 0.66613657160633 0.80820679111639 0.49859512795229 0.82156885333825 0.47579862255952 0.79593699556426 0.46023325521674 0.79065770666057 0.40489646022615 1.1875874133402 0.6074297807354 1.1505231644405 0.67894419413642</float2>
 <float name="height">
 19.601537515224</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.70717212444288 0.58163061662344 0.72027932445053 0.66907803571667 0.793679644441 0.74843616013095 0.91040654221433 0.77509308180015 0.93454563555133 0.70069875377521 0.93789525332977 0.69009723825729 0.85550193776726 0.66503352248401 0.82320725332829 0.63163562397676 0.81210254221514 0.63163562397676 0.79651953777648 0.57433821166342 0.70717212444288 0.58163061662344</float2>
 <float name="height">
 15.654530090119</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.83605959110719 0.94716744791367 0.89394972444279 0.96450963729876 0.90563697778271 0.93497275657137 0.92067384888651 0.88570369394438 0.81516088888748 0.85181583906524 0.79819434667297 0.89722432890994 0.8474919822329 0.91707902822964 0.83605959110719 0.94716744791367</float2>
 <float name="height">
 11.020500241323</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.49370680889115 0.91346351313405 0.49341553777049 0.90408768348425 0.49177713778045 0.84691343325539 0.57537194665929 0.84231742695556 0.57049315555196 0.90218800517323 0.57063879110501 0.91468911152333 0.49370680889115 0.91346351313405</float2>
 <float name="height">
 11.932953834502</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.27285048889462 0.6489167437976 0.27135772444308 0.71896031369397 0.43206655999529 0.71865391178289 0.43115633778507 0.6468944856897 0.27285048889462 0.6489167437976</float2>
 <float name="height">
 13.675675812958</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.56426723556069 0.99631383433007 0.62754588444659 1.0012162119019 0.63369898666861 0.92167502127995 0.58742328888911 0.91812078672956 0.58578488888452 0.93950746658084 0.56874552888621 0.93815930963319 0.56426723556069 0.99631383433007</float2>
 <float name="height">
 10.030413358486</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.57063879110501 0.91468911152333 0.49370680889115 0.91346351313405 0.49556366221805 0.96941202088783 0.49938659554755 0.98577371941064 0.56426723556069 0.99631383433007 0.56874552888621 0.93815930963319 0.57063879110501 0.91468911152333</float2>
 <float name="height">
 11.891994574988</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.63369898666861 0.92167502127995 0.63970645332302 0.84378814906813 0.57537194665929 0.84231742695556 0.57049315555196 0.90218800517323 0.58855196445074 0.90359744392481 0.58742328888911 0.91812078672956 0.63369898666861 0.92167502127995</float2>
 <float name="height">
 19.177404446144</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.63970645332302 0.84378814906813 0.67170986667043 0.86787121163798 0.66690389333235 0.9807487793878 0.62754588444659 1.0012162119019 0.63369898666861 0.92167502127995 0.63970645332302 0.84378814906813</float2>
 <float name="height">
 18.454483835238</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.50255416889559 0.47824986066553 0.4697133511072 0.48762584425276 0.46024703999865 0.45435027929489 0.49308785777248 0.44497428367322 0.50255416889559 0.47824986066553</float2>
 <float name="height">
 19.857071326048</float>
 </data>
 </assetmesh>
-<assetmesh shader="http://130.206.80.175/api/3d-map-tiles/basic.xml#shader_building" type="triangles">
-<data compute="dataflow['http://130.206.80.175/api/3d-map-tiles/basic.xml#dataflow_extrude']">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
 0.32283989334246 0.43988795782207 0.32520647111232 0.38908592568623 0.47091484443808 0.37345922509849 0.55203384888591 0.36475729363156 0.52279751111928 0.19359828751476 0.19926812444464 0.19911363293795 0.19460778667417 0.43443394466885 0.32283989334246 0.43988795782207</float2>
 <float name="height">

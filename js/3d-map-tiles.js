@@ -531,3 +531,118 @@ XML3D.shaders.register("normaldebug", {
 XML3D.options.setValue("renderer-faceculling", "back");
 
 })();
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+/*
+
+Xflow.registerOperator("xflow.rotateIndex", {
+    outputs: [
+		{type: 'float2', name: 'out_contour'}
+	],
+    params:  [
+        {type: 'float2', source: 'in_contour'}
+		{type: 'int', source: 'rotation'}
+    ],
+	
+	    alloc: function(sizes, in_contour, rotation)
+    {
+        sizes['out_contour'] = in_contour.length;
+    },
+	
+	
+    evaluate: function(out_contour, in_contour,rotation, info)
+	{
+
+		var n = info.iterateCount; // this.points;
+		var tn = 2*n;
+		var rot=rotation[0]*2;
+		
+		//move indeces
+		for (var i = rot; i < tn-1; i+=2) {
+			out_contour[i-rot  ] = in_contour[i  ];
+			out_contour[i+1-rot] = in_contour[i+1];
+		}
+		
+		for (var i = 0; i < rot; i+=2) {
+			out_contour[i-rot+tn  ] = in_contour[i  ];
+			out_contour[i+1-rot+tn] = in_contour[i+1];
+		}
+		
+		//close the contour
+		out_contour[tn-2]=out_contour[0];
+		out_contour[tn-1]=out_contour[1];	
+		
+
+		return true;
+    }
+});
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+
+Xflow.registerOperator("xflow.simpleRoof", {
+    outputs: [
+		{type: 'float3', name: 'out_positions'}
+	],
+    params:  [
+        {type: 'float3', source: 'in_positions'}
+		{type: 'float', source: 'height'}
+    ],
+	
+	alloc: function(sizes, in_positions, height)
+    {
+        sizes['out_positions'] = in_positions.length;
+    },
+	
+	
+    evaluate: function(out_positions, in_positions,height, info)
+	{
+
+		var n = info.iterateCount; // this.points;
+		var tn = 3*n;
+		
+		var x1=in_positions[3];
+		var y1=in_positions[5];
+		
+		var x2=in_positions[tn-3];
+		var y2=in_postions[tn-1];
+		
+		var max_distance=0.0;
+		// find max distance to line
+		for(var i=0,i<tn,i+=6){ //+=6-> only every second point taken into account since every second point is a roof point
+			max_distance=Math.max(max_distance,get_distance(in_positions[i+3],in_positions[i+5],x1,y1,x2,y1));
+		}
+		var height_factor=-height[0]/max_distance;
+		
+		for(var i=0,i<tn,i+=6){ 
+			out_points[i]=in_points[i];
+			out_points[i+1]=in_points[i+1];
+			out_points[i+2]=in_points[i+2];
+			
+			
+			out_points[i+3]=in_points[i+3];
+			
+			out_points[i+4]=in_points[i+4]+height[0]+get_distance(in_positions[i+3],in_positions[i+5],x1,y1,x2,y1)*height_factor;
+			
+			out_points[i+5]=in_points[i+5];
+		}
+			
+		
+
+		return true;
+    }
+});
+
+function get_distance(x0,y0,x1,y1,x2,y2){ //1,2 define line, 0 is the point
+
+return Math.sign((x2-x1)*(y1-y0)-(x1-x0)*(y2-y1))/Math.sqrt(Math.Pow((x2-x1),2)+Math.Pow((y2-y1),2));
+
+
+}
+/*
