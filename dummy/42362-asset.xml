@@ -14,7 +14,7 @@
 <asset id="buildings">
 
 <assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
-<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude_simple_roof']">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude_shed']">
 <float2 name="contour">
 0.73662691554637 0.14377628078364 0.75151815111167 0.1406509118533 0.74977052444592 0.11650589216151 0.82808604443562 0.10921335642342 0.82892344889115 0.11846690982929 0.97841834666906 0.10523003770504 0.98216846221476 0.17141433077632 0.83434837333334 0.18238374822249 0.83609599999909 0.19758159267076 0.75610567111289 0.20530307473382 0.74256156444608 0.20340334523644 0.73662691554637 0.14377628078364</float2>
 <float name="height">
@@ -25,7 +25,7 @@
 10.0</float>
 </data>
 </assetmesh>
-<!--
+
 <assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
 <data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
@@ -34,6 +34,7 @@
 15.615045379668</float>
 </data>
 </assetmesh>
+
 <assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
 <data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">
@@ -42,14 +43,24 @@
 19.523627725208</float>
 </data>
 </assetmesh>
+
+<!--
+gable
+-->
+
 <assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
-<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude_gable']">
 <float2 name="contour">
 0.04460316443874 0.98859258776065 0.10092771555355 0.99073737871367 0.1027481600031 0.94287785864435 0.084616533335065 0.94214250041114 0.086327751108911 0.89697920907201 0.048098417770234 0.89550848999352 0.0467876977782 0.93019292622921 0.04460316443874 0.98859258776065</float2>
 <float name="height">
 15.417137656089</float>
+<int name="splitindices">
+0 4</int>
+<float name="roofheight">
+10.0</float>
 </data>
 </assetmesh>
+<!--
 <assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
 <data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
 <float2 name="contour">

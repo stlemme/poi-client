@@ -547,13 +547,12 @@ Xflow.registerOperator("xflow.rotateIndex", {
 	
 	    alloc: function(sizes, in_contour, rotation)
     {
-        sizes['out_contour'] = in_contour.length;
+        sizes['out_contour'] = in_contour.length/2;
     },
 	
 	
     evaluate: function(out_contour, in_contour,rotation, info)
 	{
-
 		var n = info.iterateCount; // this.points;
 		var tn = 2*n;
 		var rot=rotation[0]*2;
@@ -595,7 +594,7 @@ Xflow.registerOperator("xflow.simpleRoof", {
 	
 	alloc: function(sizes, in_positions, height)
     {
-        sizes['out_positions'] = in_positions.length;
+        sizes['out_positions'] = in_positions.length/3;
     },
 	
 	
@@ -660,6 +659,165 @@ return Math.abs((x2-x1)*(y1-y0)-(x1-x0)*(y2-y1))/Math.sqrt(Math.pow((x2-x1),2)+M
 
 
 }
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+
+Xflow.registerOperator("xflow.splitContour", {
+    outputs: [
+		{type: 'float2', name: 'out_contour_a'},
+		{type: 'float2', name: 'out_contour_b'}
+	],
+    params:  [
+        {type: 'float2', source: 'in_contour'},
+		{type: 'int', source: 'indices'}
+    ],
+	
+	    alloc: function(sizes, in_contour, indices)
+    {
+	
+	
+		var length=in_contour.length/2;
+		size_a=indices[1]-indices[0]+2;
+		size_b=length-indices[1]+indices[0]+1;
+		console.log(size_a);
+		console.log(size_b);
+		sizes['out_contour_a']=size_a;
+		sizes['out_contour_b']=size_b;
+		/*
+		console.log(in_contour.length/2);
+		console.log(indices[1]-indices[0]+2);
+		console.log((in_contour.length/2)-(indices[1]-indices[0])+1);
+        sizes['out_contour_a'] = indices[1]-indices[0]+2;
+		sizes['out_contour_b'] = (in_contour.length/2)-(indices[1]-indices[0])+1;
+		*/
+    },
+	
+	
+    evaluate: function(out_contour_a,out_contour_b, in_contour,indices, info)
+	{
+		var contour_length=in_contour.length;
+		console.log(contour_length);
+		console.log(out_contour_a.length);
+		console.log(out_contour_b.length);
+	
+	
+	
+		/*
+		var n = info.iterateCount; // this.points;
+		var tn = in_contour.length
+		console.log(in_contour.length/2);
+		console.log(out_contour_a.length/2);
+		console.log(out_contour_b.length/2);
+		var index1=indices[0]*2;
+		var index2=indices[1]*2;
+		
+		
+		for(var i= index1;i<=index2;i+=2){
+			out_contour_a[i-index1] = in_contour[i];
+			out_contour_b[i-index1+1] = in_contour[i+1];
+		
+		}
+		
+		//close contour a
+		out_contour_a[index2-index1+2]=out_contour_a[0];
+		out_contour_a[index2-index1+3]=out_contour_a[1];
+		
+		
+		
+		for (var i = index2; i < tn-1; i+=2) {
+			out_contour_b[i-index2  ] = in_contour[i  ];
+			out_contour_b[i+1-index2] = in_contour[i+1];
+		}
+		
+		for (var i = 0; i <=index1; i+=2) {
+			out_contour_b[i+tn-index2-2] = in_contour[i  ];
+			out_contour_b[i+tn-index2-1] = in_contour[i+1];
+		}
+		
+		//close contour b
+		out_contour_b[tn-index2+index1]=out_contour_b[0];
+		out_contour_b[tn-index2+index1+1]=out_contour_b[1];
+		
+		
+		//debug
+		console.log("countour_a");
+		for(var i=0;i<out_contour_a.length*2;i+=2){
+			console.log(out_contour_a[i]);
+			console.log(out_contour_a[i+1]);
+		}
+		
+		//debug
+		console.log("countour_b");
+		for(var i=0;i<out_contour_b.length*2;i+=2){
+			console.log(out_contour_b[i]);
+			console.log(out_contour_b[i+1]);
+		}
+		*/
+		return true;
+    }
+});
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+
+Xflow.registerOperator("xflow.mergeMesh", {
+    outputs: [
+		{type: 'float3', name: 'out_position'},
+		{type: 'int', name: 'out_index'}
+	],
+    params:  [
+        {type: 'float3', name: 'in_position1'},
+		{type: 'int', name: 'in_index1'},
+		{type: 'float3', name: 'in_position2'},
+		{type: 'int', name: 'in_index2'}
+    ],
+	
+	    alloc: function(sizes, in_position1, in_index1,in_position2,in_index2)
+    {
+        sizes['out_position'] = in_position1.length+in_position2.length;
+		sizes['out_index'] = in_index1.length+in_index2.length;
+    },
+	
+	
+    evaluate: function(out_position,out_index,in_position1,in_index1,in_position2,in_index2,info)
+	{
+		//copy in_pos1
+		for(var i=0;i<in_position1.length*3;i+=3){
+			out_position[i]=in_position1[i];
+			out_position[i+1]=in_position1[i+1];
+			out_position[i+2]=in_position1[i+2];
+		}
+		//add in_pos2
+		for(var i=0;i<in_position2.length*3;i+=3){
+			out_position[in_position1.length*3+i]=in_position2[i];
+			out_position[in_position1.length*3+i+1]=in_position2[i+1];
+			out_position[in_position1.length*3+i+2]=in_position2[i+2];
+		}
+	
+		//copy in_index1
+		for(var i=0;i<in_index1.length;i++){
+			out_index[i]=in_index1[i];
+		}
+		
+		//add in_index2 and adjust for indexshift in out_pos
+		for(var i=0;i<in_index2.length;i++){
+			out_index[i+in_index1.length]=in_index2[i]+in_position1.length;
+		}
+	
+	
+
+		return true;
+    }
+});
+
+
 
 })();
 
