@@ -81,12 +81,14 @@ XML3D.Camera.prototype.rotateAroundPoint = function(q0, p0) {
     this.position = p0.add(trans);
 };
 
-XML3D.Camera.prototype.getRotatedOrientation = function(q0) {
-	//used by the panning controller
-    //xml3d.debug.logError("Orientation: " + this.orientation.multiply(q0).normalize());
-    var tmp = this.orientation.multiply(q0);
-    tmp.normalize();
-	return tmp.rotateVec3(new window.XML3DVec3(0,0,-1));
+XML3D.Camera.prototype.getRayDirection = function(x,y) {
+	// x and y are ratios relative to to dir
+	var dir=this.orientation.rotateVec3(new window.XML3DVec3(0,0,-1));
+	var span_x=this.orientation.rotateVec3(new window.XML3DVec3(x,0,0));
+	var span_y=this.orientation.rotateVec3(new window.XML3DVec3(0,-y,0));
+	var out=dir.add(span_x.add(span_y));
+	return out;
+	
 };
 
 XML3D.Camera.prototype.lookAround = function(rotSide, rotUp, upVector) {
@@ -425,27 +427,18 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 			
 		case(this.PANNING): //new code to handle panning update
 			
-			//calculate angles between  old/new x/y and view direction
+			//calculate length of spanning vectors in x and y direction
 			var ratio=Math.tan(this.camera.fieldOfView/2);
-			var x_prev=Math.atan((this.prevPos.x-this.width / 2)*2/this.height*ratio);
-			var y_prev=Math.atan((this.prevPos.y-this.height / 2)*2/this.height*ratio);
+			var x_prev=(this.prevPos.x-this.width / 2)*2/this.height*ratio;
+			var y_prev=(this.prevPos.y-this.height / 2)*2/this.height*ratio;
 			
-			var x_curr=Math.atan((ev.pageX-this.width / 2)*2/this.height*ratio);
-			var y_curr=Math.atan((ev.pageY-this.height / 2)*2/this.height*ratio);
+			var x_curr=(ev.pageX-this.width / 2)*2/this.height*ratio;
+			var y_curr=(ev.pageY-this.height / 2)*2/this.height*ratio;
 			
+			//calculate ray directions through camera
+			var old_vector=this.camera.getRayDirection(x_prev,y_prev);
+			var new_vector=this.camera.getRayDirection(x_curr,y_curr);
 			
-			//calculate rotations
-			var mx_prev = new window.XML3DRotation(new window.XML3DVec3(0,-1,0), x_prev);
-            var my_prev = new window.XML3DRotation(new window.XML3DVec3(-1,0,0), y_prev);
-			var rotation_prev = mx_prev.multiply(my_prev);
-			
-			var mx_curr = new window.XML3DRotation(new window.XML3DVec3(0,-1,0), x_curr);
-            var my_curr = new window.XML3DRotation(new window.XML3DVec3(-1,0,0), y_curr);
-			var rotation_curr = mx_curr.multiply(my_curr);
-			
-			//calculate vector into new direction
-			var old_vector=this.camera.getRotatedOrientation(rotation_prev);
-			var new_vector=this.camera.getRotatedOrientation(rotation_curr);
 			
 			//calculate projections of old and new ray onto xz plane
 			var old_proj=projectxz(old_vector,this.camera.position);
