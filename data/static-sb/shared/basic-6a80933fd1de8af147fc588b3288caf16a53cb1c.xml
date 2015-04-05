@@ -59,67 +59,6 @@
 			normal = xflow.generateFaceNormal(position);
 		</compute>
 	</dataflow>
-	
-
-	<dataflow id="dataflow_extrude_shed" out="position, normal">
-		<float2 name="contour" param="true"/>
-		<float name="height" param="true"/>
-		<int name="indexrotation" param="true"/>
-		<float name="roofheight" param="true"/>
-		<compute>
-
-			pos0 = xflow.rotateIndex(contour,indexrotation);
-
-			pos1 = xflow.ensureCCWContour(pos0);
-			pos2 = xflow.planeXZ(pos1);
-			pos3, index = xflow.extrudePolygon(pos2, height);
-
-			pos4= xflow.simpleRoof(pos3,roofheight);
-
-			position = xflow.deindex(pos4, index);
-			normal = xflow.generateFaceNormal(position);
-		</compute>
-	</dataflow>
-
-	<dataflow id="dataflow_extrude_gable" out="position, normal">
-		<float2 name="contour" param="true"/>
-		<float name="height" param="true"/>
-		<int name="splitindices" param="true"/>
-		<float name="roofheight" param="true"/>
-		<compute>
-			<!--
-			posa0,posb0 = xflow.splitContour(contour,splitindices);
-
-			posa1 = xflow.ensureCCWContour(posa0);
-			posb1 = xflow.ensureCCWContour(posb0);
-			posa2 = xflow.planeXZ(posa1);
-			posb2 = xflow.planeXZ(posb1);
-			posa3, indexa = xflow.extrudePolygon(posa2, height);
-			posb3, indexb = xflow.extrudePolygon(posb2, height);
-			posa4= xflow.simpleRoof(posa3,roofheight);
-			posb4= xflow.simpleRoof(posb3,roofheight);
-			
-			pos4,index= xflow.mergeMesh(posa4,indexa,posb4,indexb);
-			
-			position = xflow.deindex(pos4, index);
-			normal = xflow.generateFaceNormal(position);
-			-->
-			
-			posa0,posb0 = xflow.splitContour(contour,splitindices);
-			
-			pos1 = xflow.ensureCCWContour(posa0);
-			pos2 = xflow.planeXZ(pos1);
-			pos3, index = xflow.extrudePolygon(pos2, height);
-
-			pos4= xflow.simpleRoof(pos3,roofheight);
-
-			position = xflow.deindex(pos4, index);
-			normal = xflow.generateFaceNormal(position);
-			
-		</compute>
-	</dataflow>
-	
-	
 
 	<dataflow id="dataflow_triangulate" out="position, index">
 		<float2 name="contour" param="true"/>
