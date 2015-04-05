@@ -1,7 +1,7 @@
 /*************************************************************************/
 /*                                                                       */
 /*  xml3d_scene_controller.js                                            */
-/*  Navigation method for XML3D                                          */
+/*  Navigation method for XML3D                                             */
 /*                                                                       */
 /*  Copyright (C) 2010                                                   */
 /*  DFKI - German Research Center for Artificial Intelligence            */
@@ -79,16 +79,6 @@ XML3D.Camera.prototype.rotateAroundPoint = function(q0, p0) {
     this.orientation = tmp;
     var trans = new window.XML3DRotation(this.inverseTransformOf(q0.axis), q0.angle).rotateVec3(this.position.subtract(p0));
     this.position = p0.add(trans);
-};
-
-XML3D.Camera.prototype.getRayDirection = function(x,y) {
-	// x and y are ratios relative to to dir
-	var dir=this.orientation.rotateVec3(new window.XML3DVec3(0,0,-1));
-	var span_x=this.orientation.rotateVec3(new window.XML3DVec3(x,0,0));
-	var span_y=this.orientation.rotateVec3(new window.XML3DVec3(0,-y,0));
-	var out=dir.add(span_x.add(span_y));
-	return out;
-	
 };
 
 XML3D.Camera.prototype.lookAround = function(rotSide, rotUp, upVector) {
@@ -169,7 +159,7 @@ XML3D.Xml3dSceneController = function(xml3dElement) {
         if(this.mode == "none")
             return;
 
-        if(this.mode != "walk" && this.mode != "examine" && this.mode != "panning") //added panning as a cammera controler mode
+        if(this.mode != "walk" && this.mode != "examine" )
             this.mode = "examine";
 
         this.touchTranslateMode = config.getAttribute("touchtranslate");
@@ -320,7 +310,6 @@ XML3D.Xml3dSceneController.prototype.TRANSLATE = 1;
 XML3D.Xml3dSceneController.prototype.DOLLY = 2;
 XML3D.Xml3dSceneController.prototype.ROTATE = 3;
 XML3D.Xml3dSceneController.prototype.LOOKAROUND = 4;
-XML3D.Xml3dSceneController.prototype.PANNING = 5; //panning like camera-movement for terrains
 
 XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
 
@@ -331,23 +320,14 @@ XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
         case 1:
             if(this.mode == "examine")
                 this.action = this.ROTATE;
-				
-			if(this.mode == "panning")
-                this.action = this.PANNING;
             else
                 this.action = this.LOOKAROUND;
             break;
         case 2:
-			if(this.mode == "panning")
-                this.action = this.DOLLY;
-            else
-				this.action = this.TRANSLATE;
+            this.action = this.TRANSLATE;
             break;
         case 3:
-			if(this.mode == "panning")
-                this.action = this.LOOKAROUND;
-            else
-				this.action = this.DOLLY;
+            this.action = this.DOLLY;
             break;
         default:
             this.action = this.NO_MOUSE_ACTION;
@@ -424,37 +404,6 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 
             this.camera.lookAround(mx, my, this.upVector);
             break;
-			
-		case(this.PANNING): //new code to handle panning update
-			
-			//calculate length of spanning vectors in x and y direction
-			var ratio=Math.tan(this.camera.fieldOfView/2);
-			var x_prev=(this.prevPos.x-this.width / 2)*2/this.height*ratio;
-			var y_prev=(this.prevPos.y-this.height / 2)*2/this.height*ratio;
-			
-			var x_curr=(ev.pageX-this.width / 2)*2/this.height*ratio;
-			var y_curr=(ev.pageY-this.height / 2)*2/this.height*ratio;
-			
-			//calculate ray directions through camera
-			var old_vector=this.camera.getRayDirection(x_prev,y_prev);
-			var new_vector=this.camera.getRayDirection(x_curr,y_curr);
-			
-			
-			//calculate projections of old and new ray onto xz plane
-			var old_proj=projectxz(old_vector,this.camera.position);
-			var new_proj=projectxz(new_vector,this.camera.position);
-			
-
-			//calculate difference vector and adjust camera position
-			if(!(old_proj===undefined||new_proj===undefined)){	// can i project both vectors on the plane with positive t?
-				var difference = old_proj.subtract(new_proj);
-				this.camera.translate(difference);
-			}
-			
-			
-			break;
-			
-			
     }
 
     if (this.action != this.NO_MOUSE_ACTION)
@@ -470,16 +419,6 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
     return false;
 };
 
-
-
-function projectxz(vector, origin){
-	if(vector.y>=-0.025||origin.y<=0){ //y>=0 theoretically possible, but causes rapid cammera movement near horizon
-		return;
-	}
-	var t=-(origin.y/vector.y);
-	var projected=origin.add(vector.scale(t));
-	return projected;
-}
 
 // -----------------------------------------------------
 // touch rotation and movement
