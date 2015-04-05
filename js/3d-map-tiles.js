@@ -669,8 +669,8 @@ return Math.abs((x2-x1)*(y1-y0)-(x1-x0)*(y2-y1))/Math.sqrt(Math.pow((x2-x1),2)+M
 
 Xflow.registerOperator("xflow.splitContour", {
     outputs: [
-		{type: 'float2', name: 'out_contour_a'},
-		{type: 'float2', name: 'out_contour_b'}
+		{type: 'float2', name: 'out_contour_a', customAlloc: true},
+		{type: 'float2', name: 'out_contour_b', customAlloc: true}
 	],
     params:  [
         {type: 'float2', source: 'in_contour'},
