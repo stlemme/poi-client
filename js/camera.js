@@ -321,6 +321,7 @@ XML3D.Xml3dSceneController.prototype.DOLLY = 2;
 XML3D.Xml3dSceneController.prototype.ROTATE = 3;
 XML3D.Xml3dSceneController.prototype.LOOKAROUND = 4;
 XML3D.Xml3dSceneController.prototype.PANNING = 5; //panning like camera-movement for terrains
+XML3D.Xml3dSceneController.prototype.ORBIT = 6; //orbit like camera-movement for terrains
 
 XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
 
@@ -338,14 +339,27 @@ XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
                 this.action = this.LOOKAROUND;
             break;
         case 2:
-			if(this.mode == "panning")
-                this.action = this.DOLLY;
-            else
-				this.action = this.TRANSLATE;
+				if(this.mode == "panning")
+					this.action = this.DOLLY
+				else
+					this.action = this.TRANSLATE;
             break;
         case 3:
 			if(this.mode == "panning")
-                this.action = this.LOOKAROUND;
+                this.action = this.ORBIT;
+				
+				if(this.rotationCenter===undefined){
+				//calculate length of spanning vectors in x and y direction
+				var ratio=Math.tan(this.camera.fieldOfView/2);
+			
+				var x_curr=(ev.pageX-this.width / 2)*2/this.height*ratio;
+				var y_curr=(ev.pageY-this.height / 2)*2/this.height*ratio;
+			
+				//calculate ray directions through camera
+				var new_vector=this.camera.getRayDirection(x_curr,y_curr);
+			
+				this.rotationCenter=projectxz(new_vector,this.camera.position);
+				}
             else
 				this.action = this.DOLLY;
             break;
@@ -367,6 +381,7 @@ XML3D.Xml3dSceneController.prototype.mouseReleaseEvent = function(event) {
     //    this.startSpinning();
 
     this.action = this.NO_MOUSE_ACTION;
+	this.rotationCenter = undefined; //reset rotationcenter after mouse release
     return false;
 };
 
@@ -453,6 +468,41 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 			
 			
 			break;
+			
+			case(this.ORBIT): //new code to handle panning update
+			if(this.rotationCenter!=undefined){
+			
+            var dx = -this.rotateSpeed * (ev.pageX - this.prevPos.x) * 2.0 * Math.PI / this.width;
+            var dy = -this.rotateSpeed * (ev.pageY - this.prevPos.y) * 2.0 * Math.PI / this.height;
+
+            var mx = new window.XML3DRotation(new window.XML3DVec3(0,1,0), dx);
+            var my = new window.XML3DRotation((mx.multiply(this.camera.orientation)).rotateVec3(new window.XML3DVec3(1,0,0)), dy);
+            //this.computeMouseSpeed(ev);
+			
+			var q0=my.multiply(mx);
+
+			var p0=this.rotationCenter;
+			var tmp = q0.multiply(this.camera.orientation);
+			tmp.normalize();
+			var rotated_dir=tmp.rotateVec3(new window.XML3DVec3(0,0,1));
+			if(rotated_dir.y>0.05&&rotated_dir.y<0.95){
+				var diff=this.camera.position.subtract(this.rotationCenter);
+				var rotated= q0.rotateVec3(diff);
+				this.camera.orientation = tmp;
+				this.camera.position = p0.add(rotated);
+			}
+			
+			else{
+				var diff=this.camera.position.subtract(this.rotationCenter);
+				var rotated= mx.rotateVec3(diff);
+				this.camera.orientation = mx.multiply(this.camera.orientation);
+				this.camera.position = p0.add(rotated);
+			
+			}
+			
+			
+			}
+            break;
 			
 			
     }
