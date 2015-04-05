@@ -150,7 +150,7 @@ XML3D.Xml3dSceneController = function(xml3dElement) {
     this.touchTranslateMode = "twofinger";
     this.revolveAroundPoint = new window.XML3DVec3(0, 0, 0);
     this.rotateSpeed = 1;
-    this.zoomSpeed = 20;
+    this.zoomSpeed = 200;
     this.spinningSensitivity = 0.3;
     this.isSpinning = false;
 
@@ -585,14 +585,22 @@ XML3D.Xml3dSceneController.prototype.touchEndEvent = function(event) {
             this.prevZoomVectorLength = undefined;
             if(this.mode == "examine")
                 this.action = this.ROTATE;
+			if(this.mode == "panning")
+                this.action = this.PANNING;
             else
                 this.action = this.LOOKAROUND;
             break;
         case 2:
-            this.action = this.DOLLY;
+			if(this.mode == "panning")
+                this.action = this.ORBIT;
+			else
+				this.action = this.DOLLY;
             break;
         case 3:
-            this.action = this.TRANSLATE;
+			if(this.mode == "panning")
+                this.action = this.DOLLY;
+			else
+				this.action = this.TRANSLATE;
             break;
         default:
             this.action = this.NO_MOUSE_ACTION;
@@ -681,6 +689,80 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
 
             this.camera.lookAround(mx, my, this.upVector);
             break;
+		case(this.PANNING): //new code to handle panning update
+			
+			//calculate length of spanning vectors in x and y direction
+			var ratio=Math.tan(this.camera.fieldOfView/2);
+			var x_prev=(this.prevTouchPositions[0].x-this.width / 2)*2/this.height*ratio;
+			var y_prev=(this.prevTouchPositions[0].y-this.height / 2)*2/this.height*ratio;
+			
+			var x_curr=(ev.touches[0].pageX-this.width / 2)*2/this.height*ratio;
+			var y_curr=(ev.touches[0].pageY-this.height / 2)*2/this.height*ratio;
+			
+			//calculate ray directions through camera
+			var old_vector=this.camera.getRayDirection(x_prev,y_prev);
+			var new_vector=this.camera.getRayDirection(x_curr,y_curr);
+			
+			
+			//calculate projections of old and new ray onto xz plane
+			var old_proj=projectxz(old_vector,this.camera.position);
+			var new_proj=projectxz(new_vector,this.camera.position);
+			
+
+			//calculate difference vector and adjust camera position
+			if(!(old_proj===undefined||new_proj===undefined)){	// can i project both vectors on the plane with positive t?
+				var difference = old_proj.subtract(new_proj);
+				this.camera.translate(difference);
+			}
+			break;
+			
+			
+			
+		case(this.ORBIT): //new code to handle orbit update, rotate around the first touch-point
+			
+			var x_curr=(ev.touches[0].pageX-this.width / 2)*2/this.height*ratio;
+			var y_curr=(ev.touches[0].pageY-this.height / 2)*2/this.height*ratio;
+			//calculate ray directions through camera
+			var new_vector=this.camera.getRayDirection(x_curr,y_curr);
+			//calculate projections of old and new ray onto xz plane
+			var new_proj=projectxz(new_vector,this.camera.position);
+			
+			
+			
+			
+			if(new_proj!=undefined){
+            var dx = -this.rotateSpeed * (ev.touches[1].pageX - this.prevTouchPositions[1].x) * 2.0 * Math.PI / this.width;
+            var dy = -this.rotateSpeed * (ev.touches[1].pageY - this.prevTouchPositions[1].y) * 2.0 * Math.PI / this.height;
+
+            var mx = new window.XML3DRotation(new window.XML3DVec3(0,1,0), dx);
+            var my = new window.XML3DRotation((mx.multiply(this.camera.orientation)).rotateVec3(new window.XML3DVec3(1,0,0)), dy);
+            //this.computeMouseSpeed(ev);
+			
+			var q0=my.multiply(mx);
+
+			var p0=new_proj;
+			var tmp = q0.multiply(this.camera.orientation);
+			tmp.normalize();
+			var rotated_dir=tmp.rotateVec3(new window.XML3DVec3(0,0,1));
+			if(rotated_dir.y>0.05&&rotated_dir.y<0.95){
+				var diff=this.camera.position.subtract(this.rotationCenter);
+				var rotated= q0.rotateVec3(diff);
+				this.camera.orientation = tmp;
+				this.camera.position = p0.add(rotated);
+			}
+			
+			else{
+				var diff=this.camera.position.subtract(this.rotationCenter);
+				var rotated= mx.rotateVec3(diff);
+				this.camera.orientation = mx.multiply(this.camera.orientation);
+				this.camera.position = p0.add(rotated);
+			
+			}
+			}
+            break;
+			
+			
+			
     }
 
     if (this.action != this.NO_MOUSE_ACTION)
