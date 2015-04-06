@@ -167,6 +167,23 @@
 				else{
 					document.getElementById("projection_4").innerText = "Projection onto xz-plane not possible";
 				}
+				//view frustum normals
+				var n1=f2.cross(f1).normalize();
+				var n2=f3.cross(f2).normalize();
+				var n3=f4.cross(f3).normalize();
+				var n4=f1.cross(f4).normalize();
+				
+				var t_n1="("+n1.x.toFixed(3)+","+n1.y.toFixed(3)+","+n1.z.toFixed(3)+")";
+				var t_n2="("+n2.x.toFixed(3)+","+n2.y.toFixed(3)+","+n2.z.toFixed(3)+")";
+				var t_n3="("+n3.x.toFixed(3)+","+n3.y.toFixed(3)+","+n3.z.toFixed(3)+")";
+				var t_n4="("+n4.x.toFixed(3)+","+n4.y.toFixed(3)+","+n4.z.toFixed(3)+")";
+			
+				document.getElementById("normal_1").innerText = t_n1;
+				document.getElementById("normal_2").innerText = t_n2;
+				document.getElementById("normal_3").innerText = t_n3;
+				document.getElementById("normal_4").innerText = t_n4;
+				
+				
 				
 				reqAniFrame(updateStatistics);
             }
@@ -245,6 +262,16 @@
 			<span id="projection_3">f3</span>
 			</br>
 			<span id="projection_4">f4</span>
+			</br>
+			<span>View frustum normals:</span>
+			</br>
+			<span id="normal_1">f1</span>
+			</br>
+			<span id="normal_2">f2</span>
+			</br>
+			<span id="normal_3">f3</span>
+			</br>
+			<span id="normal_4">f4</span>
 			
 		</div>
 		
