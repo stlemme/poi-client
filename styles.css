@@ -51,6 +51,23 @@ div.attribution a {
 	color: inherit;
 }
 
+div.olControlAttribution, div.statistics {
+	display: block;
+	position: absolute;
+	background: rgba(255, 255, 255, 0.6);
+	top: 0px;
+	right: 0px;
+	border-bottom-left-radius: 4px;
+	padding: 2px 4px;
+	color: black;
+	font-size: smaller;
+}
+
+div.statistics a {
+	color: inherit;
+}
+
+
 div#page_container {
 	width: 670px;
 	margin: 50px auto;

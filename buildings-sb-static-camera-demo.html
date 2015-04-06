@@ -86,8 +86,101 @@
 		
 		function updateViewportSize(elem) {
 			camController.setResolution(elem.clientWidth,elem.clientHeight);
+			
+			var t="Resolution: "+elem.clientWidth+"*"+elem.clientHeight;
+			document.getElementById("resolution").innerText = t;
 		}
 		
+		//statistics-update
+		var reqAniFrame = (window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame).bind(window);
+
+
+            function updateStatistics() {
+				//direction
+				var t_direction="Direction: ("+camController.camera.direction.x.toFixed(3)+","+camController.camera.direction.y.toFixed(3)+","+camController.camera.direction.z.toFixed(3)+")";
+				document.getElementById("direction").innerText = t_direction;
+				//position
+				var t_position="Postion: ("+camController.camera.position.x.toFixed(3)+","+camController.camera.position.y.toFixed(3)+","+camController.camera.position.z.toFixed(3)+")";
+				document.getElementById("position").innerText = t_position;
+				//fov
+				var t_fov_v="Field of view (vertical): "+(camController.camera.fieldOfView*360/2/3.14159).toFixed(0)+"°";
+				document.getElementById("fov_v").innerText = t_fov_v;
+				
+				var angle=Math.atan(Math.tan(camController.camera.fieldOfView)*camController.width/camController.height);
+				var t_fov_h="Field of view (horizontal): "+(angle*360/2/3.14159).toFixed(0)+"°";
+				document.getElementById("fov_h").innerText = t_fov_h;
+				
+				
+				//view frustum
+				
+				var ratio=Math.tan(camController.camera.fieldOfView/2);
+
+				var x_frustum=(camController.width)/camController.height*ratio;
+				var y_frustum=(camController.height)/camController.height*ratio;
+			
+				var f1=camController.camera.getRayDirection(x_frustum,y_frustum).normalize();
+				var f2=camController.camera.getRayDirection(-x_frustum,y_frustum).normalize();
+				var f3=camController.camera.getRayDirection(-x_frustum,-y_frustum).normalize();
+				var f4=camController.camera.getRayDirection(x_frustum,-y_frustum).normalize();
+				
+				var t_f1="("+f1.x.toFixed(3)+","+f1.y.toFixed(3)+","+f1.z.toFixed(3)+")";
+				var t_f2="("+f2.x.toFixed(3)+","+f2.y.toFixed(3)+","+f2.z.toFixed(3)+")";
+				var t_f3="("+f3.x.toFixed(3)+","+f3.y.toFixed(3)+","+f3.z.toFixed(3)+")";
+				var t_f4="("+f4.x.toFixed(3)+","+f4.y.toFixed(3)+","+f4.z.toFixed(3)+")";
+			
+				document.getElementById("frustum_1").innerText = t_f1;
+				document.getElementById("frustum_2").innerText = t_f2;
+				document.getElementById("frustum_3").innerText = t_f3;
+				document.getElementById("frustum_4").innerText = t_f4;
+			
+				//calculate projections onto xz plane
+				var p1=projectxz(f1,camController.camera.position);
+				var p2=projectxz(f2,camController.camera.position);
+				var p3=projectxz(f3,camController.camera.position);
+				var p4=projectxz(f4,camController.camera.position);
+				
+				if(p1!=undefined){
+					var t_p1="("+p1.x.toFixed(3)+","+p1.y.toFixed(3)+","+p1.z.toFixed(3)+")";
+					document.getElementById("projection_1").innerText = t_p1;
+				}
+				else{
+					document.getElementById("projection_1").innerText = "Projection onto xz-plane not possible";
+				}
+				if(p2!=undefined){
+					var t_p2="("+p2.x.toFixed(3)+","+p2.y.toFixed(3)+","+p2.z.toFixed(3)+")";
+					document.getElementById("projection_2").innerText = t_p2;
+				}
+				else{
+					document.getElementById("projection_2").innerText = "Projection onto xz-plane not possible";
+				}
+				if(p3!=undefined){
+					var t_p3="("+p3.x.toFixed(3)+","+p3.y.toFixed(3)+","+p3.z.toFixed(3)+")";
+					document.getElementById("projection_3").innerText = t_p3;
+				}
+				else{
+					document.getElementById("projection_3").innerText = "Projection onto xz-plane not possible";
+				}
+				if(p4!=undefined){
+					var t_p4="("+p4.x.toFixed(3)+","+p4.y.toFixed(3)+","+p4.z.toFixed(3)+")";
+					document.getElementById("projection_4").innerText = t_p4;
+				}
+				else{
+					document.getElementById("projection_4").innerText = "Projection onto xz-plane not possible";
+				}
+				
+				reqAniFrame(updateStatistics);
+            }
+            reqAniFrame(updateStatistics);
+		
+		
+			function projectxz(vector, origin){
+				if(vector.y>=0||origin.y<=0){
+					return;
+				}
+				var t=-(origin.y/vector.y);
+				var projected=origin.add(vector.scale(t));
+				return projected;
+			}
 		
 	</script>
 </head>
@@ -119,6 +212,42 @@
 		</xml3d>
 		<div id="loader"><img src="img/ajax_loader_gray_512.gif"/></div>
 		<div id="logo"><img src="img/xml3dlogo.png"/></div>
+		
+		<div id="statistics" class="statistics">
+			<span>Camera statistics:</span>
+			</br>
+			<span id="resolution">res</span>
+			</br>
+			<span id="fov_v">vert</span>
+			</br>
+			<span id="fov_h">hor</span>
+			</br>
+			<span id="position">pos</span>
+			</br>
+			<span id="direction">dir</span>
+			</br>
+			<span>View frustum directions:</span>
+			</br>
+			<span id="frustum_1">f1</span>
+			</br>
+			<span id="frustum_2">f2</span>
+			</br>
+			<span id="frustum_3">f3</span>
+			</br>
+			<span id="frustum_4">f4</span>
+			</br>
+			<span>View frustum xz-plane projections:</span>
+			</br>
+			<span id="projection_1">f1</span>
+			</br>
+			<span id="projection_2">f2</span>
+			</br>
+			<span id="projection_3">f3</span>
+			</br>
+			<span id="projection_4">f4</span>
+			
+		</div>
+		
 		<div id="attribution" class="attribution">
 			Data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors
 		</div>
