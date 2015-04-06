@@ -495,8 +495,17 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 			if(rotated_dir.y>0.05&&rotated_dir.y<0.95){
 				var diff=this.camera.position.subtract(this.rotationCenter);
 				var rotated= q0.rotateVec3(diff);
-				this.camera.orientation = tmp;
-				this.camera.position = p0.add(rotated);
+				if(p0.add(rotated).y>5){
+					this.camera.orientation = tmp;
+					this.camera.position = p0.add(rotated);
+				}
+				else{
+					rotated= mx.rotateVec3(diff);
+					this.camera.orientation = mx.multiply(this.camera.orientation);
+					this.camera.position = p0.add(rotated);
+				}
+				
+				
 			}
 			
 			else{
@@ -763,8 +772,17 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
 			if(rotated_dir.y>0.05&&rotated_dir.y<0.95){
 				var diff=this.camera.position.subtract(this.rotationCenter);
 				var rotated= q0.rotateVec3(diff);
-				this.camera.orientation = tmp;
-				this.camera.position = p0.add(rotated);
+				if(p0.add(rotated).y>5){
+					this.camera.orientation = tmp;
+					this.camera.position = p0.add(rotated);
+				}
+				else{
+					rotated= mx.rotateVec3(diff);
+					this.camera.orientation = mx.multiply(this.camera.orientation);
+					this.camera.position = p0.add(rotated);
+				}
+				
+				
 			}
 			
 			else{
