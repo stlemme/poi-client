@@ -541,7 +541,7 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 
 
 function projectxz(vector, origin){
-	if(vector.y>=-0.025||origin.y<=0){ //y>=0 theoretically possible, but causes rapid cammera movement near horizon
+	if(vector.y>-0.0001||origin.y<0.0001){ //avoids dividing by too small numbers
 		return;
 	}
 	var t=-(origin.y/vector.y);
