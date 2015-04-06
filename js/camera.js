@@ -470,7 +470,9 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 			//calculate difference vector and adjust camera position
 			if(!(old_proj===undefined||new_proj===undefined)){	// can i project both vectors on the plane with positive t?
 				var difference = old_proj.subtract(new_proj);
-				this.camera.translate(difference);
+				if(difference.length()<400){
+					this.camera.translate(difference);
+				}
 			}
 			
 			
@@ -737,7 +739,9 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
 			//calculate difference vector and adjust camera position
 			if(!(old_proj===undefined||new_proj===undefined)){	// can i project both vectors on the plane with positive t?
 				var difference = old_proj.subtract(new_proj);
-				this.camera.translate(difference);
+				if(difference.length()<400){
+					this.camera.translate(difference);
+				}
 			}
 			break;
 			
