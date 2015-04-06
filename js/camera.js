@@ -554,16 +554,25 @@ XML3D.Xml3dSceneController.prototype.touchStartEvent = function(event) {
 
     switch (ev.touches.length) {
         case 1:
+            this.prevZoomVectorLength = undefined;
             if(this.mode == "examine")
                 this.action = this.ROTATE;
+			if(this.mode == "panning")
+                this.action = this.PANNING;
             else
                 this.action = this.LOOKAROUND;
             break;
         case 2:
-            this.action = this.DOLLY;
+			if(this.mode == "panning")
+                this.action = this.ORBIT;
+			else
+				this.action = this.DOLLY;
             break;
         case 3:
-            this.action = this.TRANSLATE;
+			if(this.mode == "panning")
+                this.action = this.DOLLY;
+			else
+				this.action = this.TRANSLATE;
             break;
         default:
             this.action = this.NO_MOUSE_ACTION;
