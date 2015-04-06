@@ -40,6 +40,7 @@
 		
 		var geo, terrain, pois;
 		var animator;
+		var camController;
 		
 		function onload()
 		{
@@ -73,21 +74,27 @@
 					loader.style.display = "none";
 			}, false);
 			
-			var camController = XML3D.Xml3dSceneController.controllers[0];
+			camController = XML3D.Xml3dSceneController.controllers[0];
 			camController.detach();
 			camController.mode = "panning";
 			camController.useKeys = true;
 			camController.attach();
+			updateViewportSize(xml3d);
 		}
 		
 		window.addEventListener('load', onload, false);
+		
+		function updateViewportSize(elem) {
+			camController.setResolution(elem.clientWidth,elem.clientHeight);
+		}
+		
 		
 	</script>
 </head>
 
 <body>
 	<div id="myxml3d">
-		<xml3d id="myxml3dcanvas" activeView="#defaultView" style="width: 100%; height: 100%; background-color:0xeeeeee;" >
+		<xml3d id="myxml3dcanvas" activeView="#defaultView" style="width: 100%; height: 100%; background-color:0xeeeeee;" onresize="updateViewportSize(this)" >
 
 			<!-- Asset Instance -->
 			<transform id="geo_tf"></transform>

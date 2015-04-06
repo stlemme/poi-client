@@ -135,7 +135,9 @@ XML3D.Xml3dSceneController = function(xml3dElement) {
         XML3D.debug.logError("Could not initialize Camera Controller.");
         return;
     }
-
+	
+	this.width=800;
+	this.height=600;
     this.camera = new XML3D.Camera(view);
     this.timer = new XML3D.util.Timer();
     this.prevPos = {x: -1, y: -1};
@@ -244,9 +246,15 @@ XML3D.Xml3dSceneController.prototype.detach = function() {
     if (this.useKeys)
         document.removeEventListener("keydown", this._evt_keydown, false);
 };
-
+/* these getters did not work!
 XML3D.Xml3dSceneController.prototype.__defineGetter__("width", function() { return this.canvas.width;});
 XML3D.Xml3dSceneController.prototype.__defineGetter__("height", function() { return this.canvas.height;});
+*/
+XML3D.Xml3dSceneController.prototype.setResolution=function(width,height){
+	this.width=width;
+	this.height=height;
+}
+
 
 XML3D.Xml3dSceneController.prototype.getView = function() {
     var activeView = this.xml3d.activeView;
@@ -441,7 +449,6 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
             break;
 			
 		case(this.PANNING): //new code to handle panning update
-			
 			//calculate length of spanning vectors in x and y direction
 			var ratio=Math.tan(this.camera.fieldOfView/2);
 			var x_prev=(this.prevPos.x-this.width / 2)*2/this.height*ratio;
