@@ -545,10 +545,7 @@ Xflow.registerOperator("xflow.rotateIndex", {
 		{type: 'int', source: 'rotation'}
     ],
 	
-	    alloc: function(sizes, in_contour, rotation)
-    {
-        sizes['out_contour'] = in_contour.length/2;
-    },
+
 	
 	
     evaluate: function(out_contour, in_contour,rotation, info)
@@ -558,21 +555,16 @@ Xflow.registerOperator("xflow.rotateIndex", {
 		var rot=rotation[0]*2;
 		
 		//move indeces
-		for (var i = rot; i < tn-1; i+=2) {
+		for (var i = rot; i < tn-2; i+=2) {
 			out_contour[i-rot  ] = in_contour[i  ];
 			out_contour[i+1-rot] = in_contour[i+1];
 		}
 		
-		for (var i = 0; i < rot; i+=2) {
-			out_contour[i-rot+tn  ] = in_contour[i  ];
-			out_contour[i+1-rot+tn] = in_contour[i+1];
+		for (var i = 0; i <= rot; i+=2) {
+			out_contour[i-rot+tn-2  ] = in_contour[i  ];
+			out_contour[i+1-rot+tn-2] = in_contour[i+1];
 		}
 		
-		//close the contour
-		out_contour[tn-2]=out_contour[0];
-		out_contour[tn-1]=out_contour[1];	
-		
-
 		return true;
     }
 });
@@ -592,10 +584,7 @@ Xflow.registerOperator("xflow.simpleRoof", {
 		{type: 'float', source: 'height'}
     ],
 	
-	alloc: function(sizes, in_positions, height)
-    {
-        sizes['out_positions'] = in_positions.length/3;
-    },
+
 	
 	
     evaluate: function(out_positions, in_positions,height, info)
@@ -684,42 +673,27 @@ Xflow.registerOperator("xflow.splitContour", {
 		var length=in_contour.length/2;
 		size_a=indices[1]-indices[0]+2;
 		size_b=length-indices[1]+indices[0]+1;
-		console.log(size_a);
-		console.log(size_b);
 		sizes['out_contour_a']=size_a;
 		sizes['out_contour_b']=size_b;
-		/*
-		console.log(in_contour.length/2);
-		console.log(indices[1]-indices[0]+2);
-		console.log((in_contour.length/2)-(indices[1]-indices[0])+1);
-        sizes['out_contour_a'] = indices[1]-indices[0]+2;
-		sizes['out_contour_b'] = (in_contour.length/2)-(indices[1]-indices[0])+1;
-		*/
+
     },
 	
 	
     evaluate: function(out_contour_a,out_contour_b, in_contour,indices, info)
 	{
-		var contour_length=in_contour.length;
-		console.log(contour_length);
-		console.log(out_contour_a.length);
-		console.log(out_contour_b.length);
+
 	
 	
-	
-		/*
+		
 		var n = info.iterateCount; // this.points;
 		var tn = in_contour.length
-		console.log(in_contour.length/2);
-		console.log(out_contour_a.length/2);
-		console.log(out_contour_b.length/2);
 		var index1=indices[0]*2;
 		var index2=indices[1]*2;
 		
 		
 		for(var i= index1;i<=index2;i+=2){
 			out_contour_a[i-index1] = in_contour[i];
-			out_contour_b[i-index1+1] = in_contour[i+1];
+			out_contour_a[i-index1+1] = in_contour[i+1];
 		
 		}
 		
@@ -743,21 +717,22 @@ Xflow.registerOperator("xflow.splitContour", {
 		out_contour_b[tn-index2+index1]=out_contour_b[0];
 		out_contour_b[tn-index2+index1+1]=out_contour_b[1];
 		
-		
+		/*
 		//debug
 		console.log("countour_a");
-		for(var i=0;i<out_contour_a.length*2;i+=2){
+		for(var i=0;i<out_contour_a.length;i+=2){
 			console.log(out_contour_a[i]);
 			console.log(out_contour_a[i+1]);
 		}
 		
 		//debug
 		console.log("countour_b");
-		for(var i=0;i<out_contour_b.length*2;i+=2){
+		for(var i=0;i<out_contour_b.length;i+=2){
 			console.log(out_contour_b[i]);
 			console.log(out_contour_b[i+1]);
 		}
 		*/
+		
 		return true;
     }
 });
@@ -766,39 +741,41 @@ Xflow.registerOperator("xflow.splitContour", {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-
 Xflow.registerOperator("xflow.mergeMesh", {
     outputs: [
-		{type: 'float3', name: 'out_position'},
-		{type: 'int', name: 'out_index'}
+		{type: 'float3', name: 'out_position', customAlloc: true},
+		{type: 'int', name: 'out_index', customAlloc: true}
 	],
     params:  [
-        {type: 'float3', name: 'in_position1'},
-		{type: 'int', name: 'in_index1'},
-		{type: 'float3', name: 'in_position2'},
-		{type: 'int', name: 'in_index2'}
+        {type: 'float3', source: 'in_position1'},
+		{type: 'int', source: 'in_index1'},
+		{type: 'float3', source: 'in_position2'},
+		{type: 'int', source: 'in_index2'}
     ],
 	
 	    alloc: function(sizes, in_position1, in_index1,in_position2,in_index2)
     {
-        sizes['out_position'] = in_position1.length+in_position2.length;
-		sizes['out_index'] = in_index1.length+in_index2.length;
+	
+		sizes['out_position']=(in_position1.length+in_position2.length)/3;
+		sizes['out_index']=in_index1.length+in_index2.length;
+
     },
 	
 	
-    evaluate: function(out_position,out_index,in_position1,in_index1,in_position2,in_index2,info)
+    evaluate: function(out_position,out_index, in_position1,in_index1,in_position2,in_index2,info)
 	{
 		//copy in_pos1
-		for(var i=0;i<in_position1.length*3;i+=3){
+		for(var i=0;i<in_position1.length;i+=3){
 			out_position[i]=in_position1[i];
 			out_position[i+1]=in_position1[i+1];
 			out_position[i+2]=in_position1[i+2];
 		}
+		
 		//add in_pos2
-		for(var i=0;i<in_position2.length*3;i+=3){
-			out_position[in_position1.length*3+i]=in_position2[i];
-			out_position[in_position1.length*3+i+1]=in_position2[i+1];
-			out_position[in_position1.length*3+i+2]=in_position2[i+2];
+		for(var i=0;i<in_position2.length;i+=3){
+			out_position[in_position1.length+i]=in_position2[i];
+			out_position[in_position1.length+i+1]=in_position2[i+1];
+			out_position[in_position1.length+i+2]=in_position2[i+2];
 		}
 	
 		//copy in_index1
@@ -808,16 +785,113 @@ Xflow.registerOperator("xflow.mergeMesh", {
 		
 		//add in_index2 and adjust for indexshift in out_pos
 		for(var i=0;i<in_index2.length;i++){
-			out_index[i+in_index1.length]=in_index2[i]+in_position1.length;
+			out_index[i+in_index1.length]=in_index2[i]+in_position1.length/3;
 		}
-	
-	
-
+		
+		/*
+		//debug
+		console.log("index");
+		for(var i=0;i<out_index.length;i+=1){
+			console.log(out_index[i]);
+		}
+		
+		//debug
+		console.log("positions");
+		for(var i=0;i<out_position.length;i+=3){
+			console.log(out_position[i]);
+			console.log(out_position[i+1]);
+			console.log(out_position[i+2]);
+		}
+		*/
+		
 		return true;
     }
 });
 
 
+Xflow.registerOperator("xflow.tentedRoof", {
+    outputs: [
+		{type: 'float3', name: 'position', customAlloc: true},
+		{type: 'int', name: 'index', customAlloc: true}
+	],
+    params:  [
+        {type: 'float2', source: 'contour'},
+		{type: 'float2', source: 'center'},
+		{type: 'float', source: 'height'},
+		{type: 'float', source: 'roofheight'}
+    ],
+	
+	    alloc: function(sizes, contour, center, height,roofheight)
+    {
+	
+		sizes['position']=contour.length-1;
+		var points = (contour.length/2)-1;
+		sizes['index']=points*9;
+
+    },
+	
+	
+    evaluate: function(position,index, contour,center,height,roofheight,info)
+	{
+
+	
+	
+	var points = (contour.length / 2) - 1;
+	var nv = (position.length / 3) - 1;
+		// clone contour points
+        for (var i = 0; i < points; i++)
+		{
+            position[6*i  ] = contour[2*i  ];
+            position[6*i+1] = 0;
+            position[6*i+2] = contour[2*i+1];
+
+            position[6*i+3] = contour[2*i  ];
+            position[6*i+4] = height[0];
+            position[6*i+5] = contour[2*i+1];
+        }
+		
+		// generate center position
+			position[6*points  ] = center[0];
+            position[6*points+1] = height[0]+roofheight[0];
+            position[6*points+2] = center[1];
+		
+
+		// generate indices for the walls
+        for (var i = 0; i < points; i++)
+		{
+			var tp =  2* i;
+			var np = (2*(i+1)) % nv;
+			
+			// TODO: check order in terms of cracks caused by interpolation issues
+            index[6*i  ] = tp+1;
+            index[6*i+1] = np;
+            index[6*i+2] = tp;
+			
+            index[6*i+3] = np;
+            index[6*i+4] = tp+1;
+            index[6*i+5] = np+1;
+		}
+		
+		//generate indices for the roof
+		
+		for (var i = 0; i < points; i++)
+		{
+			var curr=((i*2)+1)% nv; 		//current vertex index
+			var next=((i*2)+3)% nv;			//next vertex index
+		
+			index[3*i+6*points] = next;
+            index[3*i+1+6*points] = curr;
+            index[3*i+2+6*points] = nv;
+		}
+		
+		for (var i = 0; i < index.length; i++){
+			console.log(position[3*index[i]]+","+position[3*index[i]+1]+","+position[3*index[i]+2]);
+		}
+		
+		
+		return true;
+    }
+});
 
 })();
 
