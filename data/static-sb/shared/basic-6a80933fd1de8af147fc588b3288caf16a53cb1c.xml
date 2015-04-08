@@ -128,6 +128,21 @@
 		</compute>
 	</dataflow>
 	
+	<dataflow id="dataflow_extrude_hip" out="position, normal">
+		<float2 name="contour" param="true"/>
+		<float name="height" param="true"/>
+		<float2 name="crest" param="true"/>
+		<float name="roofheight" param="true"/>
+		<compute>
+			
+			c2 = xflow.ensureCCWContour(contour);
+			pos,index = xflow.hipRoof(c2,crest,height,roofheight);
+			
+			position = xflow.deindex(pos, index);
+			normal = xflow.generateFaceNormal(position);
+		</compute>
+	</dataflow>
+	
 	
 
 	<dataflow id="dataflow_triangulate" out="position, index">

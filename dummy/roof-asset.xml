@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<defs>
+<transform translation="69176 0 42362" id="tf"/>
+</defs>
+<asset id="plane">
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
+<texture name="diffuseTexture">
+<img src="checker.jpg"/>
+</texture>
+</assetmesh>
+</asset>
+<asset id="buildings">
+
+<!--
+house with gable roof
+-->
+
+
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude_gable']">
+<float2 name="contour">
+0.3 0.35 0.3 0.1 0.35 0.1 0.4 0.15 0.55 0.15 0.6 0.1 0.65 0.1 0.7 0.15 0.7 0.2 0.65 0.25 0.65 0.35 0.65 0.55 0.65 0.6 0.4 0.6 0.4 0.55 0.3 0.55 0.3 0.35</float2>
+<float name="height">
+15</float>
+<int name="splitindices">
+0 10</int>
+<float name="roofheight">
+25</float>
+</data>
+</assetmesh>
+
+<!--
+garage with shed roof
+-->
+
+
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude_shed']">
+<float2 name="contour">
+0.3 0.4 0.3 0.65 0.15 0.65 0.15 0.4 0.3 0.4</float2>
+<float name="height">
+15</float>
+<int name="indexrotation">
+0</int>
+<float name="roofheight">
+5</float>
+</data>
+</assetmesh>
+
+<!--
+pavillon with tent roof
+-->
+
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude_tent']">
+<float2 name="contour">
+0.75 0.35 0.8 0.35 0.85 0.4 0.85 0.45 0.8 0.5 0.75 0.5 0.7 0.45 0.7 0.4 0.75 0.35</float2>
+<float name="height">
+15</float>
+<float2 name="center">
+0.775 0.425</float2>
+<float name="roofheight">
+10</float>
+</data>
+</assetmesh>
+
+<!--
+garden shed with hip roof
+-->
+
+<assetmesh shader="../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../data/static-sb/shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude_hip']">
+<float2 name="contour">
+0.3 0.7 0.55 0.7 0.625 0.725 0.65 0.8 0.625 0.875 0.55 0.9 0.3 0.9 0.225 0.875 0.2 0.8 0.225 0.725 0.3 0.7</float2>
+<float name="height">
+15</float>
+<float2 name="crest">
+0.55 0.8 0.3 0.8</float2>
+<float name="roofheight">
+15</float>
+</data>
+</assetmesh>
+
+</asset>
+</xml3d>

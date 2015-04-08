@@ -884,14 +884,141 @@ Xflow.registerOperator("xflow.tentedRoof", {
             index[3*i+2+6*points] = nv;
 		}
 		
-		for (var i = 0; i < index.length; i++){
-			console.log(position[3*index[i]]+","+position[3*index[i]+1]+","+position[3*index[i]+2]);
-		}
+
 		
 		
 		return true;
     }
 });
+
+
+Xflow.registerOperator("xflow.hipRoof", {
+    outputs: [
+		{type: 'float3', name: 'position', customAlloc: true},
+		{type: 'int', name: 'index', customAlloc: true}
+	],
+    params:  [
+        {type: 'float2', source: 'contour'},
+		{type: 'float2', source: 'crest'},
+		{type: 'float', source: 'height'},
+		{type: 'float', source: 'roofheight'}
+    ],
+	
+	    alloc: function(sizes, contour, crest, height,roofheight)
+    {
+	
+		sizes['position']=contour.length;
+		var points = (contour.length/2)-1;
+		sizes['index']=points*9+6;
+
+    },
+	
+	
+    evaluate: function(position,index, contour,crest,height,roofheight,info)
+	{
+
+	
+	
+	var points = (contour.length / 2) - 1;
+	var nv = (position.length / 3) - 2;
+		// clone contour points
+        for (var i = 0; i < points; i++)
+		{
+            position[6*i  ] = contour[2*i  ];
+            position[6*i+1] = 0;
+            position[6*i+2] = contour[2*i+1];
+
+            position[6*i+3] = contour[2*i  ];
+            position[6*i+4] = height[0];
+            position[6*i+5] = contour[2*i+1];
+        }
+		
+		// generate crest position
+			position[6*points  ] = crest[0];
+            position[6*points+1] = height[0]+roofheight[0];
+            position[6*points+2] = crest[1];
+			
+			position[6*points+3] = crest[2];
+            position[6*points+4] = height[0]+roofheight[0];
+            position[6*points+5] = crest[3];
+		
+
+		// generate indices for the walls
+        for (var i = 0; i < points; i++)
+		{
+			var tp =  2* i;
+			var np = (2*(i+1)) % nv;
+			
+			// TODO: check order in terms of cracks caused by interpolation issues
+            index[6*i  ] = tp+1;
+            index[6*i+1] = np;
+            index[6*i+2] = tp;
+			
+            index[6*i+3] = np;
+            index[6*i+4] = tp+1;
+            index[6*i+5] = np+1;
+		}
+		
+		//generate indices for the roof
+		var offset=0;
+		for (var i = 0; i < points; i++)
+		{
+			var curr=((i*2)+1)% nv; 		//current vertex index
+			var next=((i*2)+3)% nv;			//next vertex index
+			var d_curr_1=get_point_distance(position[3*curr],position[3*curr+2],position[3*nv],position[3*nv+2]);
+			var d_curr_2=get_point_distance(position[3*curr],position[3*curr+2],position[3*nv+3],position[3*nv+5]);
+			var d_next_1=get_point_distance(position[3*next],position[3*next+2],position[3*nv],position[3*nv+2]);
+			var d_next_2=get_point_distance(position[3*next],position[3*next+2],position[3*nv+3],position[3*nv+5]);		
+		
+			if(d_curr_1>=d_curr_2&&d_next_1<=d_next_2) {
+			index[3*offset+6*points] = next;
+            index[3*offset+1+6*points] = curr;
+            index[3*offset+2+6*points] = nv;
+			index[3*offset+3+6*points] = curr;
+            index[3*offset+4+6*points] = nv+1;
+            index[3*offset+5+6*points] = nv;
+			offset+=2;
+			}
+			
+			else if(d_curr_1<=d_curr_2&&d_next_1>=d_next_2) {
+			index[3*offset+6*points] = next;
+            index[3*offset+1+6*points] = curr;
+            index[3*offset+2+6*points] = nv;
+			index[3*offset+3+6*points] = next;
+            index[3*offset+4+6*points] = nv;
+            index[3*offset+5+6*points] = nv+1;
+			offset+=2;
+			}
+		
+			else if(d_curr_1<=d_curr_2&&d_next_1<=d_next_2){
+			index[3*offset+6*points] = next;
+            index[3*offset+1+6*points] = curr;
+            index[3*offset+2+6*points] = nv;
+			offset++;
+			}
+			
+			else{
+			index[3*offset+6*points] = next;
+            index[3*offset+1+6*points] = curr;
+            index[3*offset+2+6*points] = nv+1;
+			offset++;
+			}
+			
+			
+			
+			
+			
+		}
+		
+		
+		
+		return true;
+    }
+});
+
+function get_point_distance(x1,y1,x2,y2){
+	return Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2));
+}
 
 })();
 
