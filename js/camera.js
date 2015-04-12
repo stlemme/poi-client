@@ -332,14 +332,14 @@ XML3D.Xml3dSceneController.prototype.PANNING = 5; //panning like camera-movement
 XML3D.Xml3dSceneController.prototype.ORBIT = 6; //orbit like camera-movement for terrains
 
 XML3D.Xml3dSceneController.prototype.getDirectionThroughPixel = function(x,y){
-				var ratio=Math.tan(this.camera.fieldOfView/2);
-				//calculate length of spanning vectors in x and y direction
-				var x_span=(x-this.width / 2)*2/this.height*ratio;
-				var y_span=(y-this.height / 2)*2/this.height*ratio;
+	var ratio=Math.tan(this.camera.fieldOfView/2);
+	//calculate length of spanning vectors in x and y direction
+	var x_span=(x-this.width / 2)*2/this.height*ratio;
+	var y_span=(y-this.height / 2)*2/this.height*ratio;
 			
-				//calculate ray directions through camera
-				var new_vector=this.camera.getRayDirection(x_span,y_span);
-				return new_vector;
+	//calculate ray directions through camera
+	var new_vector=this.camera.getRayDirection(x_span,y_span);
+	return new_vector;
 }
 
 XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
@@ -535,12 +535,39 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 
 
 function intersect_xz_plane(vector, origin){
-	if(vector.y>-0.0001||origin.y<0.0001){ //avoids dividing by too small numbers
+	
+	//specialized code for xz_plane is faster than code for general plane!
+	//alternatively usable:
+	//return intersect_ray_plane(vector, origin, new window.XML3DVec3(0,1,0), new window.XML3DVec3(0,0,0));
+	if(vector.y==0&&origin.y==0){ 
+		origin;
+	}
+	if(vector.y>=0||origin.y<=0){ 
 		return;
 	}
 	var t=-(origin.y/vector.y);
 	var projected=origin.add(vector.scale(t));
 	return projected;
+	
+}
+
+function intersect_ray_plane(ray_direction, ray_origin, plane_normal, plane_origin){
+	var divisor=ray_direction.dot(plane_normal);
+	var factor=(plane_origin.subtract(ray_origin)).dot(plane_normal);
+	if(divisor==0){
+		if(factor==0){
+			return ray_origin;
+		}
+		return;
+	}
+	var d= factor/divisor;
+	if(d<0){
+		return;
+	}
+	var point= ray_origin.add(ray_direction.scale(d));
+	return point;
+
+
 }
 
 // -----------------------------------------------------
