@@ -339,9 +339,8 @@ XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
     switch (button) {
         case 1:
             if(this.mode == "examine")
-                this.action = this.ROTATE;
-				
-			if(this.mode == "panning")
+                this.action = this.ROTATE;	
+			else if(this.mode == "panning")
                 this.action = this.PANNING;
             else
                 this.action = this.LOOKAROUND;
