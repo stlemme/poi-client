@@ -137,39 +137,39 @@
 			document.getElementById("frustum_3").innerText = t_f3;
 			document.getElementById("frustum_4").innerText = t_f4;
 			
-			//calculate projections onto xz plane
-			var p1=projectxz(f1,camController.camera.position);
-			var p2=projectxz(f2,camController.camera.position);
-			var p3=projectxz(f3,camController.camera.position);
-			var p4=projectxz(f4,camController.camera.position);
+			//calculate intersections with xz_plane
+			var p1=intersect_xz_plane(f1,camController.camera.position);
+			var p2=intersect_xz_plane(f2,camController.camera.position);
+			var p3=intersect_xz_plane(f3,camController.camera.position);
+			var p4=intersect_xz_plane(f4,camController.camera.position);
 				
 			if(p1!=undefined){
 				var t_p1="("+p1.x.toFixed(3)+","+p1.y.toFixed(3)+","+p1.z.toFixed(3)+")";
-				document.getElementById("projection_1").innerText = t_p1;
+				document.getElementById("intersection_1").innerText = t_p1;
 			}
 			else{
-				document.getElementById("projection_1").innerText = "Projection onto xz-plane not possible";
+				document.getElementById("intersection_1").innerText = "Intersection with xz-plane not possible";
 			}
 			if(p2!=undefined){
 				var t_p2="("+p2.x.toFixed(3)+","+p2.y.toFixed(3)+","+p2.z.toFixed(3)+")";
-				document.getElementById("projection_2").innerText = t_p2;
+				document.getElementById("intersection_2").innerText = t_p2;
 			}
 			else{
-				document.getElementById("projection_2").innerText = "Projection onto xz-plane not possible";
+				document.getElementById("intersection_2").innerText = "Intersection with xz-plane not possible";
 			}
 			if(p3!=undefined){
 				var t_p3="("+p3.x.toFixed(3)+","+p3.y.toFixed(3)+","+p3.z.toFixed(3)+")";
-				document.getElementById("projection_3").innerText = t_p3;
+				document.getElementById("intersection_3").innerText = t_p3;
 			}
 			else{
-				document.getElementById("projection_3").innerText = "Projection onto xz-plane not possible";
+				document.getElementById("intersection_3").innerText = "Intersection with xz-plane not possible";
 			}
 			if(p4!=undefined){
 				var t_p4="("+p4.x.toFixed(3)+","+p4.y.toFixed(3)+","+p4.z.toFixed(3)+")";
-				document.getElementById("projection_4").innerText = t_p4;
+				document.getElementById("intersection_4").innerText = t_p4;
 			}
 			else{
-				document.getElementById("projection_4").innerText = "Projection onto xz-plane not possible";
+				document.getElementById("intersection_4").innerText = "Intersection with xz-plane not possible";
 			}
 			//view frustum normals
 			var n1=f2.cross(f1).normalize();
@@ -190,7 +190,7 @@
             }
 		
 		
-			function projectxz(vector, origin){
+			function intersect_xz_plane(vector, origin){
 				if(vector.y>=0||origin.y<=0){
 					return;
 				}
@@ -253,15 +253,15 @@
 			</br>
 			<span id="frustum_4"></span>
 			</br>
-			<span>View frustum xz-plane projections:</span>
+			<span>View frustum xz-plane intersections:</span>
 			</br>
-			<span id="projection_1"></span>
+			<span id="intersection_1"></span>
 			</br>
-			<span id="projection_2"></span>
+			<span id="intersection_2"></span>
 			</br>
-			<span id="projection_3"></span>
+			<span id="intersection_3"></span>
 			</br>
-			<span id="projection_4"></span>
+			<span id="intersection_4"></span>
 			</br>
 			<span>View frustum normals:</span>
 			</br>

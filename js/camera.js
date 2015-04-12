@@ -331,6 +331,17 @@ XML3D.Xml3dSceneController.prototype.LOOKAROUND = 4;
 XML3D.Xml3dSceneController.prototype.PANNING = 5; //panning like camera-movement for terrains
 XML3D.Xml3dSceneController.prototype.ORBIT = 6; //orbit like camera-movement for terrains
 
+XML3D.Xml3dSceneController.prototype.getDirectionThroughPixel = function(x,y){
+				var ratio=Math.tan(this.camera.fieldOfView/2);
+				//calculate length of spanning vectors in x and y direction
+				var x_span=(x-this.width / 2)*2/this.height*ratio;
+				var y_span=(y-this.height / 2)*2/this.height*ratio;
+			
+				//calculate ray directions through camera
+				var new_vector=this.camera.getRayDirection(x_span,y_span);
+				return new_vector;
+}
+
 XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
 
     var ev = event || window.event;
@@ -356,16 +367,10 @@ XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
                 this.action = this.ORBIT;
 				
 				if(this.rotationCenter===undefined){
-				//calculate length of spanning vectors in x and y direction
-				var ratio=Math.tan(this.camera.fieldOfView/2);
+
+				var new_vector=this.getDirectionThroughPixel(ev.pageX,ev.pageY);
 			
-				var x_curr=(ev.pageX-this.width / 2)*2/this.height*ratio;
-				var y_curr=(ev.pageY-this.height / 2)*2/this.height*ratio;
-			
-				//calculate ray directions through camera
-				var new_vector=this.camera.getRayDirection(x_curr,y_curr);
-			
-				this.rotationCenter=projectxz(new_vector,this.camera.position);
+				this.rotationCenter=intersect_xz_plane(new_vector,this.camera.position);
 				}
             else
 				this.action = this.DOLLY;
@@ -448,27 +453,17 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
             break;
 			
 		case(this.PANNING): //new code to handle panning update
-			//calculate length of spanning vectors in x and y direction
-			var ratio=Math.tan(this.camera.fieldOfView/2);
-			var x_prev=(this.prevPos.x-this.width / 2)*2/this.height*ratio;
-			var y_prev=(this.prevPos.y-this.height / 2)*2/this.height*ratio;
+			var new_vector=this.getDirectionThroughPixel(ev.pageX,ev.pageY);
+			var old_vector=this.getDirectionThroughPixel(this.prevPos.x,this.prevPos.y);
 			
-			var x_curr=(ev.pageX-this.width / 2)*2/this.height*ratio;
-			var y_curr=(ev.pageY-this.height / 2)*2/this.height*ratio;
-			
-			//calculate ray directions through camera
-			var old_vector=this.camera.getRayDirection(x_prev,y_prev);
-			var new_vector=this.camera.getRayDirection(x_curr,y_curr);
-			
-			
-			//calculate projections of old and new ray onto xz plane
-			var old_proj=projectxz(old_vector,this.camera.position);
-			var new_proj=projectxz(new_vector,this.camera.position);
+			//calculate intersections of old and new ray with xz plane
+			var old_intersection=intersect_xz_plane(old_vector,this.camera.position);
+			var new_intersection=intersect_xz_plane(new_vector,this.camera.position);
 			
 
 			//calculate difference vector and adjust camera position
-			if(!(old_proj===undefined||new_proj===undefined)){	// can i project both vectors on the plane with positive t?
-				var difference = old_proj.subtract(new_proj);
+			if(!(old_intersection===undefined||new_intersection===undefined)){	// can i project both vectors on the plane with positive t?
+				var difference = old_intersection.subtract(new_intersection);
 				if(difference.length()<400){
 					this.camera.translate(difference);
 				}
@@ -485,7 +480,7 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 
             var mx = new window.XML3DRotation(new window.XML3DVec3(0,1,0), dx);
             var my = new window.XML3DRotation((mx.multiply(this.camera.orientation)).rotateVec3(new window.XML3DVec3(1,0,0)), dy);
-            //this.computeMouseSpeed(ev);
+          
 			
 			var q0=my.multiply(mx);
 
@@ -539,7 +534,7 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 
 
 
-function projectxz(vector, origin){
+function intersect_xz_plane(vector, origin){
 	if(vector.y>-0.0001||origin.y<0.0001){ //avoids dividing by too small numbers
 		return;
 	}
@@ -567,7 +562,7 @@ XML3D.Xml3dSceneController.prototype.touchStartEvent = function(event) {
             this.prevZoomVectorLength = undefined;
             if(this.mode == "examine")
                 this.action = this.ROTATE;
-			if(this.mode == "panning")
+			else if(this.mode == "panning")
                 this.action = this.PANNING;
             else
                 this.action = this.LOOKAROUND;
@@ -717,27 +712,17 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
             break;
 		case(this.PANNING): //new code to handle panning update
 			
-			//calculate length of spanning vectors in x and y direction
-			var ratio=Math.tan(this.camera.fieldOfView/2);
-			var x_prev=(this.prevTouchPositions[0].x-this.width / 2)*2/this.height*ratio;
-			var y_prev=(this.prevTouchPositions[0].y-this.height / 2)*2/this.height*ratio;
+			var new_vector=this.getDirectionThroughPixel(ev.touches[0].pageX,ev.touches[0].pageY);
+			var old_vector=this.getDirectionThroughPixel(this.prevTouchPositions[0].x,this.prevTouchPositions[0].y);
 			
-			var x_curr=(ev.touches[0].pageX-this.width / 2)*2/this.height*ratio;
-			var y_curr=(ev.touches[0].pageY-this.height / 2)*2/this.height*ratio;
-			
-			//calculate ray directions through camera
-			var old_vector=this.camera.getRayDirection(x_prev,y_prev);
-			var new_vector=this.camera.getRayDirection(x_curr,y_curr);
-			
-			
-			//calculate projections of old and new ray onto xz plane
-			var old_proj=projectxz(old_vector,this.camera.position);
-			var new_proj=projectxz(new_vector,this.camera.position);
+			//calculate intersections of old and new ray with xz plane
+			var old_intersection=intersect_xz_plane(old_vector,this.camera.position);
+			var new_intersection=intersect_xz_plane(new_vector,this.camera.position);
 			
 
 			//calculate difference vector and adjust camera position
-			if(!(old_proj===undefined||new_proj===undefined)){	// can i project both vectors on the plane with positive t?
-				var difference = old_proj.subtract(new_proj);
+			if(!(old_intersection===undefined||new_intersection===undefined)){	// can i project both vectors on the plane with positive t?
+				var difference = old_intersection.subtract(new_intersection);
 				if(difference.length()<400){
 					this.camera.translate(difference);
 				}
@@ -748,38 +733,27 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
 			
 		case(this.ORBIT): //new code to handle orbit update, rotate around the first touch-point
 			
-			//calculate length of spanning vectors in x and y direction
-			var ratio=Math.tan(this.camera.fieldOfView/2);
-			var x_curr=(ev.touches[0].pageX-this.width / 2)*2/this.height*ratio;
-			var y_curr=(ev.touches[0].pageY-this.height / 2)*2/this.height*ratio;
-			//calculate ray directions through camera
-			var new_vector=this.camera.getRayDirection(x_curr,y_curr);
-			//calculate projections of old and new ray onto xz plane
-			var new_proj=projectxz(new_vector,this.camera.position);
+			var new_vector=this.getDirectionThroughPixel(ev.touches[0].pageX,ev.touches[0].pageY);
+			var new_intersection=intersect_xz_plane(new_vector,this.camera.position);
 			
 			
-			
-			
-			if(new_proj!=undefined){
-			
-			console.log("proj:"+new_proj.x+","+new_proj.y+","+new_proj.z);
+			if(new_intersection!=undefined){
 			
             var dx = -this.rotateSpeed * (ev.touches[1].pageX - this.prevTouchPositions[1].x) * 2.0 * Math.PI / this.width;
             var dy = -this.rotateSpeed * (ev.touches[1].pageY - this.prevTouchPositions[1].y) * 2.0 * Math.PI / this.height;
 
             var mx = new window.XML3DRotation(new window.XML3DVec3(0,1,0), dx);
             var my = new window.XML3DRotation((mx.multiply(this.camera.orientation)).rotateVec3(new window.XML3DVec3(1,0,0)), dy);
-            //this.computeMouseSpeed(ev);
 			
 			var q0=my.multiply(mx);
 
-			var p0=new_proj;
+			var p0=new_intersection;
 			var tmp = q0.multiply(this.camera.orientation);
 			tmp.normalize();
 			var rotated_dir=tmp.rotateVec3(new window.XML3DVec3(0,0,1));
 			
 			if(rotated_dir.y>0.05&&rotated_dir.y<0.95){
-				var diff=this.camera.position.subtract(new_proj);
+				var diff=this.camera.position.subtract(new_intersection);
 				var rotated= q0.rotateVec3(diff);
 				if(p0.add(rotated).y>5){
 					this.camera.orientation = tmp;
@@ -798,7 +772,7 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
 			
 			else{
 			
-				var diff=this.camera.position.subtract(new_proj);
+				var diff=this.camera.position.subtract(new_intersection);
 				var rotated= mx.rotateVec3(diff);
 				this.camera.orientation = mx.multiply(this.camera.orientation);
 				this.camera.position = p0.add(rotated);
