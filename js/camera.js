@@ -136,6 +136,7 @@ XML3D.Xml3dSceneController = function(xml3dElement) {
         return;
     }
 	
+	this.useRaycasting=false;
 	this.width=800;
 	this.height=600;
     this.camera = new XML3D.Camera(view);
@@ -367,10 +368,18 @@ XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
                 this.action = this.ORBIT;
 				
 				if(this.rotationCenter===undefined){
-
-				var new_vector=this.getDirectionThroughPixel(ev.pageX,ev.pageY);
-			
-				this.rotationCenter=intersect_xz_plane(new_vector,this.camera.position);
+					if(this.useRaycasting){
+						var new_vector=this.getDirectionThroughPixel(ev.pageX,ev.pageY);
+						var new_ray= new window.XML3DRay(this.camera.position,new_vector);
+						var new_hitpoint=new this.xml3d.createXML3DVec3();
+						var new_hitnormal=new this.xml3d.createXML3DVec3();
+						this.xml3d.getElementByRay(new_ray,new_hitpoint,new_hitnormal);
+						this.rotationCenter=new_hitpoint;
+					}
+					else{
+						var new_vector=this.getDirectionThroughPixel(ev.pageX,ev.pageY);
+						this.rotationCenter=intersect_xz_plane(new_vector,this.camera.position);
+					}
 				}
             else
 				this.action = this.DOLLY;
@@ -455,11 +464,25 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 		case(this.PANNING): //new code to handle panning update
 			var new_vector=this.getDirectionThroughPixel(ev.pageX,ev.pageY);
 			var old_vector=this.getDirectionThroughPixel(this.prevPos.x,this.prevPos.y);
+
+			if(this.useRaycasting){
+				var old_ray= new window.XML3DRay(this.camera.position,old_vector);
+				var old_hitpoint=new this.xml3d.createXML3DVec3();
+				var old_hitnormal=new this.xml3d.createXML3DVec3();
+				this.xml3d.getElementByRay(old_ray,old_hitpoint,old_hitnormal);
 			
-			//calculate intersections of old and new ray with xz plane
-			var old_intersection=intersect_xz_plane(old_vector,this.camera.position);
-			var new_intersection=intersect_xz_plane(new_vector,this.camera.position);
+				if(!(old_hitpoint===undefined)){
+					//intersect_ray_plane and old_hitpoint are slightly different, creating weird bugs when using old_hitpoint as old_intersection
+					var old_intersection=intersect_ray_plane(old_vector, this.camera.position, new window.XML3DVec3(0.0,1.0,0.0), old_hitpoint);
+					var new_intersection=intersect_ray_plane(new_vector, this.camera.position, new window.XML3DVec3(0.0,1.0,0.0), old_hitpoint);
+				}
+			}
 			
+			else{
+				//calculate intersections of old and new ray with xz plane
+				var old_intersection=intersect_xz_plane(old_vector,this.camera.position);
+				var new_intersection=intersect_xz_plane(new_vector,this.camera.position);
+			}
 
 			//calculate difference vector and adjust camera position
 			if(!(old_intersection===undefined||new_intersection===undefined)){	// can i project both vectors on the plane with positive t?
