@@ -14,6 +14,7 @@
 	<script type="text/javascript" src="js/xml3d-animation.js"></script>
     <script type="text/javascript" src="js/xml3d-terrain.js"></script>
     <script type="text/javascript" src="js/3d-map-tiles.js"></script>
+	<script type="text/javascript" src="js/2d-bbox.js"></script>
     <script type="text/javascript" src="config.js"></script>
 	
 	<script type="text/javascript">
@@ -52,10 +53,11 @@
 			var ground_tf_scale = document.getElementById("ground_tf_scale");
 			
 			terrain = new XML3D.Terrain(geo, ground_group, ground_tf_scale);
+			/*
 			geo.registerMoveCallback(function (pos) {
 				terrain.load(config.api_tiles, config.layers, config.bbox);
 			});
-
+			*/
 			
 			var pois_group = document.getElementById("pois");
 			pois = new XML3D.POI(geo, pois_group);
@@ -71,11 +73,14 @@
 			var statistics = document.getElementById("statistics");
 			statistics.style.display = "none"; //do not show stats initially
 			xml3d.addEventListener('framedrawn', function( evt ) {
+				//update tiles
+				updateTiles();
 				var obj = evt.detail.count.objects;
 				if (obj > (terrain.tileCount/4)){
 					loader.style.display = "none";
 					statistics.style.display = "inline"; //show stats after loader is no longer drawn
 				}
+				//update statistics
 				updateStatistics();
 				
 			}, false);
@@ -199,6 +204,70 @@
 				var projected=origin.add(vector.scale(t));
 				return projected;
 			}
+			
+			
+			function updateTiles() {	
+			//view frustum
+				
+			var ratio=Math.tan(camController.camera.fieldOfView/2);
+
+			var x_frustum=(camController.width)/camController.height*ratio;
+			var y_frustum=(camController.height)/camController.height*ratio;
+			
+			var f1=camController.camera.getRayDirection(x_frustum,y_frustum);
+			var f2=camController.camera.getRayDirection(-x_frustum,y_frustum);
+			var f3=camController.camera.getRayDirection(-x_frustum,-y_frustum);
+			var f4=camController.camera.getRayDirection(x_frustum,-y_frustum);
+			
+			//calculate intersections with xz_plane
+			var p1=intersect_xz_plane(f1,camController.camera.position);
+			var p2=intersect_xz_plane(f2,camController.camera.position);
+			var p3=intersect_xz_plane(f3,camController.camera.position);
+			var p4=intersect_xz_plane(f4,camController.camera.position);
+			
+			var far_plane=1000; // prevents excessive tile loading
+			
+			if(p1==undefined){
+				p1=camController.camera.position.add(f1.scale(far_plane));
+			}
+			if(p2==undefined){	
+				p2=camController.camera.position.add(f2.scale(far_plane));
+			}
+			if(p3==undefined){
+				p3=camController.camera.position.add(f3.scale(far_plane));			
+			}
+			if(p4==undefined){	
+				p4=camController.camera.position.add(f4.scale(far_plane));
+			}
+			//create bounds of view frustum projection
+			
+			var p1_tile=geo.backproject(p1.x,p1.z);
+			p1_tile.x=Math.floor(p1_tile.x);
+			p1_tile.y=Math.floor(p1_tile.y);
+			
+			var p2_tile=geo.backproject(p2.x,p2.z);
+			p2_tile.x=Math.floor(p2_tile.x);
+			p2_tile.y=Math.floor(p2_tile.y);
+			
+			var p3_tile=geo.backproject(p3.x,p3.z);
+			p3_tile.x=Math.floor(p3_tile.x);
+			p3_tile.y=Math.floor(p3_tile.y);
+			
+			var p4_tile=geo.backproject(p4.x,p4.z);
+			p4_tile.x=Math.floor(p4_tile.x);
+			p4_tile.y=Math.floor(p4_tile.y);
+			
+			
+			var bounds=new XML3D.Bbox(p1_tile.x,p1_tile.y,p1_tile.x,p1_tile.y);
+			bounds.extend(p2_tile.x,p2_tile.y);
+			bounds.extend(p3_tile.x,p3_tile.y);
+			bounds.extend(p4_tile.x,p4_tile.y);
+			//create tiles
+			geo.registerMoveCallback(function (pos) {
+				terrain.dynamicLoad(config.api_tiles, config.layers, config.bbox, bounds);
+			});
+			
+		}
 		
 	</script>
 </head>

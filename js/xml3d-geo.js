@@ -33,7 +33,16 @@ XML3D.Geo.prototype.project = function ( lat, lon ) {
 }
 
 XML3D.Geo.prototype.backproject = function ( x, y ) {
-	return null;
+	//projection from screen-space to tile space, NOT to lat/long!
+	var x_origin=this.xtile(this.origin.lon, this.level);
+	var y_origin=this.ytile(this.origin.lat, this.level);
+	//origin is (0,0) in screen space projected onto xz-plane 
+	var x_result=x_origin+x/this.tile_size
+	var y_result=y_origin+y/this.tile_size
+	return {
+		"x": x_result%this.tpl,
+		"y": y_result%this.tpl
+	};
 }
 
 XML3D.Geo.prototype.tile = function ( lat, lon ) {

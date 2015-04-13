@@ -40,5 +40,47 @@ XML3D.Terrain.prototype.load = function( api_tiles, layers, bbox ) {
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
 }
 
+XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamicbbox) {
+	var min = this.geo.tile(bbox.north, bbox.west);
+	var max = this.geo.tile(bbox.south, bbox.east);
+	var z = this.geo.level;
+	
+	
+	while (this.ground.hasChildNodes()) {   
+		this.ground.removeChild(this.ground.firstChild);
+	}
+	
+	//limit dynamic bounds to bbox
+	// dynamicbbox contains tile coordinates, not lat/lon
+	
+	min.x = Math.max(min.x,dynamicbbox.min.x);
+	min.y = Math.max(min.y,dynamicbbox.min.y);
+	
+	max.x = Math.min(max.x,dynamicbbox.max.x);
+	max.y = Math.min(max.y,dynamicbbox.max.y);
+	
+	
+	var layers = layers || ["plane"];
+	
+	for (var x = min.x; x <= max.x; x++)
+	{
+		for (var y = min.y; y <= max.y; y++)
+		{
+			var tile_uri = api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+			var tile_id = "tile_" + z + "_" + x + "_" + y + '_';
+			layers.forEach(function(layer) { 
+				var tile = XML3D.createElement("model");
+				tile.setAttribute("id", tile_id + layer);
+				tile.setAttribute("src", tile_uri + "#" + layer);
+				tile.setAttribute("transform", tile_uri + "#tf");
+				this.ground.appendChild(tile);
+			});
+		}
+	}
+	
+	this.tileCount = (max.x-min.x+1)*(max.y-min.y+1);
+
+	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
+}
 
 })();
