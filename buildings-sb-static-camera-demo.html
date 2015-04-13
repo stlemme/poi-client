@@ -257,11 +257,16 @@
 			p4_tile.x=Math.floor(p4_tile.x);
 			p4_tile.y=Math.floor(p4_tile.y);
 			
+			var camera_tile=geo.backproject(camController.camera.position.x,camController.camera.position.z);
+			camera_tile.x=Math.floor(camera_tile.x);
+			camera_tile.y=Math.floor(camera_tile.y);
+			
 			
 			var bounds=new XML3D.Bbox(p1_tile.x,p1_tile.y,p1_tile.x,p1_tile.y);
 			bounds.extend(p2_tile.x,p2_tile.y);
 			bounds.extend(p3_tile.x,p3_tile.y);
 			bounds.extend(p4_tile.x,p4_tile.y);
+			bounds.extend(camera_tile.x,camera_tile.y);
 			//create tiles
 			geo.registerMoveCallback(function (pos) {
 				terrain.dynamicLoad(config.api_tiles, config.layers, config.bbox, bounds);
