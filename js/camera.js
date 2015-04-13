@@ -765,9 +765,24 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
 			var new_vector=this.getDirectionThroughPixel(ev.touches[0].pageX,ev.touches[0].pageY);
 			var old_vector=this.getDirectionThroughPixel(this.prevTouchPositions[0].x,this.prevTouchPositions[0].y);
 			
-			//calculate intersections of old and new ray with xz plane
-			var old_intersection=intersect_xz_plane(old_vector,this.camera.position);
-			var new_intersection=intersect_xz_plane(new_vector,this.camera.position);
+			if(this.useRaycasting){
+				var old_ray= new window.XML3DRay(this.camera.position,old_vector);
+				var old_hitpoint=new this.xml3d.createXML3DVec3();
+				var old_hitnormal=new this.xml3d.createXML3DVec3();
+				this.xml3d.getElementByRay(old_ray,old_hitpoint,old_hitnormal);
+			
+				if(!(old_hitpoint===undefined)){
+					//intersect_ray_plane and old_hitpoint are slightly different, creating weird bugs when using old_hitpoint as old_intersection
+					var old_intersection=intersect_ray_plane(old_vector, this.camera.position, new window.XML3DVec3(0.0,1.0,0.0), old_hitpoint);
+					var new_intersection=intersect_ray_plane(new_vector, this.camera.position, new window.XML3DVec3(0.0,1.0,0.0), old_hitpoint);
+				}
+			}
+			
+			else{
+				//calculate intersections of old and new ray with xz plane
+				var old_intersection=intersect_xz_plane(old_vector,this.camera.position);
+				var new_intersection=intersect_xz_plane(new_vector,this.camera.position);
+			}
 			
 
 			//calculate difference vector and adjust camera position
@@ -784,8 +799,17 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
 		case(this.ORBIT): //new code to handle orbit update, rotate around the first touch-point
 			
 			var new_vector=this.getDirectionThroughPixel(ev.touches[0].pageX,ev.touches[0].pageY);
-			var new_intersection=intersect_xz_plane(new_vector,this.camera.position);
 			
+			if(this.useRaycasting){
+				var new_ray= new window.XML3DRay(this.camera.position,new_vector);
+				var new_hitpoint=new this.xml3d.createXML3DVec3();
+				var new_hitnormal=new this.xml3d.createXML3DVec3();
+				this.xml3d.getElementByRay(new_ray,new_hitpoint,new_hitnormal);
+				var new_intersection=new_hitpoint;
+			}
+			else{
+				var new_intersection=intersect_xz_plane(new_vector,this.camera.position);
+			}
 			
 			if(new_intersection!=undefined){
 			
