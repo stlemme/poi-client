@@ -374,7 +374,9 @@ XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
 						var new_hitpoint=new this.xml3d.createXML3DVec3();
 						var new_hitnormal=new this.xml3d.createXML3DVec3();
 						this.xml3d.getElementByRay(new_ray,new_hitpoint,new_hitnormal);
-						this.rotationCenter=new_hitpoint;
+						if(!isNaN(new_hitpoint.x)){
+							this.rotationCenter=new_hitpoint;
+						}
 					}
 					else{
 						var new_vector=this.getDirectionThroughPixel(ev.pageX,ev.pageY);
@@ -496,7 +498,7 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 			break;
 			
 			case(this.ORBIT): //new code to handle panning update
-			if(this.rotationCenter!=undefined){
+			if(this.rotationCenter!==undefined){
 			
             var dx = -this.rotateSpeed * (ev.pageX - this.prevPos.x) * 2.0 * Math.PI / this.width;
             var dy = -this.rotateSpeed * (ev.pageY - this.prevPos.y) * 2.0 * Math.PI / this.height;

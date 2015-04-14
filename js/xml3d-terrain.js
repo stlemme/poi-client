@@ -1,4 +1,3 @@
-
 var XML3D = XML3D || {};
 	
 (function() {
@@ -8,6 +7,7 @@ XML3D.Terrain = function(geo, group, tf_scale) {
 	this.ground = ground || null;
 	this.tf_scale = tf_scale || null;
 	this.tileCount = 0;
+	this.tilePositions = [];
 };
 
 
@@ -45,17 +45,6 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 	var max = this.geo.tile(bbox.south, bbox.east);
 	var z = this.geo.level;
 	
-	/*
-	while (this.ground.hasChildNodes()) {   
-		this.ground.removeChild(this.ground.firstChild);
-	}
-	*/
-
-	
-	
-	
-	
-	
 	//limit dynamic bounds to bbox
 	// dynamicbbox contains tile coordinates, not lat/lon
 	
@@ -65,55 +54,87 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 	max.x = Math.min(max.x,dynamicbbox.max.x);
 	max.y = Math.min(max.y,dynamicbbox.max.y);
 	
-	var new_bounds= new XML3D.Bbox(min.x,min.y,max.x,max.y);
 	
-	if(typeof this.old_bounds != "undefined"){
-		for (var x = this.old_bounds.min.x; x <= this.old_bounds.max.x; x++)
-		{
-			for (var y = this.old_bounds.min.y; y <= this.old_bounds.max.y; y++)
-			{
-				//remove all tiles which are no longer visible
-				if (!new_bounds.isInside(x,y)){
-				var tile_id = "#tile_" + z + "_" + x + "_" + y + '_';
-				$(tile_id).remove();
+	var layers = layers || ["plane"];
+	var i=0;
+	var new_bounds=new XML3D.Bbox(min.x,min.y,max.x,max.y);
+	
+	for (var x = min.x; x <= max.x; x++)
+	{
+		for (var y = min.y; y <= max.y; y++){
+			var curr={
+				"x": x,
+				"y": y
+			}
+			if(!contains(this.tilePositions,curr)){
+				var tile_uri = api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+				var tile_id = "tile_" + z + "_" + x + "_" + y + '_';
+				
+				//tile re-use possible?
+				for(var j=0;j<layers.length;j++){
+					while(i<this.tileCount){
+						var pos=this.tilePositions[i];
+						if(!new_bounds.isInside(pos.x,pos.y)){
+							break;
+						}
+						i++;
+					}
+					
+				
+					if(i<this.tileCount){
+						//reuse tile
+						console.log("reused tile!");
+						
+						this.ground.children[i].setAttribute("id", tile_id + layers[j]);
+						this.ground.children[i].setAttribute("src", tile_uri + "#" + layers[j]);
+						this.ground.children[i].setAttribute("transform", tile_uri + "#tf");
+						this.tilePositions[i]={
+							"x": x,
+							"y": y
+						}
+						
+						i++;
+						
+						
+					}
+					else{
+						//create new tile
+						console.log("new tile!");
+						var tile = XML3D.createElement("model");
+						tile.setAttribute("id", tile_id + layers[j]);
+						tile.setAttribute("src", tile_uri + "#" + layers[j]);
+						tile.setAttribute("transform", tile_uri + "#tf");
+						this.ground.appendChild(tile);
+						this.tilePositions[i]={
+							"x": x,
+							"y": y
+						}
+						i++;
+					}
+					
 				
 				}
 
 			}
-		}
-	}
-	
-	
-	
-	var layers = layers || ["plane"];
-	
-	for (var x = min.x; x <= max.x; x++)
-	{
-		for (var y = min.y; y <= max.y; y++)
-		{
-			if(typeof this.old_bounds == "undefined"||!this.old_bounds.isInside(x,y)){
-				//only draw tiles which do not exist yet!
-				console.log("new tiles!");
-				var tile_uri = api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
-				var tile_id = "tile_" + z + "_" + x + "_" + y + '_';
-				layers.forEach(function(layer) { 
-					var tile = XML3D.createElement("model");
-					tile.setAttribute("id", tile_id + layer);
-					tile.setAttribute("src", tile_uri + "#" + layer);
-					tile.setAttribute("transform", tile_uri + "#tf");
-					this.ground.appendChild(tile);
-				});
-			}
+			
 		}
 	}
 
-	this.old_bounds=new XML3D.Bbox(min.x,min.y,max.x,max.y);
+	
 
-	
-	
-	this.tileCount = (max.x-min.x+1)*(max.y-min.y+1);
+	this.tileCount=this.ground.children.length;
 
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
+}
+
+function contains(a, obj) {
+    var i = a.length;
+    while (i--) {
+       if (a[i].x == obj.x && a[i].y == obj.y) {
+           return true;
+       }
+    }
+    return false;
 }
 
 })();
