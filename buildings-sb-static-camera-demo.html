@@ -225,7 +225,7 @@
 			var p3=intersect_xz_plane(f3,camController.camera.position);
 			var p4=intersect_xz_plane(f4,camController.camera.position);
 			
-			var far_plane=1000; // prevents excessive tile loading
+			var far_plane=5000; // prevents excessive tile loading
 			
 			if(p1==undefined){
 				p1=camController.camera.position.add(f1.scale(far_plane));
