@@ -84,7 +84,7 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 					if(i<this.tileCount){
 						//reuse tile
 						console.log("reused tile!");
-						
+						redraw(this.ground.children[i]);
 						this.ground.children[i].setAttribute("id", tile_id + layers[j]);
 						this.ground.children[i].setAttribute("src", tile_uri + "#" + layers[j]);
 						this.ground.children[i].setAttribute("transform", tile_uri + "#tf");
@@ -92,7 +92,7 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 							"x": x,
 							"y": y
 						}
-						redraw(this.ground.children[i]);
+						//redraw(this.ground.children[i]);
 						i++;
 						
 						
@@ -138,6 +138,12 @@ function contains(a, obj) {
 }
 
 function redraw(element){
+	
+	//worth a try, but doesn't work
+	while (element.firstChild) {
+		element.removeChild(element.firstChild);
+	}
+
 	//nope does not work either
 /*
 	var disp = element.style.display;
