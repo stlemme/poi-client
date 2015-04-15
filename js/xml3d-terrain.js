@@ -92,7 +92,7 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 							"x": x,
 							"y": y
 						}
-						
+						redraw(this.ground.children[i]);
 						i++;
 						
 						
@@ -135,6 +135,17 @@ function contains(a, obj) {
        }
     }
     return false;
+}
+
+function redraw(element){
+	//nope does not work either
+/*
+	var disp = element.style.display;
+	element.style.display = 'none';
+	var trick = element.offsetHeight;
+	element.style.display = disp;
+*/
+
 }
 
 })();
