@@ -202,6 +202,9 @@
 					return;
 				}
 				var t=-(origin.y/vector.y);
+				if(max_t!=undefined&&t>max_t){
+				 return;
+				}
 				var projected=origin.add(vector.scale(t));
 				return projected;
 			}
@@ -220,13 +223,14 @@
 			var f3=camController.camera.getRayDirection(-x_frustum,-y_frustum);
 			var f4=camController.camera.getRayDirection(x_frustum,-y_frustum);
 			
-			//calculate intersections with xz_plane
-			var p1=intersect_xz_plane(f1,camController.camera.position);
-			var p2=intersect_xz_plane(f2,camController.camera.position);
-			var p3=intersect_xz_plane(f3,camController.camera.position);
-			var p4=intersect_xz_plane(f4,camController.camera.position);
-			
 			var far_plane=5000; // prevents excessive tile loading
+			//calculate intersections with xz_plane
+			var p1=intersect_xz_plane(f1,camController.camera.position,far_plane);
+			var p2=intersect_xz_plane(f2,camController.camera.position,far_plane);
+			var p3=intersect_xz_plane(f3,camController.camera.position,far_plane);
+			var p4=intersect_xz_plane(f4,camController.camera.position,far_plane);
+			
+			
 			
 			if(p1==undefined){
 				p1=camController.camera.position.add(f1.scale(far_plane));
