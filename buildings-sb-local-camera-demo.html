@@ -12,7 +12,7 @@
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
 	<script type="text/javascript" src="js/xml3d-poi.js"></script>
 	<script type="text/javascript" src="js/xml3d-animation.js"></script>
-    <script type="text/javascript" src="js/xml3d-terrain.js"></script>
+    <script type="text/javascript" src="js/xml3d-terrain-delete-old-tiles.js"></script>
     <script type="text/javascript" src="js/3d-map-tiles.js"></script>
 	<script type="text/javascript" src="js/2d-bbox.js"></script>
 	<script type="text/javascript" src="js/frustum.js"></script>
@@ -27,10 +27,10 @@
 			},
 			"level": 16,
 			
-			//"api_tiles": global.api.ground_tiles['sb-local'],
 			"api_tiles": global.api.ground_tiles['sb-local'],
-			//"layers": ["plane", "buildings"],
-			"layers": ["plane"],
+			//"api_tiles": global.api.ground_tiles['sb-local'],
+			"layers": ["plane", "buildings"],
+			//"layers": ["plane"],
 			
 			/*
 			"bbox": {
@@ -90,7 +90,7 @@
 				var obj = evt.detail.count.objects;
 				if (obj > (terrain.tileCount/4)){
 					loader.style.display = "none";
-					statistics.style.display = "inline"; //show stats after loader is no longer drawn
+					//statistics.style.display = "inline"; //show stats after loader is no longer drawn
 				}
 				//update statistics
 				updateStatistics();
@@ -257,27 +257,27 @@
 			//create bounds of view frustum projection
 			
 			var p1_tile=geo.backproject(p1.x,p1.z);
-			var p1_proj=p1_tile;
+			var p1_proj=geo.backproject(p1.x,p1.z);
 			p1_tile.x=Math.floor(p1_tile.x);
 			p1_tile.y=Math.floor(p1_tile.y);
 			
 			var p2_tile=geo.backproject(p2.x,p2.z);
-			var p2_proj=p2_tile;
+			var p2_proj=geo.backproject(p2.x,p2.z);
 			p2_tile.x=Math.floor(p2_tile.x);
 			p2_tile.y=Math.floor(p2_tile.y);
 			
 			var p3_tile=geo.backproject(p3.x,p3.z);
-			var p3_proj=p3_tile;
+			var p3_proj=geo.backproject(p3.x,p3.z);
 			p3_tile.x=Math.floor(p3_tile.x);
 			p3_tile.y=Math.floor(p3_tile.y);
 			
 			var p4_tile=geo.backproject(p4.x,p4.z);
-			var p4_proj=p4_tile;
+			var p4_proj=geo.backproject(p4.x,p4.z);
 			p4_tile.x=Math.floor(p4_tile.x);
 			p4_tile.y=Math.floor(p4_tile.y);
 			
 			var camera_tile=geo.backproject(camController.camera.position.x,camController.camera.position.z);
-			var camera_proj=camera_tile;
+			var camera_proj=geo.backproject(camController.camera.position.x,camController.camera.position.z);
 			camera_tile.x=Math.floor(camera_tile.x);
 			camera_tile.y=Math.floor(camera_tile.y);
 			

@@ -27,11 +27,16 @@ XML3D.Frustum.prototype.intersectBbox = function(bbox) {
 	if(this.isInside(bbox.min.x,bbox.min.y)||this.isInside(bbox.max.x,bbox.min.y)||this.isInside(bbox.min.x,bbox.max.y)||this.isInside(bbox.max.x,bbox.max.y)){
 		return true;
 		
+		
+		
 	}
 	//test if a triangle point is in the bbox
+	
 	for(var i=0;i<this.triangles.length;i++){
 		if(bbox.isInside(this.triangles[i].points[0].x,this.triangles[i].points[0].y)||bbox.isInside(this.triangles[i].points[1].x,this.triangles[i].points[1].y)||bbox.isInside(this.triangles[i].points[2].x,this.triangles[i].points[2].y)){
 			return true;
+			
+			
 		}
 	}
 	return false;
