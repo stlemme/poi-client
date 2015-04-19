@@ -40,7 +40,7 @@ XML3D.Terrain.prototype.load = function( api_tiles, layers, bbox ) {
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
 }
 
-XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamicbbox) {
+XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamicbbox, frustum) {
 	var min = this.geo.tile(bbox.north, bbox.west);
 	var max = this.geo.tile(bbox.south, bbox.east);
 	var z = this.geo.level;
@@ -62,11 +62,10 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 	for (var x = min.x; x <= max.x; x++)
 	{
 		for (var y = min.y; y <= max.y; y++){
-			var curr={
-				"x": x,
-				"y": y
-			}
-			if(!contains(this.tilePositions,curr)){
+			var curr=new XML3D.Bbox(x,y,x+1,y+1);
+			
+			
+			if(!contains(this.tilePositions,curr)&&frustum.intersectBbox(curr)){
 				var tile_uri = api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
 				var tile_id = "tile_" + z + "_" + x + "_" + y + '_';
 				
@@ -74,7 +73,7 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 				for(var j=0;j<layers.length;j++){
 					while(i<this.tileCount){
 						var pos=this.tilePositions[i];
-						if(!new_bounds.isInside(pos.x,pos.y)){
+						if(!new_bounds.isInside(pos.min.x,pos.min.y)&&!frustum.intersectBbox(pos)){
 							break;
 						}
 						i++;
@@ -88,10 +87,7 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 						this.ground.children[i].setAttribute("id", tile_id + layers[j]);
 						this.ground.children[i].setAttribute("src", tile_uri + "#" + layers[j]);
 						this.ground.children[i].setAttribute("transform", tile_uri + "#tf");
-						this.tilePositions[i]={
-							"x": x,
-							"y": y
-						}
+						this.tilePositions[i]=new XML3D.Bbox(x,y,x+1,y+1);
 						//redraw(this.ground.children[i]);
 						i++;
 						
@@ -105,10 +101,7 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 						tile.setAttribute("src", tile_uri + "#" + layers[j]);
 						tile.setAttribute("transform", tile_uri + "#tf");
 						this.ground.appendChild(tile);
-						this.tilePositions[i]={
-							"x": x,
-							"y": y
-						}
+						this.tilePositions[i]=new XML3D.Bbox(x,y,x+1,y+1);
 						i++;
 					}
 					
@@ -130,7 +123,7 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 function contains(a, obj) {
     var i = a.length;
     while (i--) {
-       if (a[i].x == obj.x && a[i].y == obj.y) {
+       if (a[i].min.x == obj.min.x && a[i].min.y == obj.min.y&&a[i].max.x == obj.max.x && a[i].max.y == obj.max.y) {
            return true;
        }
     }

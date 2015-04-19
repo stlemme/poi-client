@@ -25,16 +25,27 @@
 				"lon": 7.041700,
 				"lat": 49.254104
 			},
-			"level": 18,
+			"level": 16,
 			
-			"api_tiles": global.api.ground_tiles['static-sb'],
-			"layers": ["plane", "buildings"],
+			//"api_tiles": global.api.ground_tiles['sb-local'],
+			"api_tiles": global.api.ground_tiles['sb-local'],
+			//"layers": ["plane", "buildings"],
+			"layers": ["plane"],
 			
+			/*
 			"bbox": {
 				"west": 7.027427,
 				"south": 49.249020,
 				"east": 7.053348,
 				"north": 49.261289
+			},
+			*/
+			
+			"bbox": {
+				"west": 7.00,
+				"south": 49.24,
+				"east": 7.07,
+				"north": 49.27
 			},
 			
 			"api_poi": global.api.poi
@@ -93,6 +104,9 @@
 			camController.useRaycasting = false;
 			camController.attach();
 			updateViewportSize(xml3d);
+			
+
+			
 		}
 		
 		window.addEventListener('load', onload, false);
@@ -267,7 +281,7 @@
 			camera_tile.x=Math.floor(camera_tile.x);
 			camera_tile.y=Math.floor(camera_tile.y);
 			
-			var projections=[p1_proj,p2_proj,p3_proj,p4_proj];
+			var projections=new Array(p1_proj,p2_proj,p3_proj,p4_proj);
 			var frustum=new XML3D.Frustum(camera_proj,projections);
 			
 			var bounds=new XML3D.Bbox(p1_tile.x,p1_tile.y,p1_tile.x,p1_tile.y);
@@ -279,6 +293,7 @@
 			geo.registerMoveCallback(function (pos) {
 				terrain.dynamicLoad(config.api_tiles, config.layers, config.bbox, bounds,frustum);
 			});
+			
 			
 		}
 		

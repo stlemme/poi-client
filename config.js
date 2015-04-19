@@ -8,6 +8,7 @@ var global = {
 			"osmde": "http://130.206.80.175/api/3d-map-tiles/filab",
 			"gis": "http://130.206.80.175/api/3d-map-tiles/oulu",
 			"sb": "http://130.206.80.175/api/3d-map-tiles/sb",
+			"sb-local": "http://127.0.0.1/api/3d-map-tiles/sb",
 			"static-sb": "data/static-sb",
 			"tum": "http://130.206.80.175/api/3d-map-tiles/tum",
 			"static-tum": "data/static-tum"
