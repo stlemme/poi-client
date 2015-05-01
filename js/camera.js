@@ -369,11 +369,11 @@ XML3D.Xml3dSceneController.prototype.mousePressEvent = function(event) {
 				
 				if(this.rotationCenter===undefined){
 					if(this.useRaycasting){
-						var new_vector=this.getDirectionThroughPixel(ev.pageX,ev.pageY);
-						var new_ray= new window.XML3DRay(this.camera.position,new_vector);
-						var new_hitpoint=new this.xml3d.createXML3DVec3();
-						var new_hitnormal=new this.xml3d.createXML3DVec3();
-						this.xml3d.getElementByRay(new_ray,new_hitpoint,new_hitnormal);
+						var new_vector = this.getDirectionThroughPixel(ev.pageX,ev.pageY);
+						var new_ray = new window.XML3DRay(this.camera.position,new_vector);
+						var new_hitpoint = new window.XML3DVec3();
+						var new_hitnormal = new window.XML3DVec3();
+						this.xml3d.getElementByRay(new_ray, new_hitpoint, new_hitnormal);
 						if(!isNaN(new_hitpoint.x)){
 							this.rotationCenter=new_hitpoint;
 						}
@@ -468,10 +468,10 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 			var old_vector=this.getDirectionThroughPixel(this.prevPos.x,this.prevPos.y);
 
 			if(this.useRaycasting){
-				var old_ray= new window.XML3DRay(this.camera.position,old_vector);
-				var old_hitpoint=new this.xml3d.createXML3DVec3();
-				var old_hitnormal=new this.xml3d.createXML3DVec3();
-				this.xml3d.getElementByRay(old_ray,old_hitpoint,old_hitnormal);
+				var old_ray = new window.XML3DRay(this.camera.position, old_vector);
+				var old_hitpoint = new window.XML3DVec3();
+				var old_hitnormal = new window.XML3DVec3();
+				this.xml3d.getElementByRay(old_ray, old_hitpoint, old_hitnormal);
 			
 				if(!(old_hitpoint===undefined)){
 					//intersect_ray_plane and old_hitpoint are slightly different, creating weird bugs when using old_hitpoint as old_intersection
