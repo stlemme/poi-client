@@ -12,7 +12,7 @@
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
 	<script type="text/javascript" src="js/xml3d-poi.js"></script>
 	<script type="text/javascript" src="js/xml3d-animation.js"></script>
-    <script type="text/javascript" src="js/xml3d-terrain.js"></script>
+    <script type="text/javascript" src="js/xml3d-terrain-delete-old-tiles.js"></script>
     <script type="text/javascript" src="js/3d-map-tiles.js"></script>
 	<script type="text/javascript" src="js/2d-bbox.js"></script>
 	<script type="text/javascript" src="js/frustum.js"></script>
@@ -86,6 +86,7 @@
 			statistics.style.display = "none"; //do not show stats initially
 			xml3d.addEventListener('framedrawn', function( evt ) {
 				//update tiles
+				//rotate();
 				updateTiles();
 				var obj = evt.detail.count.objects;
 				if (obj > (terrain.tileCount/4)){
@@ -237,7 +238,7 @@
 			var f3=camController.camera.getRayDirection(-x_frustum,-y_frustum);
 			var f4=camController.camera.getRayDirection(x_frustum,-y_frustum);
 			
-			var far_plane=1000; // prevents excessive tile loading
+			var far_plane=3000; // prevents excessive tile loading
 			
 			//calculate intersections with xz_plane
 			var p1=intersect_xz_plane(f1,camController.camera.position,far_plane);
@@ -300,6 +301,14 @@
 			});
 			
 			
+		}
+		
+		function rotate(){
+		
+		var angle= 20 /(3.14159*2*360);
+		var rot = new window.XML3DRotation(new window.XML3DVec3(0,1,0), angle);
+		camController.camera.orientation=rot.multiply(camController.camera.orientation);
+		
 		}
 		
 	</script>
