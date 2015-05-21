@@ -12,7 +12,7 @@
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
 	<script type="text/javascript" src="js/xml3d-poi.js"></script>
 	<script type="text/javascript" src="js/xml3d-animation.js"></script>
-    <script type="text/javascript" src="js/xml3d-terrain-new.js"></script>
+    <script type="text/javascript" src="js/xml3d-terrain-delete-old-tiles-new.js"></script>
     <script type="text/javascript" src="js/3d-map-tiles.js"></script>
 	<script type="text/javascript" src="js/2d-bbox.js"></script>
 	<script type="text/javascript" src="js/frustum.js"></script>
@@ -25,7 +25,7 @@
 				"lon": 7.041700,
 				"lat": 49.254104
 			},
-			"level": 16,
+			"level": 17,
 			
 			"api_tiles": global.api.ground_tiles['sb-local'],
 			//"api_tiles": global.api.ground_tiles['sb-local'],
@@ -86,7 +86,7 @@
 			statistics.style.display = "none"; //do not show stats initially
 			xml3d.addEventListener('framedrawn', function( evt ) {
 				//update tiles
-				//rotate();
+				rotate();
 				updateTiles();
 				var obj = evt.detail.count.objects;
 				if (obj > (terrain.tileCount/4)){
