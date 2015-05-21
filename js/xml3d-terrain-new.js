@@ -10,7 +10,11 @@ XML3D.Terrain = function(geo, group, tf_scale) {
 	this.maxtileCount = 0;
 	this.alltiles = [];
 	this.updatecount=0;
-	this.tiles_in_frustum=0;
+	this.tiles_in_bbox=0;
+	this.updatedtiles=0;
+	this.maxupdatedtiles=0;
+	this.newtiles=0;
+	this.reusedtiles=0;
 };
 
 
@@ -60,15 +64,17 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 	
 	
 	var layers = layers || ["plane"];
-	this.tiles_in_frustum=0;
+	tiles_in_frustum=0;
 	var neededTiles=[];
 	//var new_bounds=new XML3D.Bbox(min.x,min.y,max.x,max.y);
+	
+	this.tiles_in_bbox=(max.x-min.x+1)*(max.y-min.y+1);
 	
 	for (var x = min.x; x <= max.x; x++){
 		for (var y = min.y; y <= max.y; y++){
 			var curr=new XML3D.Bbox(x,y,x+1,y+1);
 			if(frustum.intersectBbox(curr)){
-				this.tiles_in_frustum++;
+				tiles_in_frustum++;
 				var key="tile_" + z + "_" + x + "_" + y + '_';
 				if(this.alltiles[key]==null){
 					//tile doesn't exist
@@ -86,8 +92,10 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 			}
 		}
 	}
-
-	
+	this.updatedtiles=neededTiles.length;
+	if(this.updatecount>1){
+	this.maxupdatedtiles=Math.max(this.maxupdatedtiles,this.updatedtiles);
+	}
 	if(neededTiles.length>0){
 		//i=index of tile to be created in neededTiles!
 		var i=0;
@@ -121,7 +129,8 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 			
 			}
 		}
-		
+		this.reusedtiles=i;
+		this.newtiles=neededTiles.length-i;
 		//new tiles have to be created!
 		while(i<neededTiles.length){
 			var index=this.ground.children.length/layers.length;
@@ -143,7 +152,10 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 			i++;
 		}	
 	}
-	
+	else{
+		this.reusedtiles=0;
+		this.newtiles=0;
+	}
 	
 	
 	
@@ -151,8 +163,8 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 	
 	
 
-	this.tileCount=this.ground.children.length;
-	this.maxtileCount=Math.max(this.tileCount,this.maxtileCount);
+	this.tileCount=tiles_in_frustum
+	this.maxtileCount=this.ground.children.length;
 	//console.log(this.maxtileCount);
 	
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);

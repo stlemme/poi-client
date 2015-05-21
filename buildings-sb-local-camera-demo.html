@@ -16,16 +16,75 @@
     <script type="text/javascript" src="js/3d-map-tiles.js"></script>
 	<script type="text/javascript" src="js/2d-bbox.js"></script>
 	<script type="text/javascript" src="js/frustum.js"></script>
+	<script type="text/javascript" src="js/chart.js"></script>
     <script type="text/javascript" src="config.js"></script>
 	
 	<script type="text/javascript">
+	
+		var statisticsData = {
+			labels : ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],
+			datasets : [
+				{
+					
+					fillColor : "rgba(172,194,132,0.1)",
+					strokeColor : "#ACC26D",
+					pointColor : "#fff",
+					pointStrokeColor : "#9DB86D",
+					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+				},
+				{
+					fillColor : "rgba(179,12,12,0.1)",
+					strokeColor : "#B43333",
+					pointColor : "#fff",
+					pointStrokeColor : "#B30C0C",
+					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+				},
+				{
+					fillColor : "rgba(19,64,177,0.1)",
+					strokeColor : "#244CB1",
+					pointColor : "#fff",
+					pointStrokeColor : "#1340B1",
+					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+				},
+				{
+					fillColor : "rgba(224,185,11,0.1)",
+					strokeColor : "#D6B72D",
+					pointColor : "#fff",
+					pointStrokeColor : "#E0B90B",
+					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+				},
+				{
+					fillColor : "rgba(218,79,19,0.1)",
+					strokeColor : "#DC6430",
+					pointColor : "#fff",
+					pointStrokeColor : "#DA4F13",
+					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+				},
+							{
+					fillColor : "rgba(40,40,40,0.1)",
+					strokeColor : "#404040",
+					pointColor : "#fff",
+					pointStrokeColor : "#292929",
+					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+				},
+							{
+					fillColor : "rgba(39,156,80,0.1)",
+					strokeColor : "#359F5A",
+					pointColor : "#fff",
+					pointStrokeColor : "#279C50",
+					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+				}
+			]
+		}
+		
+
 	
 		var config = {
 			"origin": {
 				"lon": 7.041700,
 				"lat": 49.254104
 			},
-			"level": 17,
+			"level": 16,
 			
 			"api_tiles": global.api.ground_tiles['sb-local'],
 			//"api_tiles": global.api.ground_tiles['sb-local'],
@@ -42,10 +101,10 @@
 			*/
 			
 			"bbox": {
-				"west": 7.00,
-				"south": 49.24,
-				"east": 7.07,
-				"north": 49.27
+				"west": 6.5,
+				"south": 48.75,
+				"east": 7.5,
+				"north": 49.75
 			},
 			
 			"api_poi": global.api.poi
@@ -54,9 +113,18 @@
 		var geo, terrain, pois;
 		var animator;
 		var camController;
+		var chart;
+		
+		var framecount=0;
+		var updatedtilecount=0;
+		var newtiles=0;
+		var reusedtiles=0;
 		
 		function onload()
 		{
+			var charts = document.getElementById('charts').getContext('2d');
+			chart=new Chart(charts).Line(statisticsData);
+		
 			var geo_tf = document.getElementById("geo_tf");
 			geo = new XML3D.Geo(geo_tf, config.level, config.origin);
 			
@@ -71,7 +139,7 @@
 			});
 			*/
 			
-			var pois_group = document.getElementById("pois");
+			/*var pois_group = document.getElementById("pois");
 			pois = new XML3D.POI(geo, pois_group);
 			geo.registerMoveCallback(function (pos) {
 				pois.loadOverpass(config.bbox);
@@ -79,15 +147,16 @@
 			
 			animator = new XML3D.Animator();
 			animator.registerAnimation(pois);
-			
+			*/
 			var xml3d = document.getElementById("myxml3dcanvas");
 			var loader = document.getElementById("loader");
 			var statistics = document.getElementById("statistics");
 			statistics.style.display = "none"; //do not show stats initially
 			xml3d.addEventListener('framedrawn', function( evt ) {
 				//update tiles
-				rotate();
+				//rotate();
 				updateTiles();
+				updateTileStatistics();
 				var obj = evt.detail.count.objects;
 				if (obj > (terrain.tileCount/4)){
 					loader.style.display = "none";
@@ -238,7 +307,7 @@
 			var f3=camController.camera.getRayDirection(-x_frustum,-y_frustum);
 			var f4=camController.camera.getRayDirection(x_frustum,-y_frustum);
 			
-			var far_plane=3000; // prevents excessive tile loading
+			var far_plane=5000; // prevents excessive tile loading
 			
 			//calculate intersections with xz_plane
 			var p1=intersect_xz_plane(f1,camController.camera.position,far_plane);
@@ -311,12 +380,27 @@
 		
 		}
 		
+		function updateTileStatistics(){
+			updatedtilecount+=terrain.updatedtiles;
+			reusedtiles+=terrain.reusedtiles;
+			newtiles+=terrain.newtiles;
+			if(framecount>20){
+			framecount=0;
+			chart.removeData();
+			chart.addData([terrain.tileCount,terrain.maxtileCount,terrain.tiles_in_bbox,updatedtilecount,terrain.maxupdatedtiles,reusedtiles,newtiles],"");
+			updatedtilecount=0;
+			reusedtiles=0;
+			newtiles=0;
+			}
+			framecount++
+		}
+		
 	</script>
 </head>
 
 <body>
 	<div id="myxml3d">
-		<xml3d id="myxml3dcanvas" activeView="#defaultView" style="width: 100%; height: 100%; background-color:0xeeeeee;" onresize="updateViewportSize(this)" >
+		<xml3d id="myxml3dcanvas" activeView="#defaultView" style="width: 100%; height: 60%; background-color:0xeeeeee;" onresize="updateViewportSize(this)" >
 
 			<!-- Asset Instance -->
 			<transform id="geo_tf"></transform>
@@ -386,6 +470,8 @@
 			<span id="normal_4"></span>
 			
 		</div>
+		
+		<canvas id="charts" style="width: 100%; height: 40%;"></canvas>
 		
 		<div id="attribution" class="attribution">
 			Data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors

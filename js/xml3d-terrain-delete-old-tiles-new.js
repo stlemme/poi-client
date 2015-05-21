@@ -10,6 +10,11 @@ XML3D.Terrain = function(geo, group, tf_scale) {
 	this.maxtileCount = 0;
 	this.tilePositions = [];
 	this.lastfrustum=null;
+	this.tiles_in_bbox=0;
+	this.updatedtiles=0;
+	this.maxupdatedtiles=0;
+	this.newtiles=0;
+	this.reusedtiles=0;
 };
 
 
@@ -46,7 +51,9 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 	var min = this.geo.tile(bbox.north, bbox.west);
 	var max = this.geo.tile(bbox.south, bbox.east);
 	var z = this.geo.level;
-	
+	this.updatedtiles=0;
+	this.reusedtiles=0;
+	this.newtiles=0;
 	//limit dynamic bounds to bbox
 	// dynamicbbox contains tile coordinates, not lat/lon
 	
@@ -56,6 +63,7 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 	max.x = Math.min(max.x,dynamicbbox.max.x);
 	max.y = Math.min(max.y,dynamicbbox.max.y);
 	
+	this.tiles_in_bbox=(max.x-min.x+1)*(max.y-min.y+1);
 	
 	var layers = layers || ["plane"];
 
@@ -69,6 +77,9 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 			this.tilePositions.splice(index,1);
 			var tile=this.ground.children[index];
 			tile.parentNode.removeChild(tile);
+			
+			this.updatedtiles++;
+			this.reusedtiles++;
 			//console.log("removed child");
 		}
 		else{
@@ -92,6 +103,8 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 				var tile_uri = api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
 				var tile_id = "tile_" + z + "_" + x + "_" + y + '_';
 				
+				this.newtiles++;
+				this.updatedtiles++;
 				
 				for(var j=0;j<layers.length;j++){
 					
@@ -109,8 +122,10 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 			
 		}
 	}
-
 	
+	if(this.lastfrustum!=null){
+		this.maxupdatedtiles=Math.max(this.maxupdatedtiles,this.updatedtiles);
+	}
 	this.lastfrustum=frustum;
 	this.tileCount=this.ground.children.length;
 	this.maxtileCount=Math.max(this.tileCount,this.maxtileCount);
