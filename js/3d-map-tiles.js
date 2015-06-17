@@ -522,6 +522,8 @@ XML3D.shaders.register("normaldebug", {
     }
 });
 
+
+//warning! modified to fit terrain generation!
 Xflow.registerOperator("xflow.mygrid", {
     outputs: [	{type: 'float3', name: 'position', customAlloc: true},
 				{type: 'float3', name: 'normal', customAlloc: true},
@@ -547,9 +549,9 @@ Xflow.registerOperator("xflow.mygrid", {
         // Create Positions
 		for(var i = 0; i < l; i++) {
 			var offset = i*3;
-			position[offset] =  (((i % s) / (s-1))-0.5)*2;
+			position[offset] =  ((i % s) / (s-1));
 			position[offset+1] = 0;
-			position[offset+2] = ((Math.floor(i/t) / (t-1))-0.5)*2;
+			position[offset+2] = (Math.floor(i/t) / (t-1));
 			// position[offset+2] = ((Math.floor(i/s) / (s-1))-0.5)*2;
 		}
 
@@ -564,8 +566,8 @@ Xflow.registerOperator("xflow.mygrid", {
 		for(var i = 0; i < l; i++) {
 			var offset = i*2;
 			// tx in range [0..1] not [0..1)
-            texcoord[offset] = (i%s) / s;
-            texcoord[offset+1] = 1.0 - (Math.floor(i/t) / t);
+            texcoord[offset] = (i%s) / (s-1);
+            texcoord[offset+1] = 1.0 - (Math.floor(i/t) / (t-1));
             // texcoord[offset] = (i%s) / (s-1);
             // texcoord[offset+1] = 1.0 - (Math.floor(i/t) / (t-1));
             // texcoord[offset+1] = Math.floor(i/s) / (s-1);
