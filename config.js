@@ -7,7 +7,11 @@ var global = {
 		"ground_tiles": {
 			"osmde": "http://130.206.80.175/api/3d-map-tiles/filab",
 			"gis": "http://130.206.80.175/api/3d-map-tiles/oulu",
+			"terrain": "http://127.0.0.1/api/3d-map-tiles/terrain",
+			"terrain2": "http://127.0.0.1/api/3d-map-tiles/terrain-vertex-normals",
 			"sb": "http://130.206.80.175/api/3d-map-tiles/sb",
+			"gis-local": "http://127.0.0.1/api/3d-map-tiles/oulu-terrain",
+			"sb-local": "http://127.0.0.1/api/3d-map-tiles/sb",
 			"static-sb": "data/static-sb",
 			"tum": "http://130.206.80.175/api/3d-map-tiles/tum",
 			"static-tum": "data/static-tum"
