@@ -489,7 +489,7 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 			//calculate difference vector and adjust camera position
 			if(!(old_intersection===undefined||new_intersection===undefined)){	// can i project both vectors on the plane with positive t?
 				var difference = old_intersection.subtract(new_intersection);
-				if(difference.length()<400){
+				if(difference.length()<2000){
 					this.camera.translate(difference);
 				}
 			}

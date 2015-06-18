@@ -84,7 +84,7 @@
 				"lon": 7.041700,
 				"lat": 49.254104
 			},
-			"level": 13,
+			"level": 11,
 			
 			"api_tiles": global.api.ground_tiles['terrain'],
 			//"api_tiles": global.api.ground_tiles['sb-local'],
@@ -171,7 +171,7 @@
 			camController.detach();
 			camController.mode = "panning";
 			camController.useKeys = false;
-			camController.useRaycasting = false;
+			camController.useRaycasting = true;
 			camController.attach();
 			updateViewportSize(xml3d);
 			
@@ -307,16 +307,19 @@
 			var f3=camController.camera.getRayDirection(-x_frustum,-y_frustum);
 			var f4=camController.camera.getRayDirection(x_frustum,-y_frustum);
 			
-			var far_plane=20000; // prevents excessive tile loading
+			var far_plane=30000; // prevents excessive tile loading
 			
-			//calculate intersections with xz_plane
-			var p1=intersect_xz_plane(f1,camController.camera.position,far_plane);
-			var p2=intersect_xz_plane(f2,camController.camera.position,far_plane);
-			var p3=intersect_xz_plane(f3,camController.camera.position,far_plane);
-			var p4=intersect_xz_plane(f4,camController.camera.position,far_plane);
+			//height values can be negative!
+			//intersection with xz plane can create holes!
+			
+			var p1=camController.camera.position.add(f1.scale(far_plane));//=intersect_xz_plane(f1,camController.camera.position,far_plane);
+			var p2=camController.camera.position.add(f2.scale(far_plane));//=intersect_xz_plane(f2,camController.camera.position,far_plane);
+			var p3=camController.camera.position.add(f3.scale(far_plane));//=intersect_xz_plane(f3,camController.camera.position,far_plane);
+			var p4=camController.camera.position.add(f4.scale(far_plane));//=intersect_xz_plane(f4,camController.camera.position,far_plane);
 			
 			
 			
+			/*
 			if(p1==undefined){
 				p1=camController.camera.position.add(f1.scale(far_plane));
 			}
@@ -329,6 +332,8 @@
 			if(p4==undefined){	
 				p4=camController.camera.position.add(f4.scale(far_plane));
 			}
+			*/
+			
 			//create bounds of view frustum projection
 			
 			var p1_tile=geo.backproject(p1.x,p1.z);
