@@ -12,7 +12,7 @@
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
 	<script type="text/javascript" src="js/xml3d-poi.js"></script>
 	<script type="text/javascript" src="js/xml3d-animation.js"></script>
-    <script type="text/javascript" src="js/xml3d-terrain-delete-old-tiles-new.js"></script>
+    <script type="text/javascript" src="js/xml3d-terrain-delete-old-tiles-dynamic.js"></script>
     <script type="text/javascript" src="js/3d-map-tiles.js"></script>
 	<script type="text/javascript" src="js/2d-bbox.js"></script>
 	<script type="text/javascript" src="js/frustum.js"></script>
@@ -84,7 +84,7 @@
 				"lon": 7.041700,
 				"lat": 49.254104
 			},
-			"level": 11,
+			"level": 10,
 			
 			"api_tiles": global.api.ground_tiles['terrain'],
 			//"api_tiles": global.api.ground_tiles['sb-local'],
@@ -101,10 +101,10 @@
 			*/
 			
 			"bbox": {
-				"west": 6.5,
-				"south": 48.75,
-				"east": 7.5,
-				"north": 49.75
+				"west": 0.5,
+				"south": 40.75,
+				"east": 15.5,
+				"north": 60.75
 			},
 			
 			"api_poi": global.api.poi
@@ -307,7 +307,7 @@
 			var f3=camController.camera.getRayDirection(-x_frustum,-y_frustum);
 			var f4=camController.camera.getRayDirection(x_frustum,-y_frustum);
 			
-			var far_plane=30000; // prevents excessive tile loading
+			var far_plane=100000; // prevents excessive tile loading
 			
 			//height values can be negative!
 			//intersection with xz plane can create holes!
