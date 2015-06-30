@@ -153,7 +153,7 @@ XML3D.Xml3dSceneController = function(xml3dElement) {
     this.touchTranslateMode = "twofinger";
     this.revolveAroundPoint = new window.XML3DVec3(0, 0, 0);
     this.rotateSpeed = 1;
-    this.zoomSpeed = 200;
+    this.zoomSpeed = 1000;
     this.spinningSensitivity = 0.3;
     this.isSpinning = false;
 
