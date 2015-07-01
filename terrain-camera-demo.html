@@ -132,6 +132,7 @@
 			var ground_group = document.getElementById("ground");
 			var ground_tf_scale = document.getElementById("ground_tf_scale");
 			
+			var xml3d = document.getElementById("myxml3dcanvas");
 			terrain = new XML3D.Terrain(geo, ground_group, ground_tf_scale);
 			/*
 			geo.registerMoveCallback(function (pos) {
@@ -148,7 +149,7 @@
 			animator = new XML3D.Animator();
 			animator.registerAnimation(pois);
 			*/
-			var xml3d = document.getElementById("myxml3dcanvas");
+			
 			var loader = document.getElementById("loader");
 			var statistics = document.getElementById("statistics");
 			statistics.style.display = "none"; //do not show stats initially

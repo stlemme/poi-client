@@ -4,7 +4,7 @@ var XML3D = XML3D || {};
 
 XML3D.Terrain = function(geo, group, tf_scale) {
 	this.geo = geo || null;
-	this.ground = ground || null;
+	this.ground = group || null;
 	this.tf_scale = tf_scale || null;
 	this.tileCount = 0;
 	this.maxtileCount = 0;
@@ -168,6 +168,7 @@ XML3D.Terrain.prototype.draw_tiles = function(tiles,layers){
 			var scale=1/Math.pow(2,key);
 			//scale relative to tf_scale
 			group_new.setAttribute("scale", scale + " 1 " + scale);
+			group_new.setAttribute("id", "Lod "+key);
 			this.ground.appendChild(group_new);
 			//remember we created this group
 			group_index=this.ground.children.length-1;
