@@ -17,7 +17,8 @@ XML3D.Terrain = function(geo, group, tf_scale) {
 	this.newtiles=0;
 	this.reusedtiles=0;
 	this.framecount=0;
-
+	this.maxloddelta=4;
+	this.grp_diameter=4;
 };
 
 
@@ -50,7 +51,7 @@ XML3D.Terrain.prototype.load = function( api_tiles, layers, bbox ) {
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
 }
 
-XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamicbbox, frustum) {
+XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamicbbox, frustum,camera_origin) {
 	var min = this.geo.tile(bbox.north, bbox.west);
 	var max = this.geo.tile(bbox.south, bbox.east);
 	var z = this.geo.level;
@@ -70,12 +71,16 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 
 	var new_bounds=new XML3D.Bbox(min.x,min.y,max.x,max.y);
 	
+	//console.log(api_tiles);
 	
 	//for all tiles in frustum: add to required tiles
 	var required_tiles=[];
-	required_tiles[0]=[];
+	//required_tiles[0]=[];
 	for (var x = min.x; x <= max.x; x++){
 		for (var y = min.y; y <= max.y; y++){
+		
+			this.generate_tiles (x,y,z,camera_origin,frustum,required_tiles,api_tiles);
+			/*
 			var curr=new XML3D.Bbox(x,y,x+1,y+1);
 			
 			
@@ -84,6 +89,8 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 				var list=required_tiles[0];
 				list[tile_uri]=true;
 			}
+			*/
+			
 			
 		}
 	}
@@ -104,6 +111,42 @@ XML3D.Terrain.prototype.dynamicLoad = function( api_tiles, layers, bbox, dynamic
 	//console.log(this.tileCount);
 
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
+}
+
+XML3D.Terrain.prototype.generate_tiles = function(x,y,z,camera_origin,frustum,tiles,api_tiles){
+	//camera origin in the 3d camera origin transformed into tile space
+	var delta=z-this.geo.level;
+	var tilesize=1/Math.pow(2,delta);
+	var bounds=new XML3D.Bbox(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize);
+	if(!frustum.intersectBbox(bounds)){
+		//no need to draw this!
+		return;
+	}
+	
+	if(get_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)<tilesize*this.grp_diameter && delta<this.maxloddelta){
+		//split up tile
+		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles);
+		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles);
+		this.generate_tiles(x*2,y*2+1,z+1,camera_origin,frustum,tiles);
+		this.generate_tiles(x*2+1,y*2+1,z+1,camera_origin,frustum,tiles);
+	}
+	else{
+		//draw current tile
+		if(tiles[delta]==null){
+			tiles[delta]=[];
+		}
+		var tile=tiles[delta];
+		var tile_uri ="http://127.0.0.1/api/3d-map-tiles/terrain"+ "/" + z + "/" + x + "/" + y + "-asset.xml";
+		//var tile_uri = api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+		tile[tile_uri]=true;
+	}	
+}
+
+function get_distance(x,y,camera_origin){
+	//carefull! y in tile coordinates refers to z axis in real space!
+	
+	//z axis is scaled by a factor of 2 since lod has a very low effect for high altitude cameras
+	return Math.sqrt(Math.pow((camera_origin.x-x),2)+Math.pow((camera_origin.z-y),2)+Math.pow(camera_origin.y*2,2));
 }
 
 
