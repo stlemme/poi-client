@@ -125,10 +125,10 @@ XML3D.Terrain.prototype.generate_tiles = function(x,y,z,camera_origin,frustum,ti
 	
 	if(get_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)<tilesize*this.grp_diameter && delta<this.maxloddelta){
 		//split up tile
-		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles);
-		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles);
-		this.generate_tiles(x*2,y*2+1,z+1,camera_origin,frustum,tiles);
-		this.generate_tiles(x*2+1,y*2+1,z+1,camera_origin,frustum,tiles);
+		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,api_tiles);
+		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,api_tiles);
+		this.generate_tiles(x*2,y*2+1,z+1,camera_origin,frustum,tiles,api_tiles);
+		this.generate_tiles(x*2+1,y*2+1,z+1,camera_origin,frustum,tiles,api_tiles);
 	}
 	else{
 		//draw current tile
@@ -136,8 +136,7 @@ XML3D.Terrain.prototype.generate_tiles = function(x,y,z,camera_origin,frustum,ti
 			tiles[delta]=[];
 		}
 		var tile=tiles[delta];
-		var tile_uri ="http://127.0.0.1/api/3d-map-tiles/terrain"+ "/" + z + "/" + x + "/" + y + "-asset.xml";
-		//var tile_uri = api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+		var tile_uri = api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
 		tile[tile_uri]=true;
 	}	
 }
