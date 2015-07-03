@@ -153,7 +153,7 @@ XML3D.Xml3dSceneController = function(xml3dElement) {
     this.touchTranslateMode = "twofinger";
     this.revolveAroundPoint = new window.XML3DVec3(0, 0, 0);
     this.rotateSpeed = 1;
-    this.zoomSpeed = 1000;
+    this.zoomSpeed = 5000;
     this.spinningSensitivity = 0.3;
     this.isSpinning = false;
 
@@ -489,7 +489,7 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 			//calculate difference vector and adjust camera position
 			if(!(old_intersection===undefined||new_intersection===undefined)){	// can i project both vectors on the plane with positive t?
 				var difference = old_intersection.subtract(new_intersection);
-				if(difference.length()<2000){
+				if(difference.length()<10000){
 					this.camera.translate(difference);
 				}
 			}
@@ -790,7 +790,7 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
 			//calculate difference vector and adjust camera position
 			if(!(old_intersection===undefined||new_intersection===undefined)){	// can i project both vectors on the plane with positive t?
 				var difference = old_intersection.subtract(new_intersection);
-				if(difference.length()<400){
+				if(difference.length()<10000){
 					this.camera.translate(difference);
 				}
 			}

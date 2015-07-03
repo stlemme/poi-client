@@ -159,10 +159,10 @@
 				updateTiles();
 				updateTileStatistics();
 				var obj = evt.detail.count.objects;
-				//if (obj > (terrain.tileCount/4)){
+				if (obj > (terrain.tileCount/4)){
 					loader.style.display = "none";
 					//statistics.style.display = "inline"; //show stats after loader is no longer drawn
-				//}
+				}
 				//update statistics
 				updateStatistics();
 				

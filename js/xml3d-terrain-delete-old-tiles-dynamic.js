@@ -249,7 +249,7 @@ XML3D.Terrain.prototype.draw_tiles = function(tiles,layers){
 				//remove first node until empty
 				this.updatedtiles++;
 				this.reusedtiles++;
-				this.lodLayers[key].removeChild(this.lodLayers[key].childNodes[0]);
+				grp.removeChild(grp.children[0]);
 			}
 		
 		}

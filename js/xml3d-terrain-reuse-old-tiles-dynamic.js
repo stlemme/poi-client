@@ -167,7 +167,7 @@ XML3D.Terrain.prototype.draw_tiles = function(tiles,layers){
 			group_new=XML3D.createElement("group");
 			var scale=1/Math.pow(2,key);
 			//scale relative to tf_scale
-			group_new.setAttribute("scale", scale + " 1 " + scale);
+			group_new.setAttribute("style", "transform: scale(" + scale + ", 1, " + scale +")");
 			group_new.setAttribute("id", "Lod "+key);
 			this.ground.appendChild(group_new);
 			//remember we created this group
@@ -284,7 +284,7 @@ XML3D.Terrain.prototype.draw_tiles = function(tiles,layers){
 				//remove first node until empty
 				this.updatedtiles++;
 				this.reusedtiles++;
-				this.lodLayers[key].removeChild(this.lodLayers[key].childNodes[0]);
+				grp.removeChild(grp.children[0]);
 			}
 		
 		}
