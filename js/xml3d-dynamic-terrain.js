@@ -43,32 +43,15 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	var f2=this.camera.getRayDirection(-x_frustum,y_frustum);
 	var f3=this.camera.getRayDirection(-x_frustum,-y_frustum);
 	var f4=this.camera.getRayDirection(x_frustum,-y_frustum);
+	
+	//no intersection with xz-plane done since hight values can be negative!
 			
+	var p1=this.camera.position.add(f1.scale(this.far_plane));
+	var p2=this.camera.position.add(f2.scale(this.far_plane));
+	var p3=this.camera.position.add(f3.scale(this.far_plane));
+	var p4=this.camera.position.add(f4.scale(this.far_plane));
 			
-	//height values can be negative!
-	//intersection with xz plane can create holes!
-			
-	var p1=this.camera.position.add(f1.scale(this.far_plane));//=intersect_xz_plane(f1,camera.position,far_plane);
-	var p2=this.camera.position.add(f2.scale(this.far_plane));//=intersect_xz_plane(f2,camera.position,far_plane);
-	var p3=this.camera.position.add(f3.scale(this.far_plane));//=intersect_xz_plane(f3,camera.position,far_plane);
-	var p4=this.camera.position.add(f4.scale(this.far_plane));//=intersect_xz_plane(f4,camera.position,far_plane);
-			
-			
-			
-			/*
-			if(p1==undefined){
-				p1=camera.position.add(f1.scale(far_plane));
-			}
-			if(p2==undefined){	
-				p2=camera.position.add(f2.scale(far_plane));
-			}
-			if(p3==undefined){
-				p3=camera.position.add(f3.scale(far_plane));			
-			}
-			if(p4==undefined){	
-				p4=camera.position.add(f4.scale(far_plane));
-			}
-			*/
+
 			
 	//create bounds of view frustum projection
 			
@@ -116,18 +99,13 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	dynamicbbox.extend(p4_tile.x,p4_tile.y);
 	dynamicbbox.extend(camera_tile.x,camera_tile.y);
 
-	/*
-	XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-	OLD CODE
-	XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-	*/
+
+	
 	var min = this.geo.tile(this.bounds.north, this.bounds.west);
 	var max = this.geo.tile(this.bounds.south, this.bounds.east);
 	var z = this.geo.level;
 
 	//limit dynamic bounds to bbox
-	// dynamicbbox contains tile coordinates, not lat/lon
-	
 	min.x = Math.max(min.x,dynamicbbox.min.x);
 	min.y = Math.max(min.y,dynamicbbox.min.y);
 	
@@ -156,8 +134,6 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 		this.tileCount+=this.ground.children[i].children.length;
 	}
 	this.maxtileCount=Math.max(this.tileCount,this.maxtileCount);
-	//console.log(this.maxtileCount);
-	//console.log(this.tileCount);
 
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
 }
@@ -293,8 +269,6 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 		}
 		
 		
-		
-		
 		else{
 			/*
 			XXXXXXXXX
@@ -341,7 +315,6 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 					current_tiles.push(tile_key);
 					for(var i=0;i<this.layers.length;i++){
 						//create new tile
-						//console.log("new tile!");
 						var tile = XML3D.createElement("model");
 						tile.setAttribute("id", tile_key + this.layers[i]);
 						tile.setAttribute("src", tile_key + "#" + this.layers[i]);
