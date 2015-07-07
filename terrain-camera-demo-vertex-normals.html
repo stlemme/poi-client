@@ -12,7 +12,7 @@
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
 	<script type="text/javascript" src="js/xml3d-poi.js"></script>
 	<script type="text/javascript" src="js/xml3d-animation.js"></script>
-    <script type="text/javascript" src="js/xml3d-terrain-delete-old-tiles-new.js"></script>
+    <script type="text/javascript" src="js/xml3d-dynamic-terrain.js"></script>
     <script type="text/javascript" src="js/3d-map-tiles.js"></script>
 	<script type="text/javascript" src="js/2d-bbox.js"></script>
 	<script type="text/javascript" src="js/frustum.js"></script>
@@ -84,7 +84,7 @@
 				"lon": 7.041700,
 				"lat": 49.254104
 			},
-			"level": 11,
+			"level": 10,
 			
 			"api_tiles": global.api.ground_tiles['terrain2'],
 			//"api_tiles": global.api.ground_tiles['sb-local'],
@@ -101,17 +101,16 @@
 			*/
 			
 			"bbox": {
-				"west": 6.5,
-				"south": 48.75,
-				"east": 7.5,
-				"north": 49.75
+				"west": 0.5,
+				"south": 40.75,
+				"east": 15.5,
+				"north": 60.75
 			},
 			
 			"api_poi": global.api.poi
 		};
 		
-		var geo, terrain, pois;
-		var animator;
+		var geo, terrain;
 		var camController;
 		var chart;
 		
@@ -132,40 +131,7 @@
 			var ground_group = document.getElementById("ground");
 			var ground_tf_scale = document.getElementById("ground_tf_scale");
 			
-			terrain = new XML3D.Terrain(geo, ground_group, ground_tf_scale);
-			/*
-			geo.registerMoveCallback(function (pos) {
-				terrain.load(config.api_tiles, config.layers, config.bbox);
-			});
-			*/
-			
-			/*var pois_group = document.getElementById("pois");
-			pois = new XML3D.POI(geo, pois_group);
-			geo.registerMoveCallback(function (pos) {
-				pois.loadOverpass(config.bbox);
-			});
-			
-			animator = new XML3D.Animator();
-			animator.registerAnimation(pois);
-			*/
 			var xml3d = document.getElementById("myxml3dcanvas");
-			var loader = document.getElementById("loader");
-			var statistics = document.getElementById("statistics");
-			statistics.style.display = "none"; //do not show stats initially
-			xml3d.addEventListener('framedrawn', function( evt ) {
-				//update tiles
-				//rotate();
-				updateTiles();
-				updateTileStatistics();
-				var obj = evt.detail.count.objects;
-				if (obj > (terrain.tileCount/4)){
-					loader.style.display = "none";
-					//statistics.style.display = "inline"; //show stats after loader is no longer drawn
-				}
-				//update statistics
-				updateStatistics();
-				
-			}, false);
 			
 			camController = XML3D.Xml3dSceneController.controllers[0];
 			camController.detach();
@@ -175,206 +141,38 @@
 			camController.attach();
 			updateViewportSize(xml3d);
 			
-
 			
+			terrain = new XML3D.DynamicTerrain(geo, ground_group, ground_tf_scale,camController.camera, config.bbox, config.layers, config.api_tiles);
+			//reuse or delete old tiles?
+			terrain.mode=terrain.DELETE_OLD_TILES;
+			terrain.far_plane=60000;
+			
+			var loader = document.getElementById("loader");
+
+			xml3d.addEventListener('framedrawn', function( evt ) {
+				//rotate();
+				updateTiles();
+				updateTileStatistics();
+				var obj = evt.detail.count.objects;
+				if (obj > (terrain.tileCount/4)){
+					loader.style.display = "none";
+				}	
+			}, false);
 		}
 		
 		window.addEventListener('load', onload, false);
 		
 		function updateViewportSize(elem) {
-			camController.setResolution(elem.clientWidth,elem.clientHeight);
+			camController.camera.setResolution(elem.clientWidth,elem.clientHeight);
 			
 			var t="Resolution: "+elem.clientWidth+"*"+elem.clientHeight;
-			document.getElementById("resolution").innerText = t;
 		}
 		
-		//statistics-update
-
-        function updateStatistics() {
-			//direction
-			var t_direction="Direction: ("+camController.camera.direction.x.toFixed(3)+","+camController.camera.direction.y.toFixed(3)+","+camController.camera.direction.z.toFixed(3)+")";
-			document.getElementById("direction").innerText = t_direction;
-			//position
-			var t_position="Position: ("+camController.camera.position.x.toFixed(3)+","+camController.camera.position.y.toFixed(3)+","+camController.camera.position.z.toFixed(3)+")";
-			document.getElementById("position").innerText = t_position;
-			//fov
-			var t_fov_v="Field of view (vertical): "+(camController.camera.fieldOfView*360/3.14159).toFixed(0)+"°";
-			document.getElementById("fov_v").innerText = t_fov_v;
-				
-			var angle=Math.atan(Math.tan(camController.camera.fieldOfView)*camController.width/camController.height);
-			var t_fov_h="Field of view (horizontal): "+(angle*360/3.14159).toFixed(0)+"°";
-			document.getElementById("fov_h").innerText = t_fov_h;
-				
-				
-			//view frustum
-				
-			var ratio=Math.tan(camController.camera.fieldOfView/2);
-
-			var x_frustum=(camController.width)/camController.height*ratio;
-			var y_frustum=(camController.height)/camController.height*ratio;
-			
-			var f1=camController.camera.getRayDirection(x_frustum,y_frustum).normalize();
-			var f2=camController.camera.getRayDirection(-x_frustum,y_frustum).normalize();
-			var f3=camController.camera.getRayDirection(-x_frustum,-y_frustum).normalize();
-			var f4=camController.camera.getRayDirection(x_frustum,-y_frustum).normalize();
-				
-			var t_f1="("+f1.x.toFixed(3)+","+f1.y.toFixed(3)+","+f1.z.toFixed(3)+")";
-			var t_f2="("+f2.x.toFixed(3)+","+f2.y.toFixed(3)+","+f2.z.toFixed(3)+")";
-			var t_f3="("+f3.x.toFixed(3)+","+f3.y.toFixed(3)+","+f3.z.toFixed(3)+")";
-			var t_f4="("+f4.x.toFixed(3)+","+f4.y.toFixed(3)+","+f4.z.toFixed(3)+")";
-		
-			document.getElementById("frustum_1").innerText = t_f1;
-			document.getElementById("frustum_2").innerText = t_f2;
-			document.getElementById("frustum_3").innerText = t_f3;
-			document.getElementById("frustum_4").innerText = t_f4;
-			
-			//calculate intersections with xz_plane
-			var p1=intersect_xz_plane(f1,camController.camera.position);
-			var p2=intersect_xz_plane(f2,camController.camera.position);
-			var p3=intersect_xz_plane(f3,camController.camera.position);
-			var p4=intersect_xz_plane(f4,camController.camera.position);
-				
-			if(p1!=undefined){
-				var t_p1="("+p1.x.toFixed(3)+","+p1.y.toFixed(3)+","+p1.z.toFixed(3)+")";
-				document.getElementById("intersection_1").innerText = t_p1;
-			}
-			else{
-				document.getElementById("intersection_1").innerText = "Intersection with xz-plane not possible";
-			}
-			if(p2!=undefined){
-				var t_p2="("+p2.x.toFixed(3)+","+p2.y.toFixed(3)+","+p2.z.toFixed(3)+")";
-				document.getElementById("intersection_2").innerText = t_p2;
-			}
-			else{
-				document.getElementById("intersection_2").innerText = "Intersection with xz-plane not possible";
-			}
-			if(p3!=undefined){
-				var t_p3="("+p3.x.toFixed(3)+","+p3.y.toFixed(3)+","+p3.z.toFixed(3)+")";
-				document.getElementById("intersection_3").innerText = t_p3;
-			}
-			else{
-				document.getElementById("intersection_3").innerText = "Intersection with xz-plane not possible";
-			}
-			if(p4!=undefined){
-				var t_p4="("+p4.x.toFixed(3)+","+p4.y.toFixed(3)+","+p4.z.toFixed(3)+")";
-				document.getElementById("intersection_4").innerText = t_p4;
-			}
-			else{
-				document.getElementById("intersection_4").innerText = "Intersection with xz-plane not possible";
-			}
-			//view frustum normals
-			var n1=f2.cross(f1).normalize();
-			var n2=f3.cross(f2).normalize();
-			var n3=f4.cross(f3).normalize();
-			var n4=f1.cross(f4).normalize();
-			
-			var t_n1="("+n1.x.toFixed(3)+","+n1.y.toFixed(3)+","+n1.z.toFixed(3)+")";
-			var t_n2="("+n2.x.toFixed(3)+","+n2.y.toFixed(3)+","+n2.z.toFixed(3)+")";
-			var t_n3="("+n3.x.toFixed(3)+","+n3.y.toFixed(3)+","+n3.z.toFixed(3)+")";
-			var t_n4="("+n4.x.toFixed(3)+","+n4.y.toFixed(3)+","+n4.z.toFixed(3)+")";
-			
-			document.getElementById("normal_1").innerText = t_n1;
-			document.getElementById("normal_2").innerText = t_n2;
-			document.getElementById("normal_3").innerText = t_n3;
-			document.getElementById("normal_4").innerText = t_n4;
-
-            }
-		
-		
-			function intersect_xz_plane(vector, origin,max_t){
-				if(vector.y>=0||origin.y<=0){
-					return;
-				}
-				var t=-(origin.y/vector.y);
-				if(max_t!=undefined&&t>max_t){
-				 return;
-				}
-				var projected=origin.add(vector.scale(t));
-				return projected;
-			}
-			
-			
-			function updateTiles() {	
-			//view frustum
-				
-			var ratio=Math.tan(camController.camera.fieldOfView/2);
-
-			var x_frustum=(camController.width)/camController.height*ratio;
-			var y_frustum=(camController.height)/camController.height*ratio;
-			
-			var f1=camController.camera.getRayDirection(x_frustum,y_frustum);
-			var f2=camController.camera.getRayDirection(-x_frustum,y_frustum);
-			var f3=camController.camera.getRayDirection(-x_frustum,-y_frustum);
-			var f4=camController.camera.getRayDirection(x_frustum,-y_frustum);
-			
-			var far_plane=30000; // prevents excessive tile loading
-			
-			//height values can be negative!
-			//intersection with xz plane can create holes!
-			
-			var p1=camController.camera.position.add(f1.scale(far_plane));//=intersect_xz_plane(f1,camController.camera.position,far_plane);
-			var p2=camController.camera.position.add(f2.scale(far_plane));//=intersect_xz_plane(f2,camController.camera.position,far_plane);
-			var p3=camController.camera.position.add(f3.scale(far_plane));//=intersect_xz_plane(f3,camController.camera.position,far_plane);
-			var p4=camController.camera.position.add(f4.scale(far_plane));//=intersect_xz_plane(f4,camController.camera.position,far_plane);
-			
-			
-			
-			/*
-			if(p1==undefined){
-				p1=camController.camera.position.add(f1.scale(far_plane));
-			}
-			if(p2==undefined){	
-				p2=camController.camera.position.add(f2.scale(far_plane));
-			}
-			if(p3==undefined){
-				p3=camController.camera.position.add(f3.scale(far_plane));			
-			}
-			if(p4==undefined){	
-				p4=camController.camera.position.add(f4.scale(far_plane));
-			}
-			*/
-			
-			//create bounds of view frustum projection
-			
-			var p1_tile=geo.backproject(p1.x,p1.z);
-			var p1_proj=geo.backproject(p1.x,p1.z);
-			p1_tile.x=Math.floor(p1_tile.x);
-			p1_tile.y=Math.floor(p1_tile.y);
-			
-			var p2_tile=geo.backproject(p2.x,p2.z);
-			var p2_proj=geo.backproject(p2.x,p2.z);
-			p2_tile.x=Math.floor(p2_tile.x);
-			p2_tile.y=Math.floor(p2_tile.y);
-			
-			var p3_tile=geo.backproject(p3.x,p3.z);
-			var p3_proj=geo.backproject(p3.x,p3.z);
-			p3_tile.x=Math.floor(p3_tile.x);
-			p3_tile.y=Math.floor(p3_tile.y);
-			
-			var p4_tile=geo.backproject(p4.x,p4.z);
-			var p4_proj=geo.backproject(p4.x,p4.z);
-			p4_tile.x=Math.floor(p4_tile.x);
-			p4_tile.y=Math.floor(p4_tile.y);
-			
-			var camera_tile=geo.backproject(camController.camera.position.x,camController.camera.position.z);
-			var camera_proj=geo.backproject(camController.camera.position.x,camController.camera.position.z);
-			camera_tile.x=Math.floor(camera_tile.x);
-			camera_tile.y=Math.floor(camera_tile.y);
-			
-			var projections=new Array(p1_proj,p2_proj,p3_proj,p4_proj);
-			var frustum=new XML3D.Frustum(camera_proj,projections);
-			
-			var bounds=new XML3D.Bbox(p1_tile.x,p1_tile.y,p1_tile.x,p1_tile.y);
-			bounds.extend(p2_tile.x,p2_tile.y);
-			bounds.extend(p3_tile.x,p3_tile.y);
-			bounds.extend(p4_tile.x,p4_tile.y);
-			bounds.extend(camera_tile.x,camera_tile.y);
+		function updateTiles() {	
 			//create tiles
 			geo.registerMoveCallback(function (pos) {
-				terrain.dynamicLoad(config.api_tiles, config.layers, config.bbox, bounds,frustum);
+				terrain.render_tiles();
 			});
-			
-			
 		}
 		
 		function rotate(){
@@ -413,7 +211,6 @@
 			
 			<group transform="#geo_tf">
 				<group id="ground" transform="#ground_tf_scale"></group>
-				<group id="pois"></group>
 			</group>
 			
 			<!-- Light and View -->
@@ -430,52 +227,7 @@
 		</xml3d>
 		<div id="loader"><img src="img/ajax_loader_gray_512.gif"/></div>
 		<div id="logo"><img src="img/xml3dlogo.png"/></div>
-		
-		<div id="statistics" class="statistics">
-			<span>Camera statistics:</span>
-			</br>
-			<span id="resolution"></span>
-			</br>
-			<span id="fov_v"></span>
-			</br>
-			<span id="fov_h"></span>
-			</br>
-			<span id="position"></span>
-			</br>
-			<span id="direction"></span>
-			</br>
-			<span>View frustum directions:</span>
-			</br>
-			<span id="frustum_1"></span>
-			</br>
-			<span id="frustum_2"></span>
-			</br>
-			<span id="frustum_3"></span>
-			</br>
-			<span id="frustum_4"></span>
-			</br>
-			<span>View frustum xz-plane intersections:</span>
-			</br>
-			<span id="intersection_1"></span>
-			</br>
-			<span id="intersection_2"></span>
-			</br>
-			<span id="intersection_3"></span>
-			</br>
-			<span id="intersection_4"></span>
-			</br>
-			<span>View frustum normals:</span>
-			</br>
-			<span id="normal_1"></span>
-			</br>
-			<span id="normal_2"></span>
-			</br>
-			<span id="normal_3"></span>
-			</br>
-			<span id="normal_4"></span>
-			
-		</div>
-		
+
 		<canvas id="charts" style="width: 100%; height: 40%;"></canvas>
 		
 		<div id="attribution" class="attribution">

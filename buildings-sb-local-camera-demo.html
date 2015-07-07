@@ -182,7 +182,7 @@
 		window.addEventListener('load', onload, false);
 		
 		function updateViewportSize(elem) {
-			camController.setResolution(elem.clientWidth,elem.clientHeight);
+			camController.camera.setResolution(elem.clientWidth,elem.clientHeight);
 			
 			var t="Resolution: "+elem.clientWidth+"*"+elem.clientHeight;
 			document.getElementById("resolution").innerText = t;
@@ -210,8 +210,8 @@
 				
 			var ratio=Math.tan(camController.camera.fieldOfView/2);
 
-			var x_frustum=(camController.width)/camController.height*ratio;
-			var y_frustum=(camController.height)/camController.height*ratio;
+			var x_frustum=(camController.camera.width)/camController.camera.height*ratio;
+			var y_frustum=(camController.camera.height)/camController.camera.height*ratio;
 			
 			var f1=camController.camera.getRayDirection(x_frustum,y_frustum).normalize();
 			var f2=camController.camera.getRayDirection(-x_frustum,y_frustum).normalize();
@@ -299,8 +299,8 @@
 				
 			var ratio=Math.tan(camController.camera.fieldOfView/2);
 
-			var x_frustum=(camController.width)/camController.height*ratio;
-			var y_frustum=(camController.height)/camController.height*ratio;
+			var x_frustum=(camController.camera.width)/camController.camera.height*ratio;
+			var y_frustum=(camController.camera.height)/camController.camera.height*ratio;
 			
 			var f1=camController.camera.getRayDirection(x_frustum,y_frustum);
 			var f2=camController.camera.getRayDirection(-x_frustum,y_frustum);

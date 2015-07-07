@@ -41,6 +41,8 @@ XML3D.util.Timer.prototype.start = function() {
 
 
 XML3D.Camera = function(view) {
+	this.width=800;
+	this.height=600;
     this.view = view;
 };
 
@@ -71,6 +73,11 @@ XML3D.Camera.prototype.__defineGetter__("upVector", function() {
 XML3D.Camera.prototype.__defineGetter__("fieldOfView", function() {
     return this.view.fieldOfView;
 });
+
+XML3D.Camera.prototype.setResolution=function(width,height){
+	this.width=width;
+	this.height=height;
+}
 
 XML3D.Camera.prototype.rotateAroundPoint = function(q0, p0) {
     //xml3d.debug.logError("Orientation: " + this.orientation.multiply(q0).normalize());
@@ -137,8 +144,6 @@ XML3D.Xml3dSceneController = function(xml3dElement) {
     }
 	
 	this.useRaycasting=false;
-	this.width=800;
-	this.height=600;
     this.camera = new XML3D.Camera(view);
     this.timer = new XML3D.util.Timer();
     this.prevPos = {x: -1, y: -1};
@@ -251,10 +256,7 @@ XML3D.Xml3dSceneController.prototype.detach = function() {
 XML3D.Xml3dSceneController.prototype.__defineGetter__("width", function() { return this.canvas.width;});
 XML3D.Xml3dSceneController.prototype.__defineGetter__("height", function() { return this.canvas.height;});
 */
-XML3D.Xml3dSceneController.prototype.setResolution=function(width,height){
-	this.width=width;
-	this.height=height;
-}
+
 
 
 XML3D.Xml3dSceneController.prototype.getView = function() {
@@ -335,8 +337,8 @@ XML3D.Xml3dSceneController.prototype.ORBIT = 6; //orbit like camera-movement for
 XML3D.Xml3dSceneController.prototype.getDirectionThroughPixel = function(x,y){
 	var ratio=Math.tan(this.camera.fieldOfView/2);
 	//calculate length of spanning vectors in x and y direction
-	var x_span=(x-this.width / 2)*2/this.height*ratio;
-	var y_span=(y-this.height / 2)*2/this.height*ratio;
+	var x_span=(x-this.camera.width / 2)*2/this.camera.height*ratio;
+	var y_span=(y-this.camera.height / 2)*2/this.camera.height*ratio;
 			
 	//calculate ray directions through camera
 	var new_vector=this.camera.getRayDirection(x_span,y_span);
@@ -432,20 +434,20 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
         return;
     switch(this.action) {
         case(this.TRANSLATE):
-            var f = 2.0* Math.tan(this.camera.fieldOfView/2.0) / this.height;
+            var f = 2.0* Math.tan(this.camera.fieldOfView/2.0) / this.camera.height;
             var dx = f*(ev.pageX - this.prevPos.x);
             var dy = f*(ev.pageY - this.prevPos.y);
             var trans = new window.XML3DVec3(-dx, dy, 0.0);
             this.camera.translate(this.camera.inverseTransformOf(trans));
             break;
         case(this.DOLLY):
-            var dy = this.zoomSpeed * (ev.pageY - this.prevPos.y) / this.height;
+            var dy = this.zoomSpeed * (ev.pageY - this.prevPos.y) / this.camera.height;
             this.camera.translate(this.camera.inverseTransformOf(new window.XML3DVec3(0, 0, dy)));
             break;
         case(this.ROTATE):
 
-            var dx = -this.rotateSpeed * (ev.pageX - this.prevPos.x) * 2.0 * Math.PI / this.width;
-            var dy = -this.rotateSpeed * (ev.pageY - this.prevPos.y) * 2.0 * Math.PI / this.height;
+            var dx = -this.rotateSpeed * (ev.pageX - this.prevPos.x) * 2.0 * Math.PI / this.camera.width;
+            var dy = -this.rotateSpeed * (ev.pageY - this.prevPos.y) * 2.0 * Math.PI / this.camera.height;
 
             var mx = new window.XML3DRotation(new window.XML3DVec3(0,1,0), dx);
             var my = new window.XML3DRotation(new window.XML3DVec3(1,0,0), dy);
@@ -453,8 +455,8 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
             this.camera.rotateAroundPoint(mx.multiply(my), this.revolveAroundPoint);
             break;
         case(this.LOOKAROUND):
-            var dx = -this.rotateSpeed * (ev.pageX - this.prevPos.x) * 2.0 * Math.PI / this.width;
-            var dy = this.rotateSpeed * (ev.pageY - this.prevPos.y) * 2.0 * Math.PI / this.height;
+            var dx = -this.rotateSpeed * (ev.pageX - this.prevPos.x) * 2.0 * Math.PI / this.camera.width;
+            var dy = this.rotateSpeed * (ev.pageY - this.prevPos.y) * 2.0 * Math.PI / this.camera.height;
             var cross = this.upVector.cross(this.camera.direction);
 
             var mx = new window.XML3DRotation( this.upVector , dx);
@@ -500,8 +502,8 @@ XML3D.Xml3dSceneController.prototype.mouseMoveEvent = function(event, camera) {
 			case(this.ORBIT): //new code to handle panning update
 			if(this.rotationCenter!==undefined){
 			
-            var dx = -this.rotateSpeed * (ev.pageX - this.prevPos.x) * 2.0 * Math.PI / this.width;
-            var dy = -this.rotateSpeed * (ev.pageY - this.prevPos.y) * 2.0 * Math.PI / this.height;
+            var dx = -this.rotateSpeed * (ev.pageX - this.prevPos.x) * 2.0 * Math.PI / this.camera.width;
+            var dy = -this.rotateSpeed * (ev.pageY - this.prevPos.y) * 2.0 * Math.PI / this.camera.height;
 
             var mx = new window.XML3DRotation(new window.XML3DVec3(0,1,0), dx);
             var my = new window.XML3DRotation((mx.multiply(this.camera.orientation)).rotateVec3(new window.XML3DVec3(1,0,0)), dy);
@@ -701,7 +703,7 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
     switch(this.action) {
         case(this.TRANSLATE):
             if (this.touchTranslateMode == "threefinger") {
-                var f = 2.0* Math.tan(this.camera.fieldOfView/2.0) / this.height;
+                var f = 2.0* Math.tan(this.camera.fieldOfView/2.0) / this.camera.height;
                 var dx = f*(ev.touches[0].pageX - this.prevTouchPositions[0].x);
                 var dy = f*(ev.touches[0].pageY - this.prevTouchPositions[0].y);
                 var trans = new window.XML3DVec3(-dx*this.zoomSpeed, dy*this.zoomSpeed, 0.0);
@@ -721,7 +723,7 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
                 if (prevMidpoint !== undefined) {
                     var curMidpoint = {x:(ev.touches[0].pageX + ev.touches[1].pageX) / 2 ,
                                        y:(ev.touches[0].pageY + ev.touches[1].pageY) / 2 }
-                    var f = 2.0* Math.tan(this.camera.fieldOfView/2.0) / this.height;
+                    var f = 2.0* Math.tan(this.camera.fieldOfView/2.0) / this.camera.height;
                     var dx = f*(curMidpoint.x - prevMidpoint.x);
                     var dy = f*(curMidpoint.y - prevMidpoint.y);
                     var trans = new window.XML3DVec3(-dx*this.zoomSpeed, dy*this.zoomSpeed, 0.0);
@@ -733,7 +735,7 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
                 var dv = {x: ev.touches[0].pageX - ev.touches[1].pageX, y: ev.touches[0].pageY - ev.touches[1].pageY};
                 var currLength = Math.sqrt(dv.x*dv.x + dv.y*dv.y);
 
-                var dy = this.zoomSpeed * (currLength - this.prevZoomVectorLength) / this.height;
+                var dy = this.zoomSpeed * (currLength - this.prevZoomVectorLength) / this.camera.height;
                 this.camera.translate(this.camera.inverseTransformOf(new window.XML3DVec3(0, 0, -dy)));
 
                 this.prevZoomVectorLength = currLength;
@@ -744,8 +746,8 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
 
             break;
         case(this.ROTATE):
-            var dx = -this.rotateSpeed * (ev.touches[0].pageX - this.prevTouchPositions[0].x) * 2.0 * Math.PI / this.width;
-            var dy = -this.rotateSpeed * (ev.touches[0].pageY - this.prevTouchPositions[0].y) * 2.0 * Math.PI / this.height;
+            var dx = -this.rotateSpeed * (ev.touches[0].pageX - this.prevTouchPositions[0].x) * 2.0 * Math.PI / this.camera.width;
+            var dy = -this.rotateSpeed * (ev.touches[0].pageY - this.prevTouchPositions[0].y) * 2.0 * Math.PI / this.camera.height;
 
             var mx = new window.XML3DRotation(new window.XML3DVec3(0,1,0), dx);
             var my = new window.XML3DRotation(new window.XML3DVec3(1,0,0), dy);
@@ -753,8 +755,8 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
             this.camera.rotateAroundPoint(mx.multiply(my), this.revolveAroundPoint);
             break;
         case(this.LOOKAROUND):
-            var dx = -this.rotateSpeed * (ev.touches[0].pageX - this.prevTouchPositions[0].x) * 2.0 * Math.PI / this.width;
-            var dy = this.rotateSpeed * (ev.touches[0].pageY - this.prevTouchPositions[0].y) * 2.0 * Math.PI / this.height;
+            var dx = -this.rotateSpeed * (ev.touches[0].pageX - this.prevTouchPositions[0].x) * 2.0 * Math.PI / this.camera.width;
+            var dy = this.rotateSpeed * (ev.touches[0].pageY - this.prevTouchPositions[0].y) * 2.0 * Math.PI / this.camera.height;
             var cross = this.upVector.cross(this.camera.direction);
 
             var mx = new window.XML3DRotation( this.upVector , dx);
@@ -815,8 +817,8 @@ XML3D.Xml3dSceneController.prototype.touchMoveEvent = function(event, camera) {
 			
 			if(new_intersection!=undefined){
 			
-            var dx = -this.rotateSpeed * (ev.touches[1].pageX - this.prevTouchPositions[1].x) * 2.0 * Math.PI / this.width;
-            var dy = -this.rotateSpeed * (ev.touches[1].pageY - this.prevTouchPositions[1].y) * 2.0 * Math.PI / this.height;
+            var dx = -this.rotateSpeed * (ev.touches[1].pageX - this.prevTouchPositions[1].x) * 2.0 * Math.PI / this.camera.width;
+            var dy = -this.rotateSpeed * (ev.touches[1].pageY - this.prevTouchPositions[1].y) * 2.0 * Math.PI / this.camera.height;
 
             var mx = new window.XML3DRotation(new window.XML3DVec3(0,1,0), dx);
             var my = new window.XML3DRotation((mx.multiply(this.camera.orientation)).rotateVec3(new window.XML3DVec3(1,0,0)), dy);

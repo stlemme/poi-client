@@ -98,7 +98,7 @@
 		window.addEventListener('load', onload, false);
 		
 		function updateViewportSize(elem) {
-			camController.setResolution(elem.clientWidth,elem.clientHeight);
+			camController.camera.setResolution(elem.clientWidth,elem.clientHeight);
 			
 			var t="Resolution: "+elem.clientWidth+"*"+elem.clientHeight;
 			document.getElementById("resolution").innerText = t;
@@ -126,8 +126,8 @@
 				
 			var ratio=Math.tan(camController.camera.fieldOfView/2);
 
-			var x_frustum=(camController.width)/camController.height*ratio;
-			var y_frustum=(camController.height)/camController.height*ratio;
+			var x_frustum=(camController.camera.width)/camController.camera.height*ratio;
+			var y_frustum=(camController.camera.height)/camController.camera.height*ratio;
 			
 			var f1=camController.camera.getRayDirection(x_frustum,y_frustum).normalize();
 			var f2=camController.camera.getRayDirection(-x_frustum,y_frustum).normalize();
@@ -197,7 +197,7 @@
             }
 		
 		
-			function intersect_xz_plane(vector, origin){
+			function intersect_xz_plane(vector, origin,max_t){
 				if(vector.y>=0||origin.y<=0){
 					return;
 				}
@@ -215,15 +215,16 @@
 				
 			var ratio=Math.tan(camController.camera.fieldOfView/2);
 
-			var x_frustum=(camController.width)/camController.height*ratio;
-			var y_frustum=(camController.height)/camController.height*ratio;
+			var x_frustum=(camController.camera.width)/camController.camera.height*ratio;
+			var y_frustum=(camController.camera.height)/camController.camera.height*ratio;
 			
 			var f1=camController.camera.getRayDirection(x_frustum,y_frustum);
 			var f2=camController.camera.getRayDirection(-x_frustum,y_frustum);
 			var f3=camController.camera.getRayDirection(-x_frustum,-y_frustum);
 			var f4=camController.camera.getRayDirection(x_frustum,-y_frustum);
 			
-			var far_plane=5000; // prevents excessive tile loading
+			var far_plane=3000; // prevents excessive tile loading
+			
 			//calculate intersections with xz_plane
 			var p1=intersect_xz_plane(f1,camController.camera.position,far_plane);
 			var p2=intersect_xz_plane(f2,camController.camera.position,far_plane);
@@ -244,8 +245,6 @@
 			if(p4==undefined){	
 				p4=camController.camera.position.add(f4.scale(far_plane));
 			}
-			
-			
 			//create bounds of view frustum projection
 			
 			var p1_tile=geo.backproject(p1.x,p1.z);
@@ -285,6 +284,7 @@
 			geo.registerMoveCallback(function (pos) {
 				terrain.dynamicLoad(config.api_tiles, config.layers, config.bbox, bounds,frustum);
 			});
+			
 			
 		}
 		
