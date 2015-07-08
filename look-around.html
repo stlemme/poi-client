@@ -78,8 +78,10 @@
 				pois.loadOverpass(bboxAroundPosition(pos));
 			});
 			
-			geo.goToMyPosition(function () {
-				geo.setOrigin(config.origin);
+			geo.goToMyPosition({
+				'error': function () {
+					geo.setOrigin(config.origin);
+				}
 			});
 
 			animator = new XML3D.Animator();
@@ -126,7 +128,7 @@
 			</group>
 
 		</xml3d>
-		<div id="loader"><img src="img/ajax_loader_gray_512.gif"/></div>
+		<div id="loader" class="upperright_loader"><img src="img/ajax_loader_gray_512.gif"/></div>
 		<div id="logo"><img src="img/xml3dlogo.png"/></div>
 		<div id="attribution" class="attribution">
 			Data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors

@@ -19,6 +19,8 @@ XML3D.Terrain.prototype.load = function( api_tiles, layers, bbox ) {
 	
 	var layers = layers || ["all"];
 	
+	var tilesAdded = 0;
+	
 	for (var x = min.x; x <= max.x; x++)
 	{
 		for (var y = min.y; y <= max.y; y++)
@@ -26,11 +28,20 @@ XML3D.Terrain.prototype.load = function( api_tiles, layers, bbox ) {
 			var tile_uri = api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
 			var tile_id = "tile_" + z + "_" + x + "_" + y + '_';
 			layers.forEach(function(layer) { 
-				var tile = XML3D.createElement("model");
-				tile.setAttribute("id", tile_id + layer);
+				var model_id = tile_id + layer;
+
+				// check if tile is already a child of ground - then skip
+				var tile = this.ground.querySelector("#"+model_id);
+				if (tile !== null) return;
+
+				tile = XML3D.createElement("model");
+				tile.setAttribute("id", model_id);
 				tile.setAttribute("src", tile_uri + "#" + layer);
 				tile.setAttribute("transform", tile_uri + "#tf");
+
 				this.ground.appendChild(tile);
+
+				tilesAdded++;
 			});
 		}
 	}
@@ -38,6 +49,7 @@ XML3D.Terrain.prototype.load = function( api_tiles, layers, bbox ) {
 	this.tileCount = (max.x-min.x+1)*(max.y-min.y+1);
 
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
+	console.log("tiles added: " + tilesAdded);
 }
 
 

@@ -8,6 +8,11 @@ html, body, #myxml3d {
 	padding: 0px;
 }
 
+.transmusicales {
+	background: #d1e8ff;
+	background: linear-gradient(to top, #d1e8ff 0%,#8bbced 100%);
+}
+
 div#logo {
     position: absolute;
 	top: 0px;
@@ -20,18 +25,35 @@ div#logo {
 }
 
 div#loader {
-    position: absolute;
-	top: 20px;
-	right: 20px;
+	position: absolute;
 	display: block;
-    width: 200;
-    height: 200;
+	border: 0px;
 	z-index: 2;
 }
 
-div#loader img {
+div.upperright_loader {
+	top: 20px;
+	right: 20px;
 	width: 200px;
 	height: 200px;
+}
+
+div.centered_loader {
+	width: 1px;
+	height: 1px;
+	top: 50%;
+	left: 50%;
+}
+
+div#loader img {
+	position: relative;
+	width: 200px;
+	height: 200px;
+}
+
+div.centered_loader img {
+	top: -100px;
+	left: -100px;
 	text-align: center;
 }
 

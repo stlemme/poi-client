@@ -1,0 +1,39 @@
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+<defs>
+<transform translation="259617 0 182121" id="tf"/>
+</defs>
+<asset id="plane">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_surface" type="triangles">
+<data src="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#mesh_ground"/>
+<texture name="diffuseTexture">
+<img src="182121-dbbe576384973885269917be098a56c9dba3ff8a.png"/>
+</texture>
+</assetmesh>
+</asset>
+<asset id="buildings">
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.23767466665595 1.0183619518066 0.31486151111312 1.0423306617304 0.40224284442957 0.769958656776 0.32651235556114 0.74598988867365 0.23767466665595 1.0183619518066</float2>
+<float name="height">
+17.325372866972</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.49981866666349 0.29276130977087 0.55370382222463 0.31019321206259 0.57118008891121 0.25571850844426 0.51729493332095 0.23828659768333 0.49981866666349 0.29276130977087</float2>
+<float name="height">
+11.417685505663</float>
+</data>
+</assetmesh>
+<assetmesh shader="../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#shader_building" type="triangles">
+<data compute="dataflow['../../shared/basic-6a80933fd1de8af147fc588b3288caf16a53cb1c.xml#dataflow_extrude']">
+<float2 name="contour">
+0.15320604442968 0.90941320589627 0.1910712889221 0.79174844146473 0.11388444446493 0.767779678019 0.076019200030714 0.88326549116755 0.15320604442968 0.90941320589627</float2>
+<float name="height">
+10.244223415034</float>
+</data>
+</assetmesh>
+</asset>
+</xml3d>

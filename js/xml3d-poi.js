@@ -2,11 +2,12 @@ var XML3D = XML3D || {};
 	
 (function() {
 
-XML3D.POI = function( geo, group, scale )
+XML3D.POI = function( geo, group, scale, height )
 {
 	this.group = group || null;
 	this.geo = geo || null;
 	this.scale = scale || 0.6;
+	this.height = height || 20;
 	
 	this.idGen = 0;
 	
@@ -30,7 +31,10 @@ XML3D.POI = function( geo, group, scale )
 		"merchandising": "asset_tramus_poi",
 		"bar": "asset_tramus_poi",
 		"stage": "asset_tramus_poi",
-		"shuttle": "asset_tramus_poi"
+		"shuttle": "asset_tramus_poi",
+		"wc" : "asset_tramus_poi",
+		"wcWomen" : "asset_tramus_poi",
+		"wcMen" : "asset_tramus_poi"
 	};
 	
 	for (var typeName in this.types)
@@ -125,7 +129,8 @@ XML3D.POI.prototype.addPOI = function ( poi_id, poi_data )
 	
 	var t = XML3D.createElement("transform");
 	t.setAttribute("id", "poi_tf_" + poi_id);
-	t.setAttribute("translation", coord.x + " 20 " + coord.y);
+	t.setAttribute("translation", coord.x + " " + this.height + " " + coord.y);
+	// t.setAttribute("translation", this.geo.xtile(loc.longitude) + " 20 " + this.geo.ytile(loc.latitude));
 	t.setAttribute("rotation", "0 1 0 " + (seed % Math.PI));
 	
 	this.group.appendChild(t);
