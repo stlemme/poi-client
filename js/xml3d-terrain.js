@@ -17,7 +17,7 @@ XML3D.Terrain.prototype.load = function( api_tiles, layers, bbox ) {
 	var max = this.geo.tile(bbox.south, bbox.east);
 	var z = this.geo.level;
 	
-	var layers = layers || ["plane"];
+	var layers = layers || ["all"];
 	
 	for (var x = min.x; x <= max.x; x++)
 	{

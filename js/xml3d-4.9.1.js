@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-@version: DEVELOPMENT SNAPSHOT (25.03.2015 16:01:16 GMT+0100)
+@version: 4.9.1
 **/
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
@@ -1289,6 +1289,29 @@ vec3.forEach = (function() {
         return a;
     };
 })();
+
+/**
+ * Get the angle between two 3D vectors
+ * @param {vec3} a The first operand
+ * @param {vec3} b The second operand
+ * @returns {Number} The angle in radians
+ */
+vec3.angle = function(a, b) {
+   
+    var tempA = vec3.fromValues(a[0], a[1], a[2]);
+    var tempB = vec3.fromValues(b[0], b[1], b[2]);
+ 
+    vec3.normalize(tempA, tempA);
+    vec3.normalize(tempB, tempB);
+ 
+    var cosine = vec3.dot(tempA, tempB);
+
+    if(cosine > 1.0){
+        return 0;
+    } else {
+        return Math.acos(cosine);
+    }     
+};
 
 /**
  * Returns a string representation of a vector
@@ -4320,69 +4343,39 @@ if(typeof(exports) !== 'undefined') {
 // shim for using process in browser
 
 var process = module.exports = {};
+var queue = [];
+var draining = false;
 
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canMutationObserver = typeof window !== 'undefined'
-    && window.MutationObserver;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
+function drainQueue() {
+    if (draining) {
+        return;
     }
-
-    var queue = [];
-
-    if (canMutationObserver) {
-        var hiddenDiv = document.createElement("div");
-        var observer = new MutationObserver(function () {
-            var queueList = queue.slice();
-            queue.length = 0;
-            queueList.forEach(function (fn) {
-                fn();
-            });
-        });
-
-        observer.observe(hiddenDiv, { attributes: true });
-
-        return function nextTick(fn) {
-            if (!queue.length) {
-                hiddenDiv.setAttribute('yes', 'no');
-            }
-            queue.push(fn);
-        };
+    draining = true;
+    var currentQueue;
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        var i = -1;
+        while (++i < len) {
+            currentQueue[i]();
+        }
+        len = queue.length;
     }
-
-    if (canPost) {
-        window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
+    draining = false;
+}
+process.nextTick = function (fun) {
+    queue.push(fun);
+    if (!draining) {
+        setTimeout(drainQueue, 0);
     }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
+};
 
 process.title = 'browser';
 process.browser = true;
 process.env = {};
 process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
 
 function noop() {}
 
@@ -4403,6 +4396,7 @@ process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
+process.umask = function() { return 0; };
 
 },{}],3:[function(require,module,exports){
 module.exports = require( './lib/' );
@@ -5776,6 +5770,10 @@ XML3DFormatHandler.prototype.isFormatSupported = function (response, responseTyp
     var xml3ds = [];
     if (response instanceof XMLDocument) {
         xml3ds = response.getElementsByTagName("xml3d");
+        if (!xml3ds.length) {
+            // Also check cases where the XML3D element may have been fitted with a NS prefix (eg. ns1:xml3d)
+            xml3ds = response.getElementsByTagNameNS(XML3D.xml3dNS, "xml3d");
+        }
     }
     return xml3ds.length !== 0;
 };
@@ -5806,6 +5804,7 @@ var xml3dFormatHandler = new XML3DFormatHandler();
 registerFormat(xml3dFormatHandler);
 XML3D.xml3dFormatHandler = xml3dFormatHandler;
 XML3D.resource.FormatHandler = FormatHandler;
+XML3D.resource.JSONFormatHandler = JSONFormatHandler;
 
 module.exports = {
     JSONFormatHandler: JSONFormatHandler,
@@ -8074,8 +8073,6 @@ DataAdapter.prototype.notifyChanged = function (evt) {
 };
 
 DataAdapter.prototype.connectedAdapterChanged = function (key, adapter /*, status */) {
-    // we first set loading to true, to force a load event when a new, but cached xflow node is attached
-    this.xflowDataNode.setLoading(true);
     if (key === "src") {
         this.xflowDataNode.sourceNode = adapter ? adapter.getXflowNode() : null;
     } else if (key === "dataflow") {
@@ -8084,7 +8081,8 @@ DataAdapter.prototype.connectedAdapterChanged = function (key, adapter /*, statu
         window.eval(adapter.script);
         this.xflowDataNode.notify(XC.RESULT_STATE.CHANGED_STRUCTURE);
     }
-
+    // Cycle the load state to force a load event even if the new sourceNode is cached
+    this.xflowDataNode.setLoading(true);
     updateLoadState(this);
 };
 
@@ -9268,7 +9266,7 @@ var Xflow = Xflow || {};
 window.XML3D = XML3D;
 window.Xflow = Xflow;
 
-XML3D.version = 'DEVELOPMENT SNAPSHOT (25.03.2015 16:01:16 GMT+0100)';
+XML3D.version = '4.9.1';
 /** @const */
 XML3D.xml3dNS = 'http://www.xml3d.org/2009/xml3d';
 /** @const */
@@ -9351,6 +9349,7 @@ XML3D.shaders = require("./renderer/webgl/materials/urn/shaders.js");
 XML3D.resource = require("./base/resourcemanager.js").Resource; //Required for the test library because the RM needs to "belong" to the same document as the XML3D element in order to resolve references correctly
 XML3D.resource.registerFormat = require("./base/resourcemanager.js").registerFormat;
 //XML3D.resource.FormatHandler
+//XML3D.resource.JSONFormatHandler
 //XML3D.resource.AdapterFactory
 XML3D.webcl = require("./utils/webcl.js").webcl;
 XML3D.math = require("gl-matrix");
@@ -9367,8 +9366,16 @@ window.XML3DVec3 = require("./types/vec3.js");
 Xflow.registerOperator = require("./xflow/operator/operator.js").registerOperator;
 Xflow.constants = require("./xflow/interface/constants.js");
 XML3D.extend(Xflow, require("./xflow/interface/graph.js"));
-Xflow.data = require("./xflow/interface/data.js");
+XML3D.extend(Xflow, require("./xflow/interface/data.js"));
 Xflow.ComputeRequest = require("./xflow/interface/request.js").ComputeRequest;
+
+XML3D.webgl = XML3D.webgl || {};
+XML3D.webgl.FullscreenQuad = require("./renderer/webgl/base/fullscreenquad.js");
+XML3D.webgl.BaseRenderPass = require("./renderer/webgl/render-passes/base.js");
+XML3D.webgl.ForwardRenderPass = require("./renderer/webgl/render-passes/forward.js");
+XML3D.webgl.BaseRenderTree = require("./renderer/webgl/render-trees/base.js");
+XML3D.extend(XML3D.webgl, require("./renderer/webgl/base/rendertarget.js"));
+
 
 require("./xflow/operator/default");
 
@@ -9376,7 +9383,8 @@ module.exports = {
     XML3D : XML3D,
     Xflow : Xflow
 };
-},{"./base/resourcemanager.js":10,"./math/bbox.js":38,"./math/math.js":39,"./renderer/webgl/materials/urn/shaders.js":94,"./types/box.js":121,"./types/data-observer.js":122,"./types/matrix.js":123,"./types/ray.js":124,"./types/rotation.js":125,"./types/vec3.js":126,"./utils/debug.js":130,"./utils/misc.js":131,"./utils/options.js":132,"./utils/webcl.js":134,"./xflow/interface/constants.js":136,"./xflow/interface/data.js":137,"./xflow/interface/graph.js":138,"./xflow/interface/request.js":139,"./xflow/operator/default":156,"./xflow/operator/operator.js":176,"gl-matrix":1}],30:[function(require,module,exports){
+
+},{"./base/resourcemanager.js":10,"./math/bbox.js":38,"./math/math.js":39,"./renderer/webgl/base/fullscreenquad.js":74,"./renderer/webgl/base/rendertarget.js":77,"./renderer/webgl/materials/urn/shaders.js":94,"./renderer/webgl/render-passes/base.js":99,"./renderer/webgl/render-passes/forward.js":101,"./renderer/webgl/render-trees/base.js":110,"./types/box.js":121,"./types/data-observer.js":122,"./types/matrix.js":123,"./types/ray.js":124,"./types/rotation.js":125,"./types/vec3.js":126,"./utils/debug.js":130,"./utils/misc.js":131,"./utils/options.js":132,"./utils/webcl.js":134,"./xflow/interface/constants.js":136,"./xflow/interface/data.js":137,"./xflow/interface/graph.js":138,"./xflow/interface/request.js":139,"./xflow/operator/default":156,"./xflow/operator/operator.js":176,"gl-matrix":1}],30:[function(require,module,exports){
 var XML3D = require("./global.js").XML3D;
 var Config = require("./interface/elements.js").config;
 var sendAdapterEvent = require("./utils/misc.js").sendAdapterEvent;
@@ -13459,12 +13467,12 @@ MouseEventHandler.prototype =  {
             //These event APIs are deprecated but still required by IE, which doesn't support event constructors yet
             if (event.toString() === "[object WheelEvent]") {
                 evt = document.createEvent("WheelEvent");
-                evt.initWheelEvent(event.type, event.canBubble, event.cancelable, event.view, event.detail,
+                evt.initWheelEvent(event.type, event.bubbles, event.cancelable, event.view, event.detail,
                     event.screenX, event.screenY, event.clientX, event.clientY, event.button, event.relatedTarget, "",
                     event.deltaX, event.deltaY, event.deltaZ, event.deltaMode);
             } else {
                 evt = document.createEvent("MouseEvent");
-                evt.initMouseEvent(event.type, event.canBubble, event.cancelable, event.view, event.detail,
+                evt.initMouseEvent(event.type, event.bubbles, event.cancelable, event.view, event.detail,
                     event.screenX, event.screenY, event.clientX, event.clientY, event.ctrlKey, event.altKey,
                     event.shiftKey, event.metaKey, event.button, event.relatedTarget);
             }
@@ -13835,7 +13843,11 @@ LightManager.prototype = {
             var model = light.model;
             var entry = that.getModelEntry(model.id);
             var offset = entry.lightModels.indexOf(model);
-            XML3D.debug.assert(offset != -1, "Light values changed for a light that is not managed by this LightManager");
+            if (offset < 0) {
+                //These changes are for a light that no longer exists so we can ignore them
+                //This can happen for ex. during a delayed change notification that isn't fired until after a remove()
+                return;
+            }
             model.fillLightParameters(entry.parameters, offset);
             model.getLightData(entry.parameters, offset);
             entry.changed = true;
@@ -22004,6 +22016,7 @@ XML3D.extend(GLScene.prototype, {
         if (this.lightsNeedUpdate) {
             this.lightsNeedUpdate = false;
             this.updateLightParameters();
+            this.lights.lightValueChanged();
         }
         this.updateObjectsForRendering();
 
@@ -22124,8 +22137,8 @@ XML3D.extend(GLScene.prototype, {
             this.context.requestRedraw("Light value changed.");
         });
          this.addEventListener(C.EVENT_TYPE.SCENE_SHAPE_CHANGED, function (event) {
-            // Need to update light frustum
-            this.lights.lightValueChanged();
+            // Need to update light frustum. Defer this until the next render phase
+             this.lightsNeedUpdate = true;
         });
 
         Options.addObserver(this.onFlagsChange.bind(this));
@@ -27990,6 +28003,13 @@ Object.defineProperty(DataNode.prototype, "userData", {
 DataNode.prototype.setLoading = function(loading){
     if(this._loading != loading){
         this._loading = loading;
+        this._channelNode.setStructureOutOfSync();
+        this._channelNode.loading = loading;
+        for (var sub in this._substitutionNodes) {
+            var subNode = this._substitutionNodes[sub];
+            subNode.setStructureOutOfSync();
+            subNode.loading = loading;
+        }
         updateProgressLevel(this);
         Base._flushResultCallbacks();
     }
