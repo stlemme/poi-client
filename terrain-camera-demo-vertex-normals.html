@@ -87,25 +87,7 @@
 			"level": 10,
 			
 			"api_tiles": global.api.ground_tiles['terrain2'],
-			//"api_tiles": global.api.ground_tiles['sb-local'],
-			//"layers": ["plane", "buildings"],
-			"layers": ["all"],
-			
-			/*
-			"bbox": {
-				"west": 7.027427,
-				"south": 49.249020,
-				"east": 7.053348,
-				"north": 49.261289
-			},
-			*/
-			
-			"bbox": {
-				"west": 0.5,
-				"south": 40.75,
-				"east": 15.5,
-				"north": 60.75
-			},
+			"layer": "all",
 			
 			"api_poi": global.api.poi
 		};
@@ -141,10 +123,13 @@
 			camController.attach();
 			updateViewportSize(xml3d);
 			
+			var options={
+				"layer":config.layer
+			}
 			
-			terrain = new XML3D.DynamicTerrain(geo, ground_group, ground_tf_scale,camController.camera, config.bbox, config.layers, config.api_tiles);
+			terrain = new XML3D.DynamicTerrain(geo, ground_group, ground_tf_scale,camController.camera, config.api_tiles, options);
 			//reuse or delete old tiles?
-			terrain.mode=terrain.DELETE_OLD_TILES;
+			terrain.set_mode(terrain.REUSE_OLD_TILES);
 			terrain.far_plane=60000;
 			
 			var loader = document.getElementById("loader");

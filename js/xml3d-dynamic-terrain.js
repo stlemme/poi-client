@@ -2,20 +2,19 @@ var XML3D = XML3D || {};
 	
 (function() {
 
-XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, bounds, layers, api_tiles) {
+XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options) {
 	this.geo = geo || null;
 	this.ground = group || null;
 	this.tf_scale = tf_scale || null;
-	
 	this.camera=camera||null;
-	this.bounds=bounds||null;
-	this.layers=layers||["all"];
 	this.api_tiles=api_tiles||null;
 	
+	//optional information
+	this.bounds=options.bounds||null;
+	this.layer=options.layer||"all";
+
 	this.tileCount = 0;
 	this.maxtileCount = 0;
-	this.tilePositions = [];
-	this.lodLayers=[];
 	this.tiles_in_bbox=0;
 	this.updatedtiles=0;
 	this.maxupdatedtiles=0;
@@ -24,13 +23,27 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, bounds, layers, ap
 	this.framecount=0;
 	
 	this.far_plane=50000;
+	this.lodLayers=[];
 	this.maxloddelta=4;
 	this.grp_diameter=4;
-	this.mode=this.DELETE_OLD_TILES;
+	
+	this.handle_invisible=this.handle_invisible_delete;
 };
 
 XML3D.DynamicTerrain.prototype.DELETE_OLD_TILES = 0;
 XML3D.DynamicTerrain.prototype.REUSE_OLD_TILES = 1;
+
+XML3D.DynamicTerrain.prototype.set_mode = function(mode) {
+	if(mode==XML3D.DynamicTerrain.prototype.DELETE_OLD_TILES){
+		this.handle_invisible=this.handle_invisible_delete;
+		return;
+	}
+	if(mode==XML3D.DynamicTerrain.prototype.REUSE_OLD_TILES){
+		this.handle_invisible=this.handle_invisible_reuse;
+		return;
+	}
+	console.log("invalid terrain mode");
+}
 
 XML3D.DynamicTerrain.prototype.render_tiles = function() {
 
@@ -100,17 +113,25 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	dynamicbbox.extend(camera_tile.x,camera_tile.y);
 
 
-	
-	var min = this.geo.tile(this.bounds.north, this.bounds.west);
-	var max = this.geo.tile(this.bounds.south, this.bounds.east);
 	var z = this.geo.level;
+	var min;
+	var max;
+	if(this.bounds!=null){
+		min = this.geo.tile(this.bounds.north, this.bounds.west);
+		max = this.geo.tile(this.bounds.south, this.bounds.east);
 
-	//limit dynamic bounds to bbox
-	min.x = Math.max(min.x,dynamicbbox.min.x);
-	min.y = Math.max(min.y,dynamicbbox.min.y);
+
+		//limit dynamic bounds to bbox
+		min.x = Math.max(min.x,dynamicbbox.min.x);
+		min.y = Math.max(min.y,dynamicbbox.min.y);
 	
-	max.x = Math.min(max.x,dynamicbbox.max.x);
-	max.y = Math.min(max.y,dynamicbbox.max.y);
+		max.x = Math.min(max.x,dynamicbbox.max.x);
+		max.y = Math.min(max.y,dynamicbbox.max.y);
+	}
+	else{
+		min=dynamicbbox.min;
+		max=dynamicbbox.max;
+	}
 	
 	this.tiles_in_bbox=(max.x-min.x+1)*(max.y-min.y+1);
 
@@ -148,7 +169,7 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 		return;
 	}
 	
-	if(get_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)<tilesize*this.grp_diameter && delta<this.maxloddelta){
+	if(get_squared_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)<Math.pow(tilesize*this.grp_diameter,2) && delta<this.maxloddelta){
 		//split up tile
 		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
 		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
@@ -166,14 +187,14 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 	}	
 }
 
-function get_distance(x,y,camera_origin){
+function get_squared_distance(x,y,camera_origin){
 	//carefull! y in tile coordinates refers to z axis in real space!
 	
 	//z axis is scaled by a factor of 2 since lod has a very low effect for high altitude cameras
-	return Math.sqrt(Math.pow((camera_origin.x-x),2)+Math.pow((camera_origin.z-y),2)+Math.pow(camera_origin.y*2,2));
+	//ways cheaper than making the actual computation but still good enough
+	//this was suggested in another paper
+	return Math.pow((camera_origin.x-x),2)+Math.pow((camera_origin.z-y),2)+Math.pow(camera_origin.y*2,2);
 }
-
-
 
 XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 	// tiles contains a map, mapping level (as delta from minimum level) to a map of tile uris.
@@ -198,170 +219,56 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 			//remember we created this group
 			group_index=this.ground.children.length-1;
 			this.lodLayers[key]=group_index;
-			//initally the new group is empty
-			this.tilePositions[key]=[];
 		}
 		else{
 			group_index=this.lodLayers[key];
 		}
 
 		var group=this.ground.children[group_index];
-		
-		var current_tiles=this.tilePositions[key];
-		
 
-	
 		var needed_tiles=tiles[key];
-	
-	
+
 		var index=0; // corresponding index in group
 
-		
-		if(this.mode=this.DELETE_OLD_TILES){
-			/*
-			XXXXXXXXX
-			Code for Delete_old_tiles here
-			XXXXXXXXX
-			*/
-			//delete tiles, which should not be displayed
-			while (index<group.children.length/this.layers.length) {
-				//if tile should not be displayed
-				if(needed_tiles[current_tiles[index]]==null){
-					//remove tile from list and dom (multiple deletes if multiple layers!!)
-					current_tiles.splice(index,1);
-				
-					for(var i=0;i<this.layers.length;i++){
-						var tile=group.children[index*this.layers.length];
-						tile.parentNode.removeChild(tile);
+		var free_tiles= new Iterator(group.children.length); //contains reusable tiles
 			
-						this.updatedtiles++;
-						this.reusedtiles++;
-					}
-					//console.log("removed child");
-				}
-				else{
-					//remove tile from needed_tiles!
-					delete needed_tiles[current_tiles[index]];
-					index++;
-				}
-			}	
-		
-		
-		
-			for (tile_key in needed_tiles){
-				//add all remaining tiles to the dom and the list!
-		
-				//remember we added this tile
-				current_tiles.push(tile_key);
-				for(var i=0;i<this.layers.length;i++){
-					//create new tile
-					//console.log("new tile!");
-					var tile = XML3D.createElement("model");
-					tile.setAttribute("id", tile_key + this.layers[i]);
-					tile.setAttribute("src", tile_key + "#" + this.layers[i]);
-					tile.setAttribute("transform", tile_key + "#tf");
-					group.appendChild(tile);
-			
-					this.updatedtiles++;
-					this.newtiles++;
-				}
+		while (index<group.children.length) {
+			// is old tile still supposed to be displayed???
+			if(needed_tiles[group.children[index].getAttribute("id")]==null){
+				//handle currently invisible tiles depending on set mode;
+				index=this.handle_invisible(index,group,free_tiles);
 			}
+			else{
+				//remove tile from needed_tiles!
+				delete needed_tiles[group.children[index].getAttribute("id")];
+				index++;
+			}
+		}	
+
+		
+		for (tile_key in needed_tiles){
+			//create all remaining tiles
+			tile=this.create_or_reuse_tile(free_tiles,group);
+			tile.setAttribute("id", tile_key);
+			tile.setAttribute("src", tile_key + "#" + this.layer);
+			tile.setAttribute("transform", tile_key + "#tf");
 		}
+
+		//delete remaining free_tiles
+		while(free_tiles.hasNext()){
+			var tile=free_tiles.next();
+			tile.parentNode.removeChild(tile);
 		
-		
-		else{
-			/*
-			XXXXXXXXX
-			Code for Reuse_old_tiles here
-			XXXXXXXXX
-			*/
-			var freetiles=[]; //contains reusable tiles
-			
-			//delete tiles, which should not be displayed
-			while (index<group.children.length/this.layers.length) {
-				//if tile should not be displayed
-				if(needed_tiles[current_tiles[index]]==null){
-				//tile can be reused
-				freetiles.push(index);
-				index++;
-				}
-				else{
-					//remove tile from needed_tiles!
-					delete needed_tiles[current_tiles[index]];
-					index++;
-				}
-			}	
-			
-			index=0;
-			
-			for (tile_key in needed_tiles){
-				if(index<freetiles.length){
-					//reuse tiles as long as free tiles are available
-					for(var j=0;j<this.layers.length;j++){
-						//remember new uri for tile
-						current_tiles[freetiles[index]]=tile_key;
-						//reuse old tile
-						group.children[freetiles[index]*this.layers.length+j].setAttribute("id", tile_key + this.layers[j]);
-						group.children[freetiles[index]*this.layers.length+j].setAttribute("src", tile_key + "#" + this.layers[j]);
-						group.children[freetiles[index]*this.layers.length+j].setAttribute("transform", tile_key + "#tf");
-						this.updatedtiles++;
-						this.reusedtiles++;
-					}
-					index++;
-				}
-				else{
-					//add all remaining tiles to the dom and the list!
-					//remember we added this tile
-					current_tiles.push(tile_key);
-					for(var i=0;i<this.layers.length;i++){
-						//create new tile
-						var tile = XML3D.createElement("model");
-						tile.setAttribute("id", tile_key + this.layers[i]);
-						tile.setAttribute("src", tile_key + "#" + this.layers[i]);
-						tile.setAttribute("transform", tile_key + "#tf");
-						group.appendChild(tile);
-			
-						this.updatedtiles++;
-						this.newtiles++;
-					}
-				}
-			}
-		
-			var deleted=0;
-		
-			//delete remaining free_tiles
-			while(index<freetiles.length){
-				
-				var tile_index=freetiles[index];
-				//remove tile from list and dom (multiple deletes if multiple layers!!)
-				current_tiles.splice(tile_index-deleted,1);
-					
-				
-				for(var i=0;i<this.layers.length;i++){
-					var tile=group.children[(tile_index-deleted)*this.layers.length];
-					tile.parentNode.removeChild(tile);
-			
-					this.updatedtiles++;
-					this.reusedtiles++;
-				}
-				index++;
-				deleted++;
-			}
+			this.updatedtiles++;
+			this.reusedtiles++;
+
 		}
 	}
-	
-	/*
-	XXXXXXXXX
-	Code for all modes
-	XXXXXXXXX
-	*/
 	
 	//tiles may not contain tiles for every layer!
 	for (key in this.lodLayers){
 		//if no tiles in this layer are requested, delete all tiles in this layer
 		if(tiles[key]==null){
-			//remember that there are no more tiles in this layer
-			this.tilePositions[key]=[];
 			//delete all tiles from layer
 			var grp=this.ground.children[this.lodLayers[key]];
 			while(grp.children.length>0){
@@ -370,9 +277,76 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 				this.reusedtiles++;
 				grp.removeChild(grp.children[0]);
 			}
-		
 		}
 	}
+}
+
+
+XML3D.DynamicTerrain.prototype.handle_invisible_reuse = function (index,group,free_tiles){
+	free_tiles.push(group.children[index]);
+	return index+1;
+}
+
+
+XML3D.DynamicTerrain.prototype.handle_invisible_delete = function (index,group,free_tiles){
+	//remove tile from dom
+	var tile=group.children[index];
+	tile.parentNode.removeChild(tile);
+			
+	this.updatedtiles++;
+	this.reusedtiles++;
+
+	return index;
+}
+
+XML3D.DynamicTerrain.prototype.create_or_reuse_tile = function (free_tiles,group){
+	this.updatedtiles++;
+	if(free_tiles.hasNext()){
+		this.reusedtiles++;
+		//reuse tile if possible
+		return free_tiles.next();
+	}
+	//we need a new tile
+	var tile = XML3D.createElement("model");
+	group.appendChild(tile);
+	
+	this.newtiles++;
+	
+	return tile;
+}
+
+
+Iterator = function(capacity) {
+	this.length=0;
+	this.current_position=0;
+	this.values=new Array(capacity);
+};
+
+
+Iterator.prototype.getFreeCapacity = function() {
+	return this.values.length-this.length;
+}
+
+Iterator.prototype.getTotalCapacity = function() {
+	return this.values.length;
+}
+
+Iterator.prototype.getLength = function() {
+	return this.length;
+}
+
+Iterator.prototype.push = function(value) {
+	this.values[this.length]=value;
+	this.length++;
+}
+
+Iterator.prototype.hasNext = function() {
+	return(this.length-this.current_position>0);
+}
+
+Iterator.prototype.next = function() {
+	this.current_position++;
+	return(this.values[this.current_position-1]);
 }
 
 
