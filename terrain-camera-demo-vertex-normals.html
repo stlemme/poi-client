@@ -25,7 +25,8 @@
 			labels : ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],
 			datasets : [
 				{
-					
+					//total tile count
+					//bright olive
 					fillColor : "rgba(172,194,132,0.1)",
 					strokeColor : "#ACC26D",
 					pointColor : "#fff",
@@ -33,6 +34,8 @@
 					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 				},
 				{
+					//maximum tile count
+					//red
 					fillColor : "rgba(179,12,12,0.1)",
 					strokeColor : "#B43333",
 					pointColor : "#fff",
@@ -40,6 +43,8 @@
 					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 				},
 				{
+					//tiles in bounding-box
+					//blue
 					fillColor : "rgba(19,64,177,0.1)",
 					strokeColor : "#244CB1",
 					pointColor : "#fff",
@@ -47,6 +52,9 @@
 					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 				},
 				{
+					//updated tiles per update interval
+					//this includes deletes, creates and reuses
+					//yelow
 					fillColor : "rgba(224,185,11,0.1)",
 					strokeColor : "#D6B72D",
 					pointColor : "#fff",
@@ -54,24 +62,40 @@
 					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 				},
 				{
+					//maximum updated tiles per FRAME
+					//this includes deletes, creates and reuses
+					//orange
 					fillColor : "rgba(218,79,19,0.1)",
 					strokeColor : "#DC6430",
 					pointColor : "#fff",
 					pointStrokeColor : "#DA4F13",
 					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 				},
-							{
+				{
+					//reused tiles per update interval
+					//pink
 					fillColor : "rgba(40,40,40,0.1)",
-					strokeColor : "#404040",
+					strokeColor : "#DC31AF",
 					pointColor : "#fff",
-					pointStrokeColor : "#292929",
+					pointStrokeColor : "#6E1F59",
 					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 				},
-							{
+				{
+					//new tiles per update interval
+					//green
 					fillColor : "rgba(39,156,80,0.1)",
 					strokeColor : "#359F5A",
 					pointColor : "#fff",
 					pointStrokeColor : "#279C50",
+					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+				},
+				{
+					//deleted tiles per update interval
+					//black
+					fillColor : "rgba(40,40,40,0.1)",
+					strokeColor : "#404040",
+					pointColor : "#fff",
+					pointStrokeColor : "#292929",
 					data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 				}
 			]
@@ -100,6 +124,7 @@
 		var updatedtilecount=0;
 		var newtiles=0;
 		var reusedtiles=0;
+		var deletedtiles=0;
 		
 		function onload()
 		{
@@ -172,13 +197,15 @@
 			updatedtilecount+=terrain.updatedtiles;
 			reusedtiles+=terrain.reusedtiles;
 			newtiles+=terrain.newtiles;
+			deletedtiles+=terrain.removedtiles;
 			if(framecount>20){
 			framecount=0;
 			chart.removeData();
-			chart.addData([terrain.tileCount,terrain.maxtileCount,terrain.tiles_in_bbox,updatedtilecount,terrain.maxupdatedtiles,reusedtiles,newtiles],"");
+			chart.addData([terrain.tileCount,terrain.maxtileCount,terrain.tiles_in_bbox,updatedtilecount,terrain.maxupdatedtiles,reusedtiles,newtiles,deletedtiles],"");
 			updatedtilecount=0;
 			reusedtiles=0;
 			newtiles=0;
+			deletedtiles=0;
 			}
 			framecount++
 		}

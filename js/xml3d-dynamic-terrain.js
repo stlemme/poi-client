@@ -20,14 +20,18 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.maxupdatedtiles=0;
 	this.newtiles=0;
 	this.reusedtiles=0;
+	this.removedtiles=0;
 	this.framecount=0;
 	
 	this.far_plane=50000;
 	this.lodLayers=[];
-	this.maxloddelta=4;
+	this.maxloddelta=2;
 	this.grp_diameter=4;
 	
 	this.handle_invisible=this.handle_invisible_delete;
+	
+	//used in draw_tiles only!
+	this.freetiles=new Iterator(1);
 };
 
 XML3D.DynamicTerrain.prototype.DELETE_OLD_TILES = 0;
@@ -201,6 +205,7 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 	this.updatedtiles=0;
 	this.reusedtiles=0;
 	this.newtiles=0;
+	this.removedtiles=0;
 
 	
 	for(key in tiles){
@@ -230,13 +235,14 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 
 		var index=0; // corresponding index in group
 
-		var free_tiles= new Iterator(group.children.length); //contains reusable tiles
+		this.freetiles.clear_and_allocate(group.children.length);
 			
 		while (index<group.children.length) {
 			// is old tile still supposed to be displayed???
-			if(needed_tiles[group.children[index].getAttribute("id")]==null){
+			var tile=group.children[index];
+			if(needed_tiles[tile.getAttribute("id")]==null){
 				//handle currently invisible tiles depending on set mode;
-				index=this.handle_invisible(index,group,free_tiles);
+				index+=this.handle_invisible(tile);
 			}
 			else{
 				//remove tile from needed_tiles!
@@ -248,19 +254,19 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 		
 		for (tile_key in needed_tiles){
 			//create all remaining tiles
-			tile=this.create_or_reuse_tile(free_tiles,group);
+			tile=this.create_or_reuse_tile(group);
 			tile.setAttribute("id", tile_key);
 			tile.setAttribute("src", tile_key + "#" + this.layer);
 			tile.setAttribute("transform", tile_key + "#tf");
 		}
 
-		//delete remaining free_tiles
-		while(free_tiles.hasNext()){
-			var tile=free_tiles.next();
+		//delete remaining this.freetiles
+		while(this.freetiles.hasNext()){
+			var tile=this.freetiles.next();
 			tile.parentNode.removeChild(tile);
 		
 			this.updatedtiles++;
-			this.reusedtiles++;
+			this.removedtiles++;
 
 		}
 	}
@@ -271,40 +277,42 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 		if(tiles[key]==null){
 			//delete all tiles from layer
 			var grp=this.ground.children[this.lodLayers[key]];
-			while(grp.children.length>0){
+			while(grp.firstChild){
 				//remove first node until empty
 				this.updatedtiles++;
-				this.reusedtiles++;
-				grp.removeChild(grp.children[0]);
+				this.removedtiles++;
+				grp.removeChild(grp.firstChild);
 			}
 		}
 	}
 }
 
 
-XML3D.DynamicTerrain.prototype.handle_invisible_reuse = function (index,group,free_tiles){
-	free_tiles.push(group.children[index]);
-	return index+1;
+XML3D.DynamicTerrain.prototype.handle_invisible_reuse = function (tile){
+	this.freetiles.push(tile);
+	
+	//increment index
+	return 1;
 }
 
 
-XML3D.DynamicTerrain.prototype.handle_invisible_delete = function (index,group,free_tiles){
+XML3D.DynamicTerrain.prototype.handle_invisible_delete = function (tile){
 	//remove tile from dom
-	var tile=group.children[index];
 	tile.parentNode.removeChild(tile);
 			
 	this.updatedtiles++;
-	this.reusedtiles++;
-
-	return index;
+	this.deletedtiles++;
+	
+	//do not increment index
+	return 0;
 }
 
-XML3D.DynamicTerrain.prototype.create_or_reuse_tile = function (free_tiles,group){
+XML3D.DynamicTerrain.prototype.create_or_reuse_tile = function (group){
 	this.updatedtiles++;
-	if(free_tiles.hasNext()){
+	if(this.freetiles.hasNext()){
 		this.reusedtiles++;
 		//reuse tile if possible
-		return free_tiles.next();
+		return this.freetiles.next();
 	}
 	//we need a new tile
 	var tile = XML3D.createElement("model");
@@ -345,9 +353,16 @@ Iterator.prototype.hasNext = function() {
 }
 
 Iterator.prototype.next = function() {
-	this.current_position++;
-	return(this.values[this.current_position-1]);
+	return(this.values[this.current_position++]);
 }
 
+Iterator.prototype.clear_and_allocate = function(capacity) {
+	this.length=0;
+	this.current_position=0;
+	if(this.values.length<capacity){
+		//only allocate array if needed
+		this.values=new Array(capacity);
+	}
+}
 
 })();
