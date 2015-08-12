@@ -28,6 +28,9 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.maxloddelta=2;
 	this.grp_diameter=4;
 	
+	//used for stitching
+	this.displayed_tiles=[];
+	
 	this.handle_invisible=this.handle_invisible_delete;
 	
 	//used in draw_tiles only!
@@ -187,8 +190,66 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 		}
 		var tile=tiles[delta];
 		var tile_uri = this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
-		tile[tile_uri]=true;
+		//remember x/y/z coordinates to use them later on!
+		tile[tile_uri]=[x,y,z];
 	}	
+}
+
+XML3D.DynamicTerrain.prototype.set_additional_attributes= function  (node,options){
+
+	var x= options[0];
+	var y= options[1];
+	var z= options[2];
+	var stitching=[0,0,0,0];
+	var layer=this.displayed_tiles[z-1-this.geo.level];
+	//there are tiles in layer z-1 -> stitching may be needed
+	if(layer!=null){
+		var w = this.api_tiles + "/" + (z-1) + "/" + Math.floor((x-1)/2) + "/" + Math.floor(y/2) + "-asset.xml";
+		var s = this.api_tiles + "/" + (z-1) + "/" + Math.floor(x/2) + "/" + Math.floor((y+1)/2) + "-asset.xml";
+		var e = this.api_tiles + "/" + (z-1) + "/" + Math.floor((x+1)/2) + "/" + Math.floor(y/2) + "-asset.xml";
+		var n = this.api_tiles + "/" + (z-1) + "/" + Math.floor(x/2) + "/" + Math.floor((y+1)/2) + "-asset.xml";
+		var req_tiles=[w,s,e,n];
+		for(var i=0;i<4;i++){
+			if(layer[req_tiles[i]]!=null){
+				//console.log(x+" "+y+" "+z);
+				stitching[i]=1;
+				//console.log(stitching);
+			}
+		}
+	}
+	if(!node.hasChildNodes()){
+		//create child nodes!
+		var terrain=XML3D.createElement("asset");
+		terrain.setAttribute("name", "terrain");
+		
+		var terrain_shaded=XML3D.createElement("assetmesh");
+		terrain_shaded.setAttribute("name", "terrain_shaded");
+		
+		var terrain_data=XML3D.createElement("data");
+		terrain_data.setAttribute("name", "terrain_data");
+		
+		var terrain_morph=XML3D.createElement("data");
+		terrain_morph.setAttribute("name", "terrain_morph");
+		
+		var terrain_grid=XML3D.createElement("data");
+		terrain_grid.setAttribute("name", "terrain_grid");
+		
+		var terrain_stitching=XML3D.createElement("int");
+		terrain_stitching.setAttribute("name", "stitching");
+		terrain_stitching.innerHTML = stitching[0]+" "+stitching[1]+" "+stitching[2]+" "+stitching[3];
+		
+		terrain_grid.appendChild(terrain_stitching);
+		terrain_morph.appendChild(terrain_grid);
+		terrain_data.appendChild(terrain_morph);
+		terrain_shaded.appendChild(terrain_data);
+		terrain.appendChild(terrain_shaded);
+		node.appendChild(terrain);
+	}
+	else{
+		node.children[0].children[0].children[0].children[0].children[0].children[0].innerHTML = stitching[0]+" "+stitching[1]+" "+stitching[2]+" "+stitching[3];
+	}
+	
+
 }
 
 function get_squared_distance(x,y,camera_origin){
@@ -206,7 +267,9 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 	this.reusedtiles=0;
 	this.newtiles=0;
 	this.removedtiles=0;
-
+	
+	//copy array
+	this.displayed_tiles=$.extend(true, [], tiles);
 	
 	for(key in tiles){
 		//do tiles of this level allready exist?
@@ -240,11 +303,14 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 		while (index<group.children.length) {
 			// is old tile still supposed to be displayed???
 			var tile=group.children[index];
-			if(needed_tiles[tile.getAttribute("id")]==null){
+			var lookup=needed_tiles[tile.getAttribute("id")];
+			if(lookup==null){
 				//handle currently invisible tiles depending on set mode;
 				index+=this.handle_invisible(tile);
 			}
 			else{
+				//update stitching!
+				this.set_additional_attributes(tile,lookup);
 				//remove tile from needed_tiles!
 				delete needed_tiles[group.children[index].getAttribute("id")];
 				index++;
@@ -258,6 +324,7 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 			tile.setAttribute("id", tile_key);
 			tile.setAttribute("src", tile_key + "#" + this.layer);
 			tile.setAttribute("transform", tile_key + "#tf");
+			this.set_additional_attributes(tile,this.displayed_tiles[key][tile_key]);
 		}
 
 		//delete remaining this.freetiles
