@@ -196,7 +196,7 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 }
 
 XML3D.DynamicTerrain.prototype.set_additional_attributes= function  (node,options){
-
+	
 	var x= options[0];
 	var y= options[1];
 	var z= options[2];
@@ -207,7 +207,7 @@ XML3D.DynamicTerrain.prototype.set_additional_attributes= function  (node,option
 		var w = this.api_tiles + "/" + (z-1) + "/" + Math.floor((x-1)/2) + "/" + Math.floor(y/2) + "-asset.xml";
 		var s = this.api_tiles + "/" + (z-1) + "/" + Math.floor(x/2) + "/" + Math.floor((y+1)/2) + "-asset.xml";
 		var e = this.api_tiles + "/" + (z-1) + "/" + Math.floor((x+1)/2) + "/" + Math.floor(y/2) + "-asset.xml";
-		var n = this.api_tiles + "/" + (z-1) + "/" + Math.floor(x/2) + "/" + Math.floor((y+1)/2) + "-asset.xml";
+		var n = this.api_tiles + "/" + (z-1) + "/" + Math.floor(x/2) + "/" + Math.floor((y-1)/2) + "-asset.xml";
 		var req_tiles=[w,s,e,n];
 		for(var i=0;i<4;i++){
 			if(layer[req_tiles[i]]!=null){
