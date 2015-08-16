@@ -217,36 +217,36 @@ XML3D.DynamicTerrain.prototype.set_additional_attributes= function  (node,option
 			}
 		}
 	}
+	
+	var stitching_string = stitching[0]+" "+stitching[1]+" "+stitching[2]+" "+stitching[3];
+	
 	if(!node.hasChildNodes()){
 		//create child nodes!
-		var terrain=XML3D.createElement("asset");
-		terrain.setAttribute("name", "terrain");
 		
-		var terrain_shaded=XML3D.createElement("assetmesh");
-		terrain_shaded.setAttribute("name", "terrain_shaded");
-		
-		var terrain_data=XML3D.createElement("data");
-		terrain_data.setAttribute("name", "terrain_data");
-		
-		var terrain_morph=XML3D.createElement("data");
+		var terrain_morph=XML3D.createElement("assetdata");
 		terrain_morph.setAttribute("name", "terrain_morph");
-		
-		var terrain_grid=XML3D.createElement("data");
-		terrain_grid.setAttribute("name", "terrain_grid");
 		
 		var terrain_stitching=XML3D.createElement("int");
 		terrain_stitching.setAttribute("name", "stitching");
-		terrain_stitching.innerHTML = stitching[0]+" "+stitching[1]+" "+stitching[2]+" "+stitching[3];
+		terrain_stitching.innerHTML = stitching_string;
 		
-		terrain_grid.appendChild(terrain_stitching);
-		terrain_morph.appendChild(terrain_grid);
-		terrain_data.appendChild(terrain_morph);
-		terrain_shaded.appendChild(terrain_data);
-		terrain.appendChild(terrain_shaded);
-		node.appendChild(terrain);
+		terrain_morph.appendChild(terrain_stitching);
+		
+		if(this.layer=="all"){
+			//additional node needed!
+			var terrain=XML3D.createElement("asset");
+			terrain.setAttribute("name", "terrain");
+			
+			terrain.appendChild(terrain_morph);
+			node.appendChild(terrain);
+		}
+		else{
+			node.appendChild(terrain_morph);
+		}
 	}
-	else{
-		node.children[0].children[0].children[0].children[0].children[0].children[0].innerHTML = stitching[0]+" "+stitching[1]+" "+stitching[2]+" "+stitching[3];
+	else if(node.children[0].children[0].innerHTML != stitching_string){
+		//only touch node if stitching has changed. touching the node triggers a recalculation!
+		node.children[0].children[0].innerHTML = stitching_string;
 	}
 	
 
