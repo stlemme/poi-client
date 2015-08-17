@@ -117,6 +117,7 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 		"x":Math.floor(camera_proj.x*Math.pow(2,this.maxloddelta)),
 		"y":Math.floor(camera_proj.y*Math.pow(2,this.maxloddelta))
 	}
+	
 			
 	var projections=new Array(p1_proj,p2_proj,p3_proj,p4_proj);
 	var frustum=new XML3D.Frustum(camera_proj,projections);
@@ -167,7 +168,7 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 		}
 	}
 	
-	draw_map(required_tiles,imageData,map_center,this.maxloddelta);
+	draw_map(required_tiles,imageData,map_center,this.maxloddelta,projections);
 	c.putImageData(imageData, 0, 0);
 	
 	this.draw_tiles(required_tiles);
@@ -186,8 +187,8 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
 }
 
-function draw_map(required_tiles,imageData,map_center,maxloddelta){
-	var scale=3;
+function draw_map(required_tiles,imageData,map_center,maxloddelta,projections){
+	var scale=2;
 	var center_x= Math.floor(imageData.width/2);
 	var center_y= Math.floor(imageData.height/2);
 	for(delta in required_tiles){
@@ -212,8 +213,23 @@ function draw_map(required_tiles,imageData,map_center,maxloddelta){
 			var y_pos=(pos[1]*size-map_center['y'])*scale+center_y;
 			for (var x=0;x<size*scale;x++){
 				for(var y=0;y<size*scale;y++){
-					setPixel(imageData, x_pos+x, y_pos+y, colour[0], colour[1], colour[2], 256);
+					setPixel(imageData, x_pos+x, y_pos+y, colour[0], colour[1], colour[2], 255);
 				}
+			}
+		}
+	}
+	//center
+	for(var x=-1;x<=1;x++){
+		for(var y=-1;y<=1;y++){
+			setPixel(imageData, center_x+x, center_y+y, 127, 127, 255, 255);
+		}
+	}
+	for(var i=0;i<projections.length;i++){
+		var pos_x= Math.floor(projections[i].x*Math.pow(2,maxloddelta)-map_center['x'])*scale+center_x;
+		var pos_y= Math.floor(projections[i].y*Math.pow(2,maxloddelta)-map_center['y'])*scale+center_y;
+		for(var x=-1;x<=1;x++){
+			for(var y=-1;y<=1;y++){
+				setPixel(imageData, pos_x+x, pos_y+y, 63, 63, 63, 255);
 			}
 		}
 	}
@@ -222,7 +238,7 @@ function draw_map(required_tiles,imageData,map_center,maxloddelta){
 
 function setPixel(imageData, x, y, r, g, b, a) {
 	if(x<0||y<0||x>=imageData.width||y>=imageData.height){
-		console.log("out of bounds");
+		//console.log("out of bounds");
 		return;
 	}
     index = (x + y * imageData.width) * 4;
@@ -245,7 +261,7 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 		return;
 	}
 	
-	if(distance_squared<Math.pow(tilesize*this.grp_diameter,2) && delta<this.maxloddelta){
+	if(get_squared_distance_y_adjusted((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)<Math.pow(tilesize*this.grp_diameter,2) && delta<this.maxloddelta){
 		//split up tile
 		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
 		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
@@ -325,13 +341,18 @@ XML3D.DynamicTerrain.prototype.set_additional_attributes= function  (node,option
 
 }
 
-function get_squared_distance(x,y,camera_origin){
+function get_squared_distance_y_adjusted(x,y,camera_origin){
 	//carefull! y in tile coordinates refers to z axis in real space!
 	
 	//z axis is scaled by a factor of 2 since lod has a very low effect for high altitude cameras
 	//ways cheaper than making the actual computation but still good enough
 	//this was suggested in another paper
 	return Math.pow((camera_origin.x-x),2)+Math.pow((camera_origin.z-y),2)+Math.pow(camera_origin.y*2,2);
+}
+
+function get_squared_distance(x,y,camera_origin){
+	//carefull! y in tile coordinates refers to z axis in real space!
+	return Math.pow((camera_origin.x-x),2)+Math.pow((camera_origin.z-y),2)+Math.pow(camera_origin.y,2);
 }
 
 XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
