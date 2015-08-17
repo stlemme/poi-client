@@ -9,6 +9,7 @@ var global = {
 			"gis": "http://130.206.80.175/api/3d-map-tiles/oulu",
 			"terrain": "/api/3d-map-tiles/terrain",
 			"terrain2": "/api/3d-map-tiles/terrain-vertex-normals",
+			"terrain3": "/api/3d-map-tiles/terrain-wireframe",
 			"sb": "http://130.206.80.175/api/3d-map-tiles/sb",
 			"gis-local": "/api/3d-map-tiles/oulu-terrain",
 			"sb-local": "/api/3d-map-tiles/sb",

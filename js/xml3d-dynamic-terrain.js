@@ -26,7 +26,7 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.far_plane=50000;
 	this.lodLayers=[];
 	this.maxloddelta=2;
-	this.grp_diameter=4;
+	this.grp_diameter=2;
 	
 	//used for stitching
 	this.displayed_tiles=[];
@@ -35,6 +35,9 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	
 	//used in draw_tiles only!
 	this.freetiles=new Iterator(1);
+	
+	//used for wireframe rendering
+	this.wireframe=false;
 };
 
 XML3D.DynamicTerrain.prototype.DELETE_OLD_TILES = 0;
@@ -109,6 +112,11 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 		"y":this.camera.position.y/geo.tile_size,
 		"z":camera_proj.y
 	}
+	
+	var map_center={
+		"x":Math.floor(camera_proj.x*Math.pow(2,this.maxloddelta)),
+		"y":Math.floor(camera_proj.y*Math.pow(2,this.maxloddelta))
+	}
 			
 	var projections=new Array(p1_proj,p2_proj,p3_proj,p4_proj);
 	var frustum=new XML3D.Frustum(camera_proj,projections);
@@ -140,6 +148,15 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 		max=dynamicbbox.max;
 	}
 	
+	//create image with same dimensions as canvas
+	var element = document.getElementById("map");
+    var c = element.getContext("2d");
+
+    var width = element.width;
+    var height = element.height;
+
+    var imageData = c.createImageData(width, height);
+	
 	this.tiles_in_bbox=(max.x-min.x+1)*(max.y-min.y+1);
 
 	//for all tiles in frustum: add to required tiles
@@ -149,6 +166,9 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 			this.generate_tiles (x,y,z,camera_origin,frustum,required_tiles);
 		}
 	}
+	
+	draw_map(required_tiles,imageData,map_center,this.maxloddelta);
+	c.putImageData(imageData, 0, 0);
 	
 	this.draw_tiles(required_tiles);
 	
@@ -166,17 +186,66 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
 }
 
+function draw_map(required_tiles,imageData,map_center,maxloddelta){
+	var scale=3;
+	var center_x= Math.floor(imageData.width/2);
+	var center_y= Math.floor(imageData.height/2);
+	for(delta in required_tiles){
+		var size=Math.pow(2,(maxloddelta-delta));
+		var n= delta%3;
+		var colour=new Array(3); //rgb without alpha
+		if(n==0){
+			colour[0]=256;
+		}
+		else if(n==1){
+			colour[1]=256;
+		}
+		else{
+			colour[2]=256;
+		}
+		
+		var tiles = required_tiles[delta];
+		
+		for(key in tiles){
+			var pos= tiles[key];
+			var x_pos=(pos[0]*size-map_center['x'])*scale+center_x;
+			var y_pos=(pos[1]*size-map_center['y'])*scale+center_y;
+			for (var x=0;x<size*scale;x++){
+				for(var y=0;y<size*scale;y++){
+					setPixel(imageData, x_pos+x, y_pos+y, colour[0], colour[1], colour[2], 256);
+				}
+			}
+		}
+	}
+
+}
+
+function setPixel(imageData, x, y, r, g, b, a) {
+	if(x<0||y<0||x>=imageData.width||y>=imageData.height){
+		console.log("out of bounds");
+		return;
+	}
+    index = (x + y * imageData.width) * 4;
+    imageData.data[index+0] = r;
+    imageData.data[index+1] = g;
+    imageData.data[index+2] = b;
+    imageData.data[index+3] = a;
+}
+
+
 XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,frustum,tiles){
-	//camera origin in the 3d camera origin transformed into tile space
+	//camera origin is the 3d camera origin transformed into tile space
 	var delta=z-this.geo.level;
 	var tilesize=1/Math.pow(2,delta);
 	var bounds=new XML3D.Bbox(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize);
-	if(!frustum.intersectBbox(bounds)){
+	var distance_squared=get_squared_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin);
+	//distance test to avoid flickering at terrain boarder
+	if(!frustum.intersectBbox(bounds)||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))){
 		//no need to draw this!
 		return;
 	}
 	
-	if(get_squared_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)<Math.pow(tilesize*this.grp_diameter,2) && delta<this.maxloddelta){
+	if(distance_squared<Math.pow(tilesize*this.grp_diameter,2) && delta<this.maxloddelta){
 		//split up tile
 		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
 		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
@@ -244,9 +313,13 @@ XML3D.DynamicTerrain.prototype.set_additional_attributes= function  (node,option
 			node.appendChild(terrain_morph);
 		}
 	}
-	else if(node.children[0].children[0].innerHTML != stitching_string){
+	else if(this.layer=="terrain" && node.children[0].children[0].innerHTML != stitching_string){
 		//only touch node if stitching has changed. touching the node triggers a recalculation!
 		node.children[0].children[0].innerHTML = stitching_string;
+	}
+	else if(this.layer=="all" && node.children[0].children[0].children[0].innerHTML != stitching_string){
+		//only touch node if stitching has changed. touching the node triggers a recalculation!
+		node.children[0].children[0].children[0].innerHTML = stitching_string;
 	}
 	
 
@@ -283,6 +356,9 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 			//scale relative to tf_scale
 			group_new.setAttribute("style", "transform: scale(" + scale + ", 1, " + scale +")");
 			group_new.setAttribute("id", "Lod "+key);
+			if(this.wireframe){
+				group_new.setAttribute("shader", "#wireframe"+key%3);
+			}
 			this.ground.appendChild(group_new);
 			//remember we created this group
 			group_index=this.ground.children.length-1;

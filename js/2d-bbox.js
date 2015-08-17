@@ -23,10 +23,7 @@ XML3D.Bbox.prototype.extend = function(x,y) {
 }
 
 XML3D.Bbox.prototype.isInside = function(x,y) {
-	if(this.min.x<=x&&this.max.x>=x&&this.min.y<=y&&this.max.y>=y){
-		return true;
-	}
-	return false;
+	return(this.min.x<=x&&this.max.x>=x&&this.min.y<=y&&this.max.y>=y);
 }
 
 })();

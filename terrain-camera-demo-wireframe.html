@@ -111,7 +111,7 @@
 			},
 			"level": 9,
 			
-			"api_tiles": global.api.ground_tiles['terrain2'],
+			"api_tiles": global.api.ground_tiles['terrain3'],
 			"layer": "terrain",
 			
 			"api_poi": global.api.poi
@@ -157,6 +157,7 @@
 			//reuse or delete old tiles?
 			terrain.set_mode(terrain.DELETE_OLD_TILES);
 			terrain.far_plane=300000;
+			terrain.wireframe=true;
 			
 			var loader = document.getElementById("loader");
 
@@ -217,8 +218,8 @@
 <body>
 	<div id="myxml3d">
 	
-		<!--
-		<defs>
+		
+		<defs style="display: none;">
 		<script id="wireframe-script" type="application/javascript">
 			function shade(env) {
 			var bc = env.barycentric;
@@ -239,11 +240,17 @@
 			return Shade.diffuse(color, env.normal);
 		}
 		</script>
-		<shader id="wireframe" script="#wireframe-script">
-			<float3 name="color">0.8 0.2 0.0</float3>
+		<shader id="wireframe0" script="#wireframe-script">
+			<float3 name="color">0.8 0.2 0.2</float3>
+		</shader>
+		<shader id="wireframe1" script="#wireframe-script">
+			<float3 name="color">0.2 0.8 0.2</float3>
+		</shader>
+		<shader id="wireframe2" script="#wireframe-script">
+			<float3 name="color">0.2 0.2 0.8</float3>
 		</shader>
 		</defs>
-		-->
+		
 		<xml3d id="myxml3dcanvas" activeView="#defaultView" style="width: 100%; height: 80%;  background-color:0xeeeeee;" onresize="updateViewportSize(this)" >
 
 			<!-- Asset Instance -->
@@ -252,7 +259,7 @@
 			
 			<group transform="#geo_tf">
 				<!--<group id="ground" transform="#ground_tf_scale" shader="#wireframe"></group>-->
-				<group id="ground" transform="#ground_tf_scale" ></group>
+				<group id="ground" transform="#ground_tf_scale"></group>
 			</group>
 			
 			<!-- Light and View -->
