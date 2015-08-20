@@ -1,0 +1,208 @@
+﻿<html>
+
+<head>
+	<title>POI-Client Demo</title>
+
+	<link rel="stylesheet" type="text/css" media="all" href="styles.css"/>
+
+	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="js/xml3d-latest-dev.js"></script>
+	<script type="text/javascript" src="js/camera.js"></script>
+	<script type="text/javascript" src="js/overlay-shader.js"></script>
+	<script type="text/javascript" src="js/xml3d-geo.js"></script>
+	<script type="text/javascript" src="js/shade-0.2.js"></script>
+    <script type="text/javascript" src="config.js"></script>
+	
+	<script type="text/javascript">
+	
+		
+	
+		var config = {
+			"origin": {
+				"lon": 50,
+				"lat": 30
+			},
+			"level": 15,
+			
+			"api_tiles": global.api.ground_tiles['terrain3'],
+			"layer": "terrain",
+			
+			"api_poi": global.api.poi
+		};
+		
+		var geo, terrain;
+		var camController;
+		var ground;
+		
+		var framecount=0;
+
+		function onload()
+		{
+			
+			var geo_tf = document.getElementById("geo_tf");
+			geo = new XML3D.Geo(geo_tf, config.level, config.origin);
+			
+			
+			
+			ground= document.getElementById("ground");
+			var ground_tf_scale = document.getElementById("ground_tf_scale");
+			
+			ground_tf_scale.setAttribute("scale", geo.tile_size + " 1 " + geo.tile_size);
+			
+			var xml3d = document.getElementById("myxml3dcanvas");
+			
+			camController = XML3D.Xml3dSceneController.controllers[0];
+			camController.detach();
+			camController.mode = "panning";
+			camController.useKeys = false;
+			camController.useRaycasting = true;
+			camController.attach();
+			updateViewportSize(xml3d);
+			
+			var loader = document.getElementById("loader");
+
+			xml3d.addEventListener('framedrawn', function( evt ) {
+				//update tiles causes memory leak (observed on google chrome)
+				updateTiles();
+				var obj = evt.detail.count.objects;
+				if (true){
+					loader.style.display = "none";
+				}	
+			}, false);
+		}
+		
+		window.addEventListener('load', onload, false);
+		
+		function updateViewportSize(elem) {
+			camController.camera.setResolution(elem.clientWidth,elem.clientHeight);
+			
+			var t="Resolution: "+elem.clientWidth+"*"+elem.clientHeight;
+		}
+		
+		function updateTiles() {	
+			//create tiles
+			if(framecount%2==0){
+				for (var n=0; n<2; n++){
+					for (var s=0; s<2; s++){
+						for (var o=0; o<2; o++){
+							for (var w=0; w<2; w++){
+								var x= 20930+n+2*s;
+								var y= 13514+o+2*w;
+					
+								var tile_uri = config.api_tiles + "/" + 15 + "/" + x + "/" + y + "-asset.xml";
+					
+								var node = XML3D.createElement("model");
+								ground.appendChild(node);
+					
+								node.setAttribute("id", x+"-"+y);
+								node.setAttribute("src", tile_uri + "#" + config.layer);
+								node.setAttribute("transform", tile_uri + "#tf");
+					
+								var terrain_morph=XML3D.createElement("assetdata");
+								terrain_morph.setAttribute("name", "terrain_morph");
+		
+								var terrain_stitching=XML3D.createElement("int");
+								terrain_stitching.setAttribute("name", "stitching");
+								terrain_stitching.innerHTML = w+" "+s+" "+o+" "+n;
+		
+								terrain_morph.appendChild(terrain_stitching);
+				
+								if(config.layer=="all"){
+								//additional node needed!
+								var terrain=XML3D.createElement("asset");
+								terrain.setAttribute("name", "terrain");
+			
+								terrain.appendChild(terrain_morph);
+								node.appendChild(terrain);
+								}
+								else{
+								node.appendChild(terrain_morph);
+								}
+					
+							}		
+						}
+					}			
+				}
+			}
+			else if(framecount%2==1){
+				for (var n=0; n<2; n++){
+					for (var s=0; s<2; s++){
+						for (var o=0; o<2; o++){
+							for (var w=0; w<2; w++){
+								while(ground.firstChild){
+									//remove first node until empty
+									ground.removeChild(ground.firstChild);
+								}
+							}		
+						}
+					}
+				}
+			}
+		framecount++;
+			
+		}
+		
+		
+	</script>
+</head>
+
+<body>
+	<div id="myxml3d">
+	
+		
+		<defs>
+		<script id="wireframe-script" type="application/javascript">
+			function shade(env) {
+			var bc = env.barycentric;
+			var eps = 0.02;
+
+			if (this.fwidth) {
+				var d = this.fwidth(bc);
+				var a = Math.smoothstep(new Vec3(0.0), d.mul(0.8), bc);
+				var s = Math.min(Math.min(a.x(), a.y()), a.z());
+				var color = Math.mix(env.lineColor || env.color.mul(0.2), env.color.mul(0.8), s);
+			} else {
+				if (bc.x() < eps || bc.y() < eps || bc.z() < eps) {
+				var color = env.color.mul(0.2);
+				} else {
+					var color =  env.color.mul(0.8);
+				}
+			}
+			return Shade.diffuse(color, env.normal);
+		}
+		</script>
+		<shader id="wireframe" script="#wireframe-script">
+			<float3 name="color">0.8 0.2 0.0</float3>
+		</shader>
+		</defs>
+		
+		<xml3d id="myxml3dcanvas" activeView="#defaultView" style="width: 100%; height: 100%; background-color:0xeeeeee;" onresize="updateViewportSize(this)" >
+
+			<!-- Asset Instance -->
+			<transform id="geo_tf"></transform>
+			<transform id="ground_tf_scale"></transform>
+			
+			<group transform="#geo_tf">
+				<group id="ground" transform="#ground_tf_scale" shader="#wireframe"></group>
+				<!--<group id="ground" transform="#ground_tf_scale" ></group>-->
+			</group>
+			
+			<!-- Light and View -->
+			<view id="defaultView" position="0 2500 0"></view>
+			
+			<lightshader id="light1" script="urn:xml3d:lightshader:directional">
+				<float3 name="intensity">1 1 1</float3>
+			</lightshader>
+			
+			<group style="transform: rotateX(-90deg)" >
+				<light shader="#light1"></light>
+			</group>
+
+		</xml3d>
+		<div id="loader"><img src="img/ajax_loader_gray_512.gif"/></div>
+		<div id="logo"><img src="img/xml3dlogo.png"/></div>
+
+	</div>
+</body>
+
+</html>

@@ -352,7 +352,7 @@ function get_squared_distance_y_adjusted(x,y,camera_origin){
 
 function get_squared_distance(x,y,camera_origin){
 	//carefull! y in tile coordinates refers to z axis in real space!
-	return Math.pow((camera_origin.x-x),2)+Math.pow((camera_origin.z-y),2)+Math.pow(camera_origin.y,2);
+	return Math.pow((camera_origin.x-x),2)+Math.pow((camera_origin.z-y),2);
 }
 
 XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
