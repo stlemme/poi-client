@@ -38,6 +38,15 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	
 	//used for wireframe rendering
 	this.wireframe=false;
+	
+	//used for pre-loading
+	this.cached_tiles=[];
+	
+	this.loading=XML3D.createElement("group");
+	this.loading.setAttribute("style", "transform: scale(0,0,0)");
+	this.loading.setAttribute("id", "loading");
+	this.ground.appendChild(this.loading);
+	
 };
 
 XML3D.DynamicTerrain.prototype.DELETE_OLD_TILES = 0;
@@ -261,7 +270,8 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 		return;
 	}
 	
-	if(get_squared_distance_y_adjusted((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)<Math.pow(tilesize*this.grp_diameter,2) && delta<this.maxloddelta){
+	//draw more detailed tiles if near camera and max lod has not been reached and all tiles are ready to be displayed
+	if(get_squared_distance_y_adjusted((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)<Math.pow(tilesize*this.grp_diameter,2) && delta<this.maxloddelta && this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
 		//split up tile
 		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
 		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
@@ -278,6 +288,46 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 		//remember x/y/z coordinates to use them later on!
 		tile[tile_uri]=[x,y,z];
 	}	
+}
+
+XML3D.DynamicTerrain.prototype.tile_onload= function (event,x,y,z,tiles,api_tiles){
+	var key=api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+	//remember this tile has been cached and can be used without creating holes is the terrain.
+	tiles[key]=true;
+	//remove loaded tile from dom
+	var node=event.target;
+	node.parentNode.removeChild(node);
+}
+
+XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
+	//returns true if tile is chached
+	//otherwise false; starts loading the tile
+	var key=this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+	var lookup=this.cached_tiles[key];
+	if(lookup==true){
+		//tile is ready to be displayed
+		return true;
+	}
+	else if(lookup==null){
+		//tile has not been requested yet
+		//load it!
+		var tile = XML3D.createElement("model");
+		var fun=this.tile_onload;
+		var tiles= this.cached_tiles;
+		var api_tiles=this.api_tiles;
+		this.loading.appendChild(tile);
+		tile.setAttribute("src", key + "#" + this.layer);
+		//make sure we are alerted if tile is loaded
+		tile.addEventListener('load', function( evt ) {
+			fun(evt,x,y,z,tiles,api_tiles);
+		});
+		
+		//remember we are allready attempting to load this tile
+		this.cached_tiles[key]=false;
+		return false;
+	}
+	//tile has been requested, but has not finished loading
+	return false;
 }
 
 XML3D.DynamicTerrain.prototype.set_additional_attributes= function  (node,options){
