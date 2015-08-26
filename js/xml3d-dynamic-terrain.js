@@ -290,8 +290,7 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 	}	
 }
 
-XML3D.DynamicTerrain.prototype.tile_onload= function (event,x,y,z,tiles,api_tiles){
-	var key=api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+XML3D.DynamicTerrain.prototype.tile_onload= function (event,key,tiles,api_tiles){
 	//remember this tile has been cached and can be used without creating holes is the terrain.
 	tiles[key]=true;
 	//remove loaded tile from dom
@@ -319,7 +318,7 @@ XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
 		tile.setAttribute("src", key + "#" + this.layer);
 		//make sure we are alerted if tile is loaded
 		tile.addEventListener('load', function( evt ) {
-			fun(evt,x,y,z,tiles,api_tiles);
+			fun(evt,key,tiles,api_tiles);
 		});
 		
 		//remember we are allready attempting to load this tile
