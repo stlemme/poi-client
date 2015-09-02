@@ -23,7 +23,7 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.removedtiles=0;
 	this.framecount=0;
 	
-	this.far_plane=50000;
+	this.far_plane=150000;
 	this.lodLayers=[];
 	this.maxloddelta=2;
 	this.grp_diameter=2;
@@ -46,6 +46,11 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.loading.setAttribute("style", "transform: scale(0,0,0)");
 	this.loading.setAttribute("id", "loading");
 	this.ground.appendChild(this.loading);
+	
+	//currently disabled!
+	this.max_preload_requests=20;
+	
+	this.preload_range=[500000,75000];
 	
 };
 
@@ -168,6 +173,8 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
     var imageData = c.createImageData(width, height);
 	
 	this.tiles_in_bbox=(max.x-min.x+1)*(max.y-min.y+1);
+	
+	this.preload_tiles(camera_origin);
 
 	//for all tiles in frustum: add to required tiles
 	var required_tiles=[];
@@ -258,6 +265,33 @@ function setPixel(imageData, x, y, r, g, b, a) {
 }
 
 
+XML3D.DynamicTerrain.prototype.preload_tiles = function(camera_origin){
+	if(this.preload_range.length==0){
+		return;
+	}
+	var range=Math.ceil(this.preload_range[0]/this.geo.tile_size)+1;
+	for(var x=Math.floor(camera_origin.x)-range;x<=Math.floor(camera_origin.x)+range;x++){
+		for(var y=Math.floor(camera_origin.z)-range;y<=Math.floor(camera_origin.z)+range;y++){
+			if(get_squared_distance((x+0.5),(y+0.5),camera_origin)<=Math.pow(this.preload_range[0]/this.geo.tile_size,2)){
+				this.preload_tiles_recursive(x,y,0,camera_origin);
+			}
+		}
+	}
+}
+
+XML3D.DynamicTerrain.prototype.preload_tiles_recursive = function(x,y,delta,camera_origin){
+	var z= this.geo.level+delta;
+	var scale= Math.pow(2,delta);
+	//preload small tiles only after large tiles have allready been loaded!
+	if(this.load_tile(x,y,z)&&delta<this.preload_range.length-1&&get_squared_distance_y_adjusted((x+0.5)/scale,(y+0.5)/scale,camera_origin)<Math.pow(this.preload_range[delta+1]/this.geo.tile_size,2)){
+		this.preload_tiles_recursive(x*2,y*2,delta+1,camera_origin);
+		this.preload_tiles_recursive(x*2+1,y*2,delta+1,camera_origin);
+		this.preload_tiles_recursive(x*2,y*2+1,delta+1,camera_origin);
+		this.preload_tiles_recursive(x*2+1,y*2+1,delta+1,camera_origin);
+	}
+}
+
+
 XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,frustum,tiles){
 	//camera origin is the 3d camera origin transformed into tile space
 	var delta=z-this.geo.level;
@@ -308,6 +342,13 @@ XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
 	}
 	else if(lookup==null){
 		//tile has not been requested yet
+		//are we allowed to load it?
+		/*
+		//currently not working!
+		if(this.loading.children.length>=this.max_preload_requests){
+			return false;
+		}
+		*/
 		//load it!
 		var tile = XML3D.createElement("model");
 		var fun=this.tile_onload;
@@ -470,8 +511,6 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 		//do tiles of this level allready exist?
 		var group_index;
 		if(!(key in this.lodLayers)){
-			console.log("new group!");
-		
 			//if not, create a new grop containing those tiles
 			group_new=XML3D.createElement("group");
 			var scale=1/Math.pow(2,key);
