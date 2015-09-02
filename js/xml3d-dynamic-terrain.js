@@ -262,10 +262,9 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 	//camera origin is the 3d camera origin transformed into tile space
 	var delta=z-this.geo.level;
 	var tilesize=1/Math.pow(2,delta);
-	var bounds=new XML3D.Bbox(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize);
 	var distance_squared=get_squared_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin);
 	//distance test to avoid flickering at terrain boarder
-	if(!frustum.intersectBbox(bounds)||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))){
+	if(!frustum.intersectRectangle(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize)||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))){
 		//no need to draw this!
 		return;
 	}
@@ -335,22 +334,75 @@ XML3D.DynamicTerrain.prototype.set_additional_attributes= function  (node,option
 	var y= options[1];
 	var z= options[2];
 	var stitching=[0,0,0,0];
+	
+	
+	//at max 2x stitching since 1 bigger tile gets replaced by 4 smaller ones (so 2 adjacent tiles are at least of the same lod or a higher lod (so they will handle stitching to the current tile))
+	/*
+	
+	.--.--.
+	|  |  |
+	.--.--.
+	|  |  |
+	.--.--.
+	
+	*/
+	var delta=1;
+	
+	var center_x=Math.floor(x/2);
+	var center_y=Math.floor(y/2);
+	
+	var horizontal;
+	var horizontal_index;
+	
+	var vertical;
+	var vertical_index;
+	
+	if(x%2==0){
+		horizontal_index=0;
+		horizontal=Math.floor((x-1)/2);
+	}
+	else{
+		horizontal_index=2;
+		horizontal=Math.floor((x+1)/2);
+	}
+	if(y%2==0){
+		vertical_index=3;
+		vertical=Math.floor((y-1)/2);
+	}
+	else{
+		vertical_index=1;
+		vertical=Math.floor((y+1)/2);
+	}
+	
 	var layer=this.displayed_tiles[z-1-this.geo.level];
-	//there are tiles in layer z-1 -> stitching may be needed
-	if(layer!=null){
-		var w = this.api_tiles + "/" + (z-1) + "/" + Math.floor((x-1)/2) + "/" + Math.floor(y/2) + "-asset.xml";
-		var s = this.api_tiles + "/" + (z-1) + "/" + Math.floor(x/2) + "/" + Math.floor((y+1)/2) + "-asset.xml";
-		var e = this.api_tiles + "/" + (z-1) + "/" + Math.floor((x+1)/2) + "/" + Math.floor(y/2) + "-asset.xml";
-		var n = this.api_tiles + "/" + (z-1) + "/" + Math.floor(x/2) + "/" + Math.floor((y-1)/2) + "-asset.xml";
-		var req_tiles=[w,s,e,n];
-		for(var i=0;i<4;i++){
-			if(layer[req_tiles[i]]!=null){
-				//console.log(x+" "+y+" "+z);
-				stitching[i]=1;
-				//console.log(stitching);
+	
+	//if horizontal/vertical is the same as the center coordinates, they tiles will not exist at this layer or above as they would cover the original tile!
+	while((z-delta)>=this.geo.level&&!((vertical==center_y||stitching[vertical_index]!=0)&&(horizontal==center_x||stitching[horizontal_index]!=0))){
+		var lookup_string;
+		if(layer!=null){
+			if(vertical!=center_y&&stitching[vertical_index]==0){
+				lookup_string=this.api_tiles + "/" + (z-delta) + "/" + center_x + "/" + vertical + "-asset.xml";
+				if(layer[lookup_string]!=null){
+					stitching[vertical_index]=delta;
+				}
+			}
+		
+			if(horizontal!=center_x&&stitching[horizontal_index]==0){
+				lookup_string=this.api_tiles + "/" + (z-delta) + "/" + horizontal + "/" + center_y + "-asset.xml";
+				if(layer[lookup_string]!=null){
+					stitching[horizontal_index]=delta;
+				}
 			}
 		}
+
+		center_x=Math.floor(center_x/2);
+		center_y=Math.floor(center_y/2);
+		vertical=Math.floor(vertical/2);
+		horizontal=Math.floor(horizontal/2);
+		delta++;
+		layer=this.displayed_tiles[z-delta-this.geo.level];
 	}
+	
 	
 	var stitching_string = stitching[0]+" "+stitching[1]+" "+stitching[2]+" "+stitching[3];
 	
@@ -374,7 +426,7 @@ XML3D.DynamicTerrain.prototype.set_additional_attributes= function  (node,option
 			terrain.appendChild(terrain_morph);
 			node.appendChild(terrain);
 		}
-		else{
+		else if(this.layer=="terrain"){
 			node.appendChild(terrain_morph);
 		}
 	}

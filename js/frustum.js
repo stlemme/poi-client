@@ -39,6 +39,25 @@ XML3D.Frustum.prototype.intersectBbox = function(bbox) {
 	return false;
 }
 
+XML3D.Frustum.prototype.intersectRectangle = function(min_x,min_y,max_x,max_y) {
+	//test all bbox corner points with frustum
+	if(this.isInside(min_x,min_y)||this.isInside(max_x,min_y)||this.isInside(min_x,max_y)||this.isInside(max_x,max_y)){
+		return true;	
+	}
+	//test if a triangle point is in the bbox
+
+	for(var i=0;i<this.triangles.length;i++){
+		if(isInsideBbox(min_x,min_y,max_x,max_y,this.triangles[i].points[0].x,this.triangles[i].points[0].y)||isInsideBbox(min_x,min_y,max_x,max_y,this.triangles[i].points[1].x,this.triangles[i].points[1].y)||isInsideBbox(min_x,min_y,max_x,max_y,this.triangles[i].points[2].x,this.triangles[i].points[2].y)){
+			return true;
+		}
+	}
+	return false;
+}
+
+function isInsideBbox(min_x,min_y,max_x,max_y,x,y){
+	return(min_x<=x&&max_x>=x&&min_y<=y&&max_y>=y);
+}
+
 XML3D.Triangle = function(a,b,c) {
 	this.points=[a,b,c];
 	this.lines=[];
