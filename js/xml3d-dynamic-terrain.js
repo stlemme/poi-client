@@ -174,7 +174,7 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	
 	this.tiles_in_bbox=(max.x-min.x+1)*(max.y-min.y+1);
 	
-	this.preload_tiles(camera_origin);
+	//this.preload_tiles(camera_origin);
 
 	//for all tiles in frustum: add to required tiles
 	var required_tiles=[];
@@ -322,10 +322,18 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 		tile[tile_uri]=[x,y,z];
 	}	
 }
-
+/*
 XML3D.DynamicTerrain.prototype.tile_onload= function (event,key,tiles,api_tiles){
 	//remember this tile has been cached and can be used without creating holes is the terrain.
 	tiles[key]=true;
+	//remove loaded tile from dom
+	var node=event.target;
+	node.parentNode.removeChild(node);
+}
+*/
+XML3D.DynamicTerrain.prototype.tile_onload= function (event,key,that){
+	//remember this tile has been cached and can be used without creating holes is the terrain.
+	that.cached_tiles[key]=true;
 	//remove loaded tile from dom
 	var node=event.target;
 	node.parentNode.removeChild(node);
@@ -351,14 +359,12 @@ XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
 		*/
 		//load it!
 		var tile = XML3D.createElement("model");
-		var fun=this.tile_onload;
-		var tiles= this.cached_tiles;
-		var api_tiles=this.api_tiles;
+		var that = this;
 		this.loading.appendChild(tile);
 		tile.setAttribute("src", key + "#" + this.layer);
 		//make sure we are alerted if tile is loaded
 		tile.addEventListener('load', function( evt ) {
-			fun(evt,key,tiles,api_tiles);
+			that.tile_onload(evt,key,that);
 		});
 		
 		//remember we are allready attempting to load this tile
