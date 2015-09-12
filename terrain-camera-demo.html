@@ -224,38 +224,30 @@
 			var normalMapSample = env.normalMap.sample2D(env.texcoord).rgb();
 			var normalMapNormal = normalMapSample.sub(0.5).mul(2.0).normalize();
 			var normal= new Vec3(normalMapNormal.x(),normalMapNormal.z(),normalMapNormal.y());
-			/*var perturbedNormal = N.mul(normalMapNormal.z())
-							.add(T.mul(normalMapNormal.x())
-							.add(B.mul(normalMapNormal.y()))).normalize();
-			*/
 			return Shade.diffuse(env.color, normal);
 		}
 		</script>
-		<shader id="normalmap" script="#normalmap-script">
+		<material id="normalmap" model="#normalmap-script">
 			<float3 name="color"> 0.6 0.6 0.6 </float3>
-		</shader>
+		</material>
 		</defs>
 	
-		<xml3d id="myxml3dcanvas" activeView="#defaultView" style="width: 100%; height: 80%; background-color:0xeeeeee;" onresize="updateViewportSize(this)" >
+		<xml3d id="myxml3dcanvas" view="#defaultView" style="width: 100%; height: 80%; background-color:0xeeeeee;" onresize="updateViewportSize(this)" >
 
 			<!-- Asset Instance -->
 			<transform id="geo_tf"></transform>
 			<transform id="ground_tf_scale"></transform>
 			
 			<group transform="#geo_tf">
-				<group id="ground" transform="#ground_tf_scale" shader="#normalmap"></group>
+				<group id="ground" transform="#ground_tf_scale" material="#normalmap"></group>
 			</group>
 			
 			<!-- Light and View -->
 			<view id="defaultView" position="0 4000 0"></view>
 			
-			<lightshader id="light1" script="urn:xml3d:lightshader:directional">
+			<light model="urn:xml3d:light:directional">
 				<float3 name="intensity">1 1 1</float3>
-			</lightshader>
-			
-			<group style="transform: rotateX(-90deg)" >
-				<light shader="#light1"></light>
-			</group>
+			</light>
 
 		</xml3d>
 		<div id="loader"><img src="img/ajax_loader_gray_512.gif"/></div>

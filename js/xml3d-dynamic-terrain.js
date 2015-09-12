@@ -331,9 +331,9 @@ XML3D.DynamicTerrain.prototype.tile_onload= function (event,key,tiles,api_tiles)
 	node.parentNode.removeChild(node);
 }
 */
-XML3D.DynamicTerrain.prototype.tile_onload= function (event,key,that){
+XML3D.DynamicTerrain.prototype.tile_onload= function (event,key){
 	//remember this tile has been cached and can be used without creating holes is the terrain.
-	that.cached_tiles[key]=true;
+	this.cached_tiles[key]=true;
 	//remove loaded tile from dom
 	var node=event.target;
 	node.parentNode.removeChild(node);
@@ -364,7 +364,7 @@ XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
 		tile.setAttribute("src", key + "#" + this.layer);
 		//make sure we are alerted if tile is loaded
 		tile.addEventListener('load', function( evt ) {
-			that.tile_onload(evt,key,that);
+			that.tile_onload(evt,key);
 		});
 		
 		//remember we are allready attempting to load this tile
@@ -524,7 +524,7 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 			group_new.setAttribute("style", "transform: scale(" + scale + ", 1, " + scale +")");
 			group_new.setAttribute("id", "Lod "+key);
 			if(this.wireframe){
-				group_new.setAttribute("shader", "#wireframe"+key%3);
+				group_new.setAttribute("material", "#wireframe"+key%3);
 			}
 			this.ground.appendChild(group_new);
 			//remember we created this group

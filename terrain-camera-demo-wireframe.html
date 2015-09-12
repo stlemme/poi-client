@@ -240,18 +240,18 @@
 			return Shade.diffuse(color, env.normal);
 		}
 		</script>
-		<shader id="wireframe0" script="#wireframe-script">
+		<material id="wireframe0" model="#wireframe-script">
 			<float3 name="color">0.8 0.2 0.2</float3>
-		</shader>
-		<shader id="wireframe1" script="#wireframe-script">
+		</material>
+		<material id="wireframe1" model="#wireframe-script">
 			<float3 name="color">0.2 0.8 0.2</float3>
-		</shader>
-		<shader id="wireframe2" script="#wireframe-script">
+		</material>
+		<material id="wireframe2" model="#wireframe-script">
 			<float3 name="color">0.2 0.2 0.8</float3>
-		</shader>
+		</material>
 		</defs>
 		
-		<xml3d id="myxml3dcanvas" activeView="#defaultView" style="width: 100%; height: 80%;  background-color:0xeeeeee;" onresize="updateViewportSize(this)" >
+		<xml3d id="myxml3dcanvas" view="#defaultView" style="width: 100%; height: 80%;  background-color:0xeeeeee;" onresize="updateViewportSize(this)" >
 
 			<!-- Asset Instance -->
 			<transform id="geo_tf"></transform>
@@ -265,13 +265,9 @@
 			<!-- Light and View -->
 			<view id="defaultView" position="0 4000 0"></view>
 			
-			<lightshader id="light1" script="urn:xml3d:lightshader:directional">
+			<light model="urn:xml3d:light:directional">
 				<float3 name="intensity">1 1 1</float3>
-			</lightshader>
-			
-			<group style="transform: rotateX(-90deg)" >
-				<light shader="#light1"></light>
-			</group>
+			</light>
 
 		</xml3d>
 		<div id="loader"><img src="img/ajax_loader_gray_512.gif"/></div>
