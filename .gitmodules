@@ -1,0 +1,4 @@
+[submodule "tools"]
+	path = tools
+	url = https://github.com/stlemme/xml3d-tools.git
+	branch = stable

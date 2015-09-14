@@ -6,8 +6,8 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.geo = geo || null;
 	this.ground = group || null;
 	this.tf_scale = tf_scale || null;
-	this.camera=camera||null;
-	this.api_tiles=api_tiles||null;
+	this.camera = camera || null;
+	this.api_tiles = api_tiles || null;
 	
 	//optional information
 	this.bounds=options.bounds||null;
@@ -71,25 +71,35 @@ XML3D.DynamicTerrain.prototype.set_mode = function(mode) {
 
 XML3D.DynamicTerrain.prototype.render_tiles = function() {
 
-	var ratio=Math.tan(this.camera.fieldOfView/2);
+	// var ratio=Math.tan(this.camera.fieldOfView/2);
 
-	var x_frustum=(this.camera.width)/this.camera.height*ratio;
-	var y_frustum=(this.camera.height)/this.camera.height*ratio;
+	// var x_frustum=(this.camera.width)/this.camera.height*ratio;
+	// var y_frustum=(this.camera.height)/this.camera.height*ratio;
 			
-	var f1=this.camera.getRayDirection(x_frustum,y_frustum);
-	var f2=this.camera.getRayDirection(-x_frustum,y_frustum);
-	var f3=this.camera.getRayDirection(-x_frustum,-y_frustum);
-	var f4=this.camera.getRayDirection(x_frustum,-y_frustum);
+	// var f1=this.camera.getRayDirection(x_frustum,y_frustum);
+	// var f2=this.camera.getRayDirection(-x_frustum,y_frustum);
+	// var f3=this.camera.getRayDirection(-x_frustum,-y_frustum);
+	// var f4=this.camera.getRayDirection(x_frustum,-y_frustum);
+	
+	var r1 = this.camera.xml3d.generateRay(this.camera.width-1, this.camera.height-1);
+	var r2 = this.camera.xml3d.generateRay(                  0, this.camera.height-1);
+	var r3 = this.camera.xml3d.generateRay(                  0,                    0);
+	var r4 = this.camera.xml3d.generateRay(this.camera.width-1,                    0);
+	
+	var f1 = r1.direction;
+	var f2 = r2.direction;
+	var f3 = r3.direction;
+	var f4 = r4.direction;
 	
 	//no intersection with xz-plane done since hight values can be negative!
-			
-	var p1=this.camera.position.add(f1.scale(this.far_plane));
-	var p2=this.camera.position.add(f2.scale(this.far_plane));
-	var p3=this.camera.position.add(f3.scale(this.far_plane));
-	var p4=this.camera.position.add(f4.scale(this.far_plane));
-			
-
-			
+	
+	var p1 = this.camera.transformInterface.position.add(f1.scale(this.far_plane));
+	var p2 = this.camera.transformInterface.position.add(f2.scale(this.far_plane));
+	var p3 = this.camera.transformInterface.position.add(f3.scale(this.far_plane));
+	var p4 = this.camera.transformInterface.position.add(f4.scale(this.far_plane));
+	
+	
+	
 	//create bounds of view frustum projection
 			
 	var p1_tile=this.geo.backproject(p1.x,p1.z);
@@ -112,8 +122,8 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	p4_tile.x=Math.floor(p4_tile.x);
 	p4_tile.y=Math.floor(p4_tile.y);
 			
-	var camera_tile=this.geo.backproject(this.camera.position.x,this.camera.position.z);
-	var camera_proj=this.geo.backproject(this.camera.position.x,this.camera.position.z);
+	var camera_tile=this.geo.backproject(this.camera.transformInterface.position.x,this.camera.transformInterface.position.z);
+	var camera_proj=this.geo.backproject(this.camera.transformInterface.position.x,this.camera.transformInterface.position.z);
 	camera_tile.x=Math.floor(camera_tile.x);
 	camera_tile.y=Math.floor(camera_tile.y);
 			
@@ -123,7 +133,7 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	//camera coordinates in tile space
 	var camera_origin={
 		"x":camera_proj.x,
-		"y":this.camera.position.y/geo.tile_size,
+		"y":this.camera.transformInterface.position.y/geo.tile_size,
 		"z":camera_proj.y
 	}
 	
