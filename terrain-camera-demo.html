@@ -6,19 +6,20 @@
 	<link rel="stylesheet" type="text/css" media="all" href="styles.css"/>
 
 	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
-	<script type="text/javascript" src="js/xml3d-latest-dev.js"></script>
-	<script type="text/javascript" src="js/camera.js"></script>
-	<script type="text/javascript" src="js/overlay-shader.js"></script>
+	<script type="text/javascript" src="js/xml3d-dev.js"></script>
+	<!-- <script type="text/javascript" src="js/overlay-shader.js"></script> -->
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
-	<script type="text/javascript" src="js/xml3d-poi.js"></script>
-	<script type="text/javascript" src="js/xml3d-animation.js"></script>
+	<!-- <script type="text/javascript" src="js/xml3d-poi.js"></script> -->
+	<!-- <script type="text/javascript" src="js/xml3d-animation.js"></script> -->
     <script type="text/javascript" src="js/xml3d-dynamic-terrain.js"></script>
-    <script type="text/javascript" src="js/3d-map-tiles.js"></script>
+    <!-- <script type="text/javascript" src="js/3d-map-tiles.js"></script> -->
 	<script type="text/javascript" src="js/2d-bbox.js"></script>
 	<script type="text/javascript" src="js/frustum.js"></script>
 	<script type="text/javascript" src="js/chart.js"></script>
 	<script type="text/javascript" src="js/shade-0.2.js"></script>
     <script type="text/javascript" src="config.js"></script>
+
+	<script type="text/javascript" src="tools/camera.js"></script>
 	
 	<script type="text/javascript">
 	
@@ -141,19 +142,26 @@
 			
 			var xml3d = document.getElementById("myxml3dcanvas");
 			
-			camController = XML3D.Xml3dSceneController.controllers[0];
-			camController.detach();
-			camController.mode = "panning";
-			camController.useKeys = false;
-			camController.useRaycasting = true;
-			camController.attach();
-			updateViewportSize(xml3d);
+			//camController = XML3D.Xml3dSceneController.controllers[0];
+			//camController.detach();
+			//camController.mode = "panning";
+			//camController.useKeys = false;
+			//camController.useRaycasting = true;
+			//camController.attach();
+			//updateViewportSize(xml3d);
+			
+			var viewElem = document.getElementById("Camera");
+			window.DemoCamera = new XML3D.StandardCamera(viewElem, {
+				mode: "panning",
+				updateExaminePoint: true,
+				upVector: [0,1,0]
+			});
 			
 			var options={
 				"layer":config.layer
 			}
 			
-			terrain = new XML3D.DynamicTerrain(geo, ground_group, ground_tf_scale,camController.camera, config.api_tiles, options);
+			terrain = new XML3D.DynamicTerrain(geo, ground_group, ground_tf_scale,window.DemoCamera, config.api_tiles, options);
 			//reuse or delete old tiles?
 			terrain.set_mode(terrain.REUSE_OLD_TILES);
 			terrain.far_plane=150000;
@@ -165,20 +173,20 @@
 				//rotate();
 				updateTiles();
 				updateTileStatistics();
-				var obj = evt.detail.count.objects;
+				/*var obj = evt.detail.count.objects;
 				if (obj > (terrain.tileCount/4)){
 					loader.style.display = "none";
-				}	
+				}*/	
 			}, false);
 		}
 		
 		window.addEventListener('load', onload, false);
 		
-		function updateViewportSize(elem) {
+		/*function updateViewportSize(elem) {
 			camController.camera.setResolution(elem.clientWidth,elem.clientHeight);
 			
 			var t="Resolution: "+elem.clientWidth+"*"+elem.clientHeight;
-		}
+		}*/
 		
 		function updateTiles() {	
 			//create tiles
@@ -191,7 +199,8 @@
 		
 		var angle= 20 /(3.14159*2*360);
 		var rot = new window.XML3DRotation(new window.XML3DVec3(0,1,0), angle);
-		camController.camera.orientation=rot.multiply(camController.camera.orientation);
+		//TODO
+		//camController.camera.orientation=rot.multiply(camController.camera.orientation);
 		
 		}
 		
@@ -232,7 +241,7 @@
 		</material>
 		</defs>
 	
-		<xml3d id="myxml3dcanvas" view="#defaultView" style="width: 100%; height: 80%; background-color:0xeeeeee;" onresize="updateViewportSize(this)" >
+		<xml3d id="myxml3dcanvas" view="#defaultView" style="width: 100%; height: 80%; background-color:0xeeeeee;" >
 
 			<!-- Asset Instance -->
 			<transform id="geo_tf"></transform>
@@ -243,7 +252,7 @@
 			</group>
 			
 			<!-- Light and View -->
-			<view id="defaultView" position="0 4000 0"></view>
+			<view id="Camera" position="0 4000 0"></view>
 			
 			<light model="urn:xml3d:light:directional">
 				<float3 name="intensity">1 1 1</float3>
