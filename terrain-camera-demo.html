@@ -227,22 +227,22 @@
 <body>
 	<div id="myxml3d">
 	
-	<defs style="display: none;">
-		<script id="normalmap-script" type="application/javascript">
-			function shade(env) {
-			var normalMapSample = env.normalMap.sample2D(env.texcoord).rgb();
-			var normalMapNormal = normalMapSample.sub(0.5).mul(2.0).normalize();
-			var normal= new Vec3(normalMapNormal.x(),normalMapNormal.z(),normalMapNormal.y());
-			return Shade.diffuse(env.color, normal);
-		}
-		</script>
-		<material id="normalmap" model="#normalmap-script">
-			<float3 name="color"> 0.6 0.6 0.6 </float3>
-		</material>
-		</defs>
-	
 		<xml3d id="myxml3dcanvas" view="#defaultView" style="width: 100%; height: 80%; background-color:0xeeeeee;" >
-
+			
+			<defs style="display: none;">
+				<script id="normalmap-script" type="application/javascript">
+					function shade(env) {
+					var normalMapSample = env.normalMap.sample2D(env.texcoord).rgb();
+					var normalMapNormal = normalMapSample.sub(0.5).mul(2.0).normalize();
+					var normal= new Vec3(normalMapNormal.x(),normalMapNormal.z(),normalMapNormal.y());
+					return Shade.diffuse(env.color, normal);
+					}
+				</script>
+				<material id="normalmap" model="#normalmap-script">
+					<float3 name="color"> 0.6 0.6 0.6 </float3>
+				</material>
+			</defs>
+		
 			<!-- Asset Instance -->
 			<transform id="geo_tf"></transform>
 			<transform id="ground_tf_scale"></transform>
