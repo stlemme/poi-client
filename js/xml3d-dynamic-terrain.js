@@ -29,6 +29,7 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.grp_diameter=2;
 	
 	this.metrik=[];
+	this.screen_space_error=0.5;
 	
 	//used for stitching
 	this.displayed_tiles=[];
@@ -130,13 +131,19 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	camera_tile.x=Math.floor(camera_tile.x);
 	camera_tile.y=Math.floor(camera_tile.y);
 			
-			
+	
+	var fov=this.camera.transformInterface.fieldOfView;
+	var ratio=Math.tan(fov);
+	var height=this.camera.height;
+	var threshold=ratio*this.screen_space_error/height;
 			
 			
 	//camera coordinates in tile space
+	//adjusted y value to improve behaviour of distance estimate
+	
 	var camera_origin={
 		"x":camera_proj.x,
-		"y":this.camera.transformInterface.position.y/geo.tile_size,
+		"y":Math.min((this.camera.transformInterface.position.y-4000)/geo.tile_size,0),
 		"z":camera_proj.y
 	}
 	
@@ -194,7 +201,7 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	for (var x = min.x; x <= max.x; x++){
 		for (var y = min.y; y <= max.y; y++){
 			if(this.load_tile(x,y,z)){
-				this.generate_tiles (x,y,z,camera_origin,frustum,required_tiles);
+				this.generate_tiles (x,y,z,camera_origin,frustum,required_tiles,threshold);
 			}
 		}
 	}
@@ -307,7 +314,7 @@ XML3D.DynamicTerrain.prototype.preload_tiles_recursive = function(x,y,delta,came
 }
 
 
-XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,frustum,tiles){
+XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,frustum,tiles,threshold){
 	//camera origin is the 3d camera origin transformed into tile space
 	var delta=z-this.geo.level;
 	var tilesize=1/Math.pow(2,delta);
@@ -321,12 +328,12 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 
 
 	//draw more detailed tiles if near camera and max lod has not been reached and all tiles are ready to be displayed
-	if(/*this.metrik[tile_uri]!=null&&*/this.metrik[tile_uri]/(get_distance_y_adjusted((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)*this.geo.tile_size)>0.0005 && delta<this.maxloddelta && this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
+	if(/*this.metrik[tile_uri]!=null&&*/this.metrik[tile_uri]>(get_distance_y_adjusted_bbox(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize,camera_origin)*this.geo.tile_size)*threshold/*0.0005*/ && delta<this.maxloddelta && this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
 		//split up tile
-		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
-		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
-		this.generate_tiles(x*2,y*2+1,z+1,camera_origin,frustum,tiles,this.api_tiles);
-		this.generate_tiles(x*2+1,y*2+1,z+1,camera_origin,frustum,tiles,this.api_tiles);
+		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,threshold);
+		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,threshold);
+		this.generate_tiles(x*2,y*2+1,z+1,camera_origin,frustum,tiles,threshold);
+		this.generate_tiles(x*2+1,y*2+1,z+1,camera_origin,frustum,tiles,threshold);
 	}
 	else{
 		//draw current tile
@@ -529,7 +536,37 @@ function get_squared_distance_y_adjusted(x,y,camera_origin){
 	//z axis is scaled by a factor of 2 since lod has a very low effect for high altitude cameras
 	//ways cheaper than making the actual computation but still good enough
 	//this was suggested in another paper
+	
 	return Math.pow((camera_origin.x-x),2)+Math.pow((camera_origin.z-y),2)+Math.pow(camera_origin.y*2,2);
+}
+
+function get_distance_y_adjusted_bbox(x_min,y_min,x_max,y_max,camera_origin){
+	var x;
+	var y;
+	//x
+	if(x_min<=camera_origin.x&&camera_origin.x<=x_max){
+		//inside tile
+		x=camera_origin.x;
+	}
+	else if(x_min>camera_origin.x){
+		x=x_min;
+	}
+	else{
+		x=x_max;
+	}
+	
+	//y
+	if(y_min<=camera_origin.y&&camera_origin.y<=y_max){
+		//inside tile
+		y=camera_origin.y;
+	}
+	else if(y_min>camera_origin.y){
+		y=y_min;
+	}
+	else{
+		y=y_max;
+	}
+	return get_distance_y_adjusted(x,y,camera_origin);
 }
 
 function get_distance_y_adjusted(x,y,camera_origin){
