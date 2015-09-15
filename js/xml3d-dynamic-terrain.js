@@ -44,10 +44,11 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	//used for pre-loading
 	this.cached_tiles=[];
 	
-	this.loading=XML3D.createElement("group");
+	/*this.loading=XML3D.createElement("group");
 	this.loading.setAttribute("style", "transform: scale(0,0,0)");
 	this.loading.setAttribute("id", "loading");
 	this.ground.appendChild(this.loading);
+	*/
 	
 	//currently disabled!
 	this.max_preload_requests=20;
@@ -320,7 +321,7 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 
 
 	//draw more detailed tiles if near camera and max lod has not been reached and all tiles are ready to be displayed
-	if(this.metrik[tile_uri]!=null&&this.metrik[tile_uri]/(get_distance_y_adjusted((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)*this.geo.tile_size)>0.0005 && delta<this.maxloddelta && this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
+	if(/*this.metrik[tile_uri]!=null&&*/this.metrik[tile_uri]/(get_distance_y_adjusted((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)*this.geo.tile_size)>0.0005 && delta<this.maxloddelta && this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
 		//split up tile
 		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
 		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,this.api_tiles);
@@ -346,12 +347,12 @@ XML3D.DynamicTerrain.prototype.tile_onload= function (event,key,tiles,api_tiles)
 	node.parentNode.removeChild(node);
 }
 */
-XML3D.DynamicTerrain.prototype.tile_onload= function (event,key){
+XML3D.DynamicTerrain.prototype.tile_onload= function (key){
 	//remember this tile has been cached and can be used without creating holes is the terrain.
 	this.cached_tiles[key]=true;
 	//remove loaded tile from dom
-	var node=event.target;
-	node.parentNode.removeChild(node);
+	//var node=event.target;
+	//node.parentNode.removeChild(node);
 }
 
 XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
@@ -373,21 +374,23 @@ XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
 		}
 		*/
 		//load it!
-		var tile = XML3D.createElement("model");
 		var that = this;
+		
+		/*var tile = XML3D.createElement("model");
 		this.loading.appendChild(tile);
 		tile.setAttribute("src", key + "#" + this.layer);
 		//make sure we are alerted if tile is loaded
 		tile.addEventListener('load', function( evt ) {
-			that.tile_onload(evt,key);
+			that.tile_onload(key);
 			
 		});
-		
+		*/
 		var callback = function(records, observer){
 				var node = records[0].target; // The node of which the result has changed
 				var result = records[0].result; // The data result of the observed node
 				var val = result.getValue('errormetric');
 				that.metrik[key]=val[0];
+				that.tile_onload(key);
 		}
 		
 		var data = XML3D.createElement("data");
