@@ -7,12 +7,8 @@
 
 	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 	<script type="text/javascript" src="js/xml3d-dev.js"></script>
-	<!-- <script type="text/javascript" src="js/overlay-shader.js"></script> -->
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
-	<!-- <script type="text/javascript" src="js/xml3d-poi.js"></script> -->
-	<!-- <script type="text/javascript" src="js/xml3d-animation.js"></script> -->
     <script type="text/javascript" src="js/xml3d-dynamic-terrain.js"></script>
-    <!-- <script type="text/javascript" src="js/3d-map-tiles.js"></script> -->
 	<script type="text/javascript" src="js/2d-bbox.js"></script>
 	<script type="text/javascript" src="js/frustum.js"></script>
 	<script type="text/javascript" src="js/chart.js"></script>
@@ -167,7 +163,7 @@
 			terrain.far_plane=300000;
 			terrain.wireframe=true;
 			
-			var loader = document.getElementById("loader");
+			//var loader = document.getElementById("loader");
 
 			xml3d.addEventListener('framedrawn', function( evt ) {
 				//rotate();
@@ -179,9 +175,9 @@
 				//}	
 			}, false);
 			
-			xml3d.addEventListener('load', function( evt ) {
-				loader.style.display = "none";
-			}, false);
+			// xml3d.addEventListener('load', function( evt ) {
+			//	loader.style.display = "none";
+			// }, false);
 			
 		}
 		
@@ -232,20 +228,22 @@
 		function shade(env) {
 			var bc = env.barycentric;
 			var eps = 0.02;
+			var normal = env.normal;
+			var color = env.color;
 
 			if (this.fwidth) {
 				var d = this.fwidth(bc);
 				var a = Math.smoothstep(new Vec3(0.0), d.mul(0.8), bc);
 				var s = Math.min(Math.min(a.x(), a.y()), a.z());
-				var color = Math.mix(env.lineColor || env.color.mul(0.2), env.color.mul(0.8), s);
+				color = Math.mix(env.lineColor || color.mul(0.2), color.mul(0.8), s);
 			} else {
 				if (bc.x() < eps || bc.y() < eps || bc.z() < eps) {
-				var color = env.color.mul(0.2);
+					color = color.mul(0.2);
 				} else {
-					var color =  env.color.mul(0.8);
+					color =  color.mul(0.8);
 				}
 			}
-			return Shade.diffuse(color, env.normal);
+			return Shade.diffuse(color, normal);
 		}
 	</script>
 </head>
@@ -265,8 +263,8 @@
 				<material id="wireframe2" model="#wireframe-script">
 					<float3 name="color">0.2 0.2 0.8</float3>
 				</material>
-				</defs>
-		
+			</defs>
+			
 			<!-- Asset Instance -->
 			<transform id="geo_tf"></transform>
 			<transform id="ground_tf_scale"></transform>
@@ -277,11 +275,14 @@
 			</group>
 			
 			<!-- Light and View -->
-			<view id="Camera" position="0 4000 0"></view>
+			<transform id="Camera_tf" translation="0 4000 0"></transform>
+			<view id="Camera" transform="#Camera_tf"></view>
 			
-			<light model="urn:xml3d:light:directional">
-				<float3 name="intensity">1 1 1</float3>
-			</light>
+			<group style="transform: rotate3d(-1, 0, 0, 60deg);">
+				<light model="urn:xml3d:light:directional">
+					<float3 name="intensity">1 1 1</float3>
+				</light>
+			</group>
 
 		</xml3d>
 		<canvas id="map" style="float:right;" width="150" "height="150"></canvas>
