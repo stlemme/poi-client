@@ -31,6 +31,8 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.metrik=[];
 	this.screen_space_error=0.5;
 	
+	this.terrain_min_height=-10000;
+	
 	//used for stitching
 	this.displayed_tiles=[];
 	
@@ -96,13 +98,18 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	var f4 = r4.direction;
 	
 	//no intersection with xz-plane done since hight values can be negative!
-	
+	/*
 	var p1 = this.camera.transformInterface.position.add(f1.scale(this.far_plane));
 	var p2 = this.camera.transformInterface.position.add(f2.scale(this.far_plane));
 	var p3 = this.camera.transformInterface.position.add(f3.scale(this.far_plane));
 	var p4 = this.camera.transformInterface.position.add(f4.scale(this.far_plane));
+	*/
 	
-	
+	//intersection with xz-plane at height this.terrain_min_height with maximum distance of this.far_plane
+	var p1 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f1.x,f1.y,f1.z,this.far_plane,this.terrain_min_height);
+	var p2 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f2.x,f2.y,f2.z,this.far_plane,this.terrain_min_height);
+	var p3 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f3.x,f3.y,f3.z,this.far_plane,this.terrain_min_height);
+	var p4 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f4.x,f4.y,f4.z,this.far_plane,this.terrain_min_height);
 	
 	//create bounds of view frustum projection
 			
@@ -224,6 +231,31 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 
 	this.tf_scale.setAttribute("scale", this.geo.tile_size + " 1 " + this.geo.tile_size);
 }
+
+function intersect_ray_x_z_plane(camera_x,camera_y,camera_z,direction_x,direction_y,direction_z,far_plane,height){
+	var distance=far_plane;
+	var diff=camera_y-height;
+	if(diff>0&&direction_y<0){
+		var distance=Math.min(far_plane,-diff/direction_y);
+	}
+	else if(diff<=0){
+		//below plane
+		var ret={
+			"x":camera_x,
+			"y":camera_y,
+			"z":camera_z
+		}
+		return ret;
+	}
+	
+	var ret={
+		"x":camera_x+distance*direction_x,
+		"y":camera_y+distance*direction_y,
+		"z":camera_z+distance*direction_z
+	}
+	return ret;
+}
+
 
 function draw_map(required_tiles,imageData,map_center,maxloddelta,projections){
 	var scale=2;
