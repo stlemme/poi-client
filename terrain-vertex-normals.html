@@ -238,11 +238,14 @@
 			</group>
 			
 			<!-- Light and View -->
-			<view id="Camera" position="0 4000 0"></view>
+			<transform id="Camera_tf" translation="0 4000 0"></transform>
+			<view id="Camera" transform="#Camera_tf"></view>
 			
-			<light model="urn:xml3d:light:directional">
-				<float3 name="intensity">1 1 1</float3>
-			</light>
+			<group style="transform: rotate3d(-1, 0, 0, 60deg);">
+				<light model="urn:xml3d:light:directional">
+					<float3 name="intensity">1 1 1</float3>
+				</light>
+			</group>
 
 		</xml3d>
 		<canvas id="map" style="float:right;" width="150" "height="150"></canvas>

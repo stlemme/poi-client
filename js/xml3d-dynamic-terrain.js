@@ -28,10 +28,10 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.maxloddelta=2;
 	this.grp_diameter=2;
 	
-	this.metrik=[];
-	this.screen_space_error=0.5;
+	this.metric=[];
+	this.screen_space_error=1;
 	
-	this.terrain_min_height=-10000;
+	this.terrain_min_height=0;
 	
 	//used for stitching
 	this.displayed_tiles=[];
@@ -55,6 +55,8 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	
 	//currently disabled!
 	this.max_preload_requests=20;
+	
+	this.max_tiles=200;
 	
 	this.preload_range=[500000,75000];
 	
@@ -142,7 +144,7 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	var fov=this.camera.transformInterface.fieldOfView;
 	var ratio=Math.tan(fov);
 	var height=this.camera.height;
-	var threshold=ratio*this.screen_space_error/height;
+	var threshold=ratio*this.screen_space_error*2/height;
 			
 			
 	//camera coordinates in tile space
@@ -150,7 +152,7 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	
 	var camera_origin={
 		"x":camera_proj.x,
-		"y":Math.min((this.camera.transformInterface.position.y-4000)/geo.tile_size,0),
+		"y":Math.min((this.camera.transformInterface.position.y-this.ground.getWorldBoundingBox().max.y)/geo.tile_size,0),
 		"z":camera_proj.y
 	}
 	
@@ -205,14 +207,14 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 
 	//for all tiles in frustum: add to required tiles
 	var required_tiles=[];
+	this.generate_tiles_fixed_performance(min.x,min.y,max.x,max.y,camera_origin,frustum,required_tiles);
+	/*
 	for (var x = min.x; x <= max.x; x++){
 		for (var y = min.y; y <= max.y; y++){
-			if(this.load_tile(x,y,z)){
 				this.generate_tiles (x,y,z,camera_origin,frustum,required_tiles,threshold);
-			}
 		}
 	}
-	
+	*/
 	draw_map(required_tiles,imageData,map_center,this.maxloddelta,projections);
 	c.putImageData(imageData, 0, 0);
 	
@@ -351,17 +353,19 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 	var delta=z-this.geo.level;
 	var tilesize=1/Math.pow(2,delta);
 	var distance_squared=get_squared_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin);
-	var tile_uri = this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+	
 	//distance test to avoid flickering at terrain boarder
-	if(!frustum.intersectRectangle(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize)||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))){
+	if(!frustum.intersectRectangle(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize)||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))||!this.load_tile(x,y,z)){
 		//no need to draw this!
 		return;
 	}
 
+	var tile_uri = this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
 
 	//draw more detailed tiles if near camera and max lod has not been reached and all tiles are ready to be displayed
-	if(/*this.metrik[tile_uri]!=null&&*/this.metrik[tile_uri]>(get_distance_y_adjusted_bbox(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize,camera_origin)*this.geo.tile_size)*threshold/*0.0005*/ && delta<this.maxloddelta && this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
+	if(/*this.metric[tile_uri]!=null&&*/this.metric[tile_uri]>(get_distance_y_adjusted_bbox(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize,camera_origin)*this.geo.tile_size)*threshold/*0.0005*/ && delta<this.maxloddelta && this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
 		//split up tile
+		
 		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,threshold);
 		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,threshold);
 		this.generate_tiles(x*2,y*2+1,z+1,camera_origin,frustum,tiles,threshold);
@@ -376,6 +380,110 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 		//remember x/y/z coordinates to use them later on!
 		tile[tile_uri]=[x,y,z];
 	}	
+}
+
+XML3D.DynamicTerrain.prototype.generate_tiles_fixed_performance = function(x_min,y_min,x_max,y_max,camera_origin,frustum,tiles){
+	
+	var tile_list= new SortedTileList();
+	
+	//camera origin is the 3d camera origin transformed into tile space
+	for (var x = x_min; x <= x_max; x++){
+		for (var y = y_min; y <= y_max; y++){
+			var distance_squared=get_squared_distance((x+0.5),(y+0.5),camera_origin);
+			//distance test to avoid flickering at terrain boarder
+			if(!frustum.intersectRectangle(x,y,(x+1),(y+1))||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))||!this.load_tile(x,y,this.geo.level)){
+				//no need to draw this!
+				continue;
+			}
+			//tile is in frustum and loaded!
+			//calculate screen space error metric and add it to the ordered tile list!
+			var tile_uri = this.api_tiles + "/" + this.geo.level + "/" + x + "/" + y + "-asset.xml";
+			var error = this.metric[tile_uri]/(get_distance_y_adjusted_bbox(x,y,(x+1),(y+1),camera_origin)*this.geo.tile_size);
+			tile_list.insert(x,y,this.geo.level,error);
+			
+		}
+	}
+	
+	var finished_tiles=0;
+	var x;
+	var y;
+	var z;
+	
+	//console.log(tile_list.size());
+	
+	while((tile_list.size()>0)&&(tile_list.size()+finished_tiles<=this.max_tiles-3)){
+		var ret=tile_list.pop();
+		x=ret[0];
+		y=ret[1];
+		z=ret[2];
+		//can we split up the tile?
+		
+		//todo: if not loaded, still count towards tile count to prevent poor loading patterns!
+		if(z-this.geo.level<=this.maxloddelta && this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
+			//split it
+			var delta=z-this.geo.level+1;
+			var tilesize=1/Math.pow(2,delta);
+			
+			var uri1=this.api_tiles + "/" + (z+1) + "/" + (x*2) + "/" + (y*2) + "-asset.xml";
+			var uri2=this.api_tiles + "/" + (z+1) + "/" + (x*2+1) + "/" + (y*2) + "-asset.xml";
+			var uri3=this.api_tiles + "/" + (z+1) + "/" + (x*2) + "/" + (y*2+1) + "-asset.xml";
+			var uri4=this.api_tiles + "/" + (z+1) + "/" + (x*2+1) + "/" + (y*2+1) + "-asset.xml";
+			
+			
+			var metric1=this.metric[uri1];
+			var metric2=this.metric[uri2];
+			var metric3=this.metric[uri3];
+			var metric4=this.metric[uri4];
+			
+			var error1 = metric1/(get_distance_y_adjusted_bbox(2*x*tilesize,2*y*tilesize,(2*x+1)*tilesize,(2*y+1)*tilesize,camera_origin)*this.geo.tile_size);
+			var error2 = metric2/(get_distance_y_adjusted_bbox((2*x+1)*tilesize,2*y*tilesize,(2*x+2)*tilesize,(2*y+1)*tilesize,camera_origin)*this.geo.tile_size);
+			var error3 = metric3/(get_distance_y_adjusted_bbox(2*x*tilesize,(2*y+1)*tilesize,(2*x+1)*tilesize,(2*y+2)*tilesize,camera_origin)*this.geo.tile_size);
+			var error4 = metric4/(get_distance_y_adjusted_bbox((2*x+1)*tilesize,2*y*tilesize,(2*x+2)*tilesize,(2*y+1)*tilesize,camera_origin)*this.geo.tile_size);
+			
+			
+			//todo: frustum test
+			
+			tile_list.insert(x*2,y*2,z+1,error1);
+			tile_list.insert(x*2+1,y*2,z+1,error2);
+			tile_list.insert(x*2,y*2+1,z+1,error3);
+			tile_list.insert(x*2+1,y*2+1,z+1,error4);
+		
+		}
+		else{
+			var delta=z-this.geo.level;
+			var tile_uri = this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+			//add to tiles map
+			if(tiles[delta]==null){
+			tiles[delta]=[];
+			}
+			var tile=tiles[delta];
+			//remember x/y/z coordinates to use them later on!
+			tile[tile_uri]=[x,y,z];
+			//we allready finished this tile!
+			finished_tiles++;
+		}
+	}
+	
+	
+	while(tile_list.size()>0){
+		//add remaining tiles to tiles map
+		var ret=tile_list.pop();
+		x=ret[0];
+		y=ret[1];
+		z=ret[2];
+		
+		var delta=z-this.geo.level;
+		var tile_uri = this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+		//add to tiles map
+		if(tiles[delta]==null){
+		tiles[delta]=[];
+		}
+		var tile=tiles[delta];
+		//remember x/y/z coordinates to use them later on!
+		tile[tile_uri]=[x,y,z];
+	}
+	
+	
 }
 /*
 XML3D.DynamicTerrain.prototype.tile_onload= function (event,key,tiles,api_tiles){
@@ -428,8 +536,12 @@ XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
 				var node = records[0].target; // The node of which the result has changed
 				var result = records[0].result; // The data result of the observed node
 				var val = result.getValue('errormetric');
-				that.metrik[key]=val[0];
+				if(val==null){
+					console.log(key);
+				}
+				that.metric[key]=val[0];
 				that.tile_onload(key);
+				observer.disconnect();
 		}
 		
 		var data = XML3D.createElement("data");
@@ -598,7 +710,7 @@ function get_distance_y_adjusted_bbox(x_min,y_min,x_max,y_max,camera_origin){
 	else{
 		y=y_max;
 	}
-	return get_distance_y_adjusted(x,y,camera_origin);
+	return Math.max(get_distance_y_adjusted(x,y,camera_origin),0.01);
 }
 
 function get_distance_y_adjusted(x,y,camera_origin){
@@ -739,6 +851,111 @@ XML3D.DynamicTerrain.prototype.create_or_reuse_tile = function (group){
 	
 	return tile;
 }
+
+SortedTileList = function(){
+	//only error is sorted!
+	this.error=[];
+	this.x=[];
+	this.y=[];
+	this.z=[];
+};
+
+SortedTileList.prototype.insert=function(x,y,z,metric){
+	//console.log(this.error);
+	//console.log(metric);
+	
+	
+	//find index using binary search
+	var min=0;
+	var max=this.size()-1;
+	var currentIndex=0;
+	var currentElement;
+	
+	if(metric>this.error[max]){
+		this.error[max+1]=metric;
+		this.x[max+1]=x;
+		this.y[max+1]=y;
+		this.z[max+1]=z;
+	}
+	
+	else if(metric<this.error[min]){
+		//update arrays
+		this.error.splice(0, 0, metric);
+		this.x.splice(0, 0, x);
+		this.y.splice(0, 0, y);
+		this.z.splice(0, 0, z);
+	}
+	else{
+	while (min<=max){
+		currentIndex= Math.floor((min+max)/2);
+		currentElement= this.error[currentIndex];
+		
+		//special cases when terminating
+		if(max-min==1){
+			if(this.error[min]>metric){
+				currentIndex=min;
+				break;
+			}
+			else if(this.error[max]<metric){
+				currentIndex=max+1;
+				break;
+			}
+			else{
+				currentIndex=max;
+				break;
+			}
+		}
+		
+		if(max==min){
+			if(this.error[min]>metric){
+				currentIndex=min;
+				break;
+			}
+			else{
+				currentIndex=min+1;
+				break;
+			}
+		}
+		
+		
+		if(currentElement < metric){
+			min = currentIndex + 1;
+		}
+		else if(currentElement > metric){
+			max = currentIndex - 1;
+		}
+		else{
+			break;
+		}
+	}
+	
+	//update arrays
+	this.error.splice(currentIndex, 0, metric);
+	this.x.splice(currentIndex, 0, x);
+	this.y.splice(currentIndex, 0, y);
+	this.z.splice(currentIndex, 0, z);
+	
+	}
+
+	
+
+	
+	//console.log(this.error);
+	
+	
+}
+
+SortedTileList.prototype.size=function(){
+	return this.error.length;
+}
+
+SortedTileList.prototype.pop=function(){
+	this.error.pop();
+	return [this.x.pop(),this.y.pop(),this.z.pop()];
+}
+
+
+
 
 
 Iterator = function(capacity) {
