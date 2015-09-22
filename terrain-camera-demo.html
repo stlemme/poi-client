@@ -142,14 +142,6 @@
 			
 			var xml3d = document.getElementById("myxml3dcanvas");
 			
-			//camController = XML3D.Xml3dSceneController.controllers[0];
-			//camController.detach();
-			//camController.mode = "panning";
-			//camController.useKeys = false;
-			//camController.useRaycasting = true;
-			//camController.attach();
-			//updateViewportSize(xml3d);
-			
 			var viewElem = document.getElementById("Camera");
 			window.DemoCamera = new XML3D.StandardCamera(viewElem, {
 				mode: "panning",
@@ -166,7 +158,6 @@
 			//reuse or delete old tiles?
 			terrain.set_mode(terrain.REUSE_OLD_TILES);
 			terrain.far_plane=150000;
-			//terrain.far_plane=60000;
 			
 			var loader = document.getElementById("loader");
 
@@ -174,20 +165,10 @@
 				//rotate();
 				updateTiles();
 				updateTileStatistics();
-				/*var obj = evt.detail.count.objects;
-				if (obj > (terrain.tileCount/4)){
-					loader.style.display = "none";
-				}*/	
 			}, false);
 		}
 		
 		window.addEventListener('load', onload, false);
-		
-		/*function updateViewportSize(elem) {
-			camController.camera.setResolution(elem.clientWidth,elem.clientHeight);
-			
-			var t="Resolution: "+elem.clientWidth+"*"+elem.clientHeight;
-		}*/
 		
 		function updateTiles() {	
 			//create tiles
@@ -253,7 +234,7 @@
 			</group>
 			
 			<!-- Light and View -->
-			<transform id="Camera_tf" translation="0 4000 0"></transform>
+			<transform id="Camera_tf" translation="0 8000 0"></transform>
 			<view id="Camera" transform="#Camera_tf"></view>
 			
 			<group style="transform: rotate3d(-1, 0, 0, 60deg);">

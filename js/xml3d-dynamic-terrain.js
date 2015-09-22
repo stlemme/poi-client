@@ -61,6 +61,8 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	
 	this.metric=[];
 	
+	this.tiles_being_loaded=0;
+	
 	//used for stitching
 	this.displayed_tiles=[];
 	
@@ -202,7 +204,7 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	else{
 		for (var x = min.x; x <= max.x; x++){
 			for (var y = min.y; y <= max.y; y++){
-					this.generate_tiles (x,y,z,camera_origin,frustum,required_tiles,threshold);
+					this.generate_tiles (x,y,z,camera_origin,frustum,required_tiles,threshold,false);
 			}
 		}
 	}
@@ -341,7 +343,7 @@ XML3D.DynamicTerrain.prototype.preload_tiles_recursive = function(x,y,delta,came
 	var z= this.geo.level+delta;
 	var scale= Math.pow(2,delta);
 	//preload small tiles only after large tiles have allready been loaded!
-	if(this.load_tile(x,y,z)&&delta<this.preload_range.length-1&&get_squared_distance_y_adjusted((x+0.5)/scale,(y+0.5)/scale,camera_origin)<Math.pow(this.preload_range[delta+1]/this.geo.tile_size,2)){
+	if(this.load_tile(x,y,z,false)&&delta<this.preload_range.length-1&&get_squared_distance_y_adjusted((x+0.5)/scale,(y+0.5)/scale,camera_origin)<Math.pow(this.preload_range[delta+1]/this.geo.tile_size,2)){
 		this.preload_tiles_recursive(x*2,y*2,delta+1,camera_origin);
 		this.preload_tiles_recursive(x*2+1,y*2,delta+1,camera_origin);
 		this.preload_tiles_recursive(x*2,y*2+1,delta+1,camera_origin);
@@ -350,14 +352,15 @@ XML3D.DynamicTerrain.prototype.preload_tiles_recursive = function(x,y,delta,came
 }
 
 
-XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,frustum,tiles,threshold){
+XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,frustum,tiles,threshold,recursive){
 	//camera origin is the 3d camera origin transformed into tile space
 	var delta=z-this.geo.level;
 	var tilesize=1/Math.pow(2,delta);
 	var distance_squared=get_squared_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin);
 	
 	//distance test to avoid flickering at terrain boarder
-	if(!frustum.intersectRectangle(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize)||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))||!this.load_tile(x,y,z)){
+	if(!frustum.intersectRectangle(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize)
+	   ||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))||((!recursive)&&(!this.load_tile(x,y,z,false)))){
 		//no need to draw this!
 		return;
 	}
@@ -365,13 +368,14 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,fru
 	var tile_uri = this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
 
 	//draw more detailed tiles if near camera and max lod has not been reached and all tiles are ready to be displayed
-	if(/*this.metric[tile_uri]!=null&&*/this.metric[tile_uri]>(get_distance_y_adjusted_bbox(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize,camera_origin)*this.geo.tile_size)*threshold/*0.0005*/ && delta<this.maxloddelta && this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
+	if(this.metric[tile_uri]>(get_distance_y_adjusted_bbox(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize,camera_origin)*this.geo.tile_size)*threshold && delta<this.maxloddelta
+	   && this.load_tile(x*2,y*2,z+1,true)&& this.load_tile(x*2+1,y*2,z+1,true)&& this.load_tile(x*2,y*2+1,z+1,true)&& this.load_tile(x*2+1,y*2+1,z+1,true)){
 		//split up tile
 		
-		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,threshold);
-		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,threshold);
-		this.generate_tiles(x*2,y*2+1,z+1,camera_origin,frustum,tiles,threshold);
-		this.generate_tiles(x*2+1,y*2+1,z+1,camera_origin,frustum,tiles,threshold);
+		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,threshold,true);
+		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,threshold,true);
+		this.generate_tiles(x*2,y*2+1,z+1,camera_origin,frustum,tiles,threshold,true);
+		this.generate_tiles(x*2+1,y*2+1,z+1,camera_origin,frustum,tiles,threshold,true);
 	}
 	else{
 		//draw current tile
@@ -393,7 +397,7 @@ XML3D.DynamicTerrain.prototype.generate_tiles_fixed_performance = function(x_min
 		for (var y = y_min; y <= y_max; y++){
 			var distance_squared=get_squared_distance((x+0.5),(y+0.5),camera_origin);
 			//distance test to avoid flickering at terrain boarder
-			if(!frustum.intersectRectangle(x,y,(x+1),(y+1))||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))||!this.load_tile(x,y,this.geo.level)){
+			if(!frustum.intersectRectangle(x,y,(x+1),(y+1))||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))||!this.load_tile(x,y,this.geo.level,false)){
 				//no need to draw this!
 				continue;
 			}
@@ -422,7 +426,7 @@ XML3D.DynamicTerrain.prototype.generate_tiles_fixed_performance = function(x_min
 		
 		//todo: if not loaded, still count towards tile count to prevent poor loading patterns!
 		if(z-this.geo.level<=this.maxloddelta){
-			if(this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
+			if(this.load_tile(x*2,y*2,z+1,true)&& this.load_tile(x*2+1,y*2,z+1,true)&& this.load_tile(x*2,y*2+1,z+1,true)&& this.load_tile(x*2+1,y*2+1,z+1,true)){
 				//split it
 				var delta=z-this.geo.level+1;
 				var tilesize=1/Math.pow(2,delta);
@@ -499,27 +503,19 @@ XML3D.DynamicTerrain.prototype.generate_tiles_fixed_performance = function(x_min
 		//remember x/y/z coordinates to use them later on!
 		tile[tile_uri]=[x,y,z];
 	}
-	
-	
-}
-/*
-XML3D.DynamicTerrain.prototype.tile_onload= function (event,key,tiles,api_tiles){
-	//remember this tile has been cached and can be used without creating holes is the terrain.
-	tiles[key]=true;
-	//remove loaded tile from dom
-	var node=event.target;
-	node.parentNode.removeChild(node);
-}
-*/
-XML3D.DynamicTerrain.prototype.tile_onload= function (key){
-	//remember this tile has been cached and can be used without creating holes is the terrain.
-	this.cached_tiles[key]=true;
-	//remove loaded tile from dom
-	//var node=event.target;
-	//node.parentNode.removeChild(node);
 }
 
-XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
+XML3D.DynamicTerrain.prototype.tile_onload= function (key){
+	//remember this tile has been cached and can be used without creating holes is the terrain.
+	this.tiles_being_loaded--;
+	this.cached_tiles[key]=true;
+	if(this.tiles_being_loaded==0&&this.framecount<=2){
+		//call render tiles to prevent white screen when no tiles are in groups!
+		this.render_tiles();
+	}
+}
+
+XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z,optional){
 	//returns true if tile is chached
 	//otherwise false; starts loading the tile
 	var key=this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
@@ -531,24 +527,12 @@ XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
 	else if(lookup==null){
 		//tile has not been requested yet
 		//are we allowed to load it?
-		/*
-		//currently not working!
-		if(this.loading.children.length>=this.max_preload_requests){
+		if(optional&&this.tiles_being_loaded>=this.max_preload_requests){
 			return false;
 		}
-		*/
+
 		//load it!
 		var that = this;
-		
-		/*var tile = XML3D.createElement("model");
-		this.loading.appendChild(tile);
-		tile.setAttribute("src", key + "#" + this.layer);
-		//make sure we are alerted if tile is loaded
-		tile.addEventListener('load', function( evt ) {
-			that.tile_onload(key);
-			
-		});
-		*/
 		var callback = function(records, observer){
 				var node = records[0].target; // The node of which the result has changed
 				var result = records[0].result; // The data result of the observed node
@@ -560,7 +544,7 @@ XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z){
 				that.tile_onload(key);
 				observer.disconnect();
 		}
-		
+		this.tiles_being_loaded++;
 		var data = XML3D.createElement("data");
 		data.setAttribute("src",key+"#meta-data");
 		var observer = new XML3DDataObserver(callback, 'errormetric');
@@ -727,7 +711,7 @@ function get_distance_y_adjusted_bbox(x_min,y_min,x_max,y_max,camera_origin){
 	else{
 		y=y_max;
 	}
-	return Math.max(get_distance_y_adjusted(x,y,camera_origin),0.01);
+	return Math.max(get_distance_y_adjusted(x,y,camera_origin),0.0001);
 }
 
 function get_distance_y_adjusted(x,y,camera_origin){
