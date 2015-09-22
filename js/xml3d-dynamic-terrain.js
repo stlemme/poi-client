@@ -37,11 +37,15 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	}
 	
 	this.handle_invisible=this.handle_invisible_delete;
-	/*
-	if(options.tile_management!=null){
-		this.set_mode(tile_management);
+	
+	if(options.tile_management=="reuse_old_tiles"){
+		this.handle_invisible=this.handle_invisible_reuse;
 	}
-	*/
+	
+	if(options.tile_management=="delete_old_tiles"){
+		this.handle_invisible=this.handle_invisible_delete;
+	}
+	
 	//statistics
 	this.tileCount = 0;
 	this.maxtileCount = 0;
@@ -198,17 +202,9 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	//for all tiles in frustum: add to required tiles
 	var required_tiles=[];
 	
-	if(this.use_constant_tilepool){
-		this.generate_tiles_fixed_performance(min.x,min.y,max.x,max.y,camera_origin,frustum,required_tiles);
-	}
-	else{
-		for (var x = min.x; x <= max.x; x++){
-			for (var y = min.y; y <= max.y; y++){
-					this.generate_tiles (x,y,z,camera_origin,frustum,required_tiles,threshold,false);
-			}
-		}
-	}
-	
+
+	this.generate_tiles(min.x,min.y,max.x,max.y,camera_origin,frustum,required_tiles,threshold);
+
 	if(this.draw_minimap){
 		//create image with same dimensions as canvas
 		var element = document.getElementById("map");
@@ -352,43 +348,8 @@ XML3D.DynamicTerrain.prototype.preload_tiles_recursive = function(x,y,delta,came
 }
 
 
-XML3D.DynamicTerrain.prototype.generate_tiles = function(x,y,z,camera_origin,frustum,tiles,threshold,recursive){
-	//camera origin is the 3d camera origin transformed into tile space
-	var delta=z-this.geo.level;
-	var tilesize=1/Math.pow(2,delta);
-	var distance_squared=get_squared_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin);
-	
-	//distance test to avoid flickering at terrain boarder
-	if(!frustum.intersectRectangle(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize)
-	   ||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))||((!recursive)&&(!this.load_tile(x,y,z,false)))){
-		//no need to draw this!
-		return;
-	}
 
-	var tile_uri = this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
-
-	//draw more detailed tiles if near camera and max lod has not been reached and all tiles are ready to be displayed
-	if(this.metric[tile_uri]>(get_distance_y_adjusted_bbox(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize,camera_origin)*this.geo.tile_size)*threshold && delta<this.maxloddelta
-	   && this.load_tile(x*2,y*2,z+1,true)&& this.load_tile(x*2+1,y*2,z+1,true)&& this.load_tile(x*2,y*2+1,z+1,true)&& this.load_tile(x*2+1,y*2+1,z+1,true)){
-		//split up tile
-		
-		this.generate_tiles(x*2,y*2,z+1,camera_origin,frustum,tiles,threshold,true);
-		this.generate_tiles(x*2+1,y*2,z+1,camera_origin,frustum,tiles,threshold,true);
-		this.generate_tiles(x*2,y*2+1,z+1,camera_origin,frustum,tiles,threshold,true);
-		this.generate_tiles(x*2+1,y*2+1,z+1,camera_origin,frustum,tiles,threshold,true);
-	}
-	else{
-		//draw current tile
-		if(tiles[delta]==null){
-			tiles[delta]=[];
-		}
-		var tile=tiles[delta];
-		//remember x/y/z coordinates to use them later on!
-		tile[tile_uri]=[x,y,z];
-	}	
-}
-
-XML3D.DynamicTerrain.prototype.generate_tiles_fixed_performance = function(x_min,y_min,x_max,y_max,camera_origin,frustum,tiles){
+XML3D.DynamicTerrain.prototype.generate_tiles = function(x_min,y_min,x_max,y_max,camera_origin,frustum,tiles,threshold){
 	
 	var tile_list= new SortedTileList();
 	
@@ -415,13 +376,28 @@ XML3D.DynamicTerrain.prototype.generate_tiles_fixed_performance = function(x_min
 	var y;
 	var z;
 	
-	//console.log(tile_list.size());
+	//dummy value to not exit loop instantly.
+	var metric=100;
+	
+	var condition;
+	
+	if(this.use_constant_tilepool){
+		condition= function(){
+			return tile_list.size()+finished_tiles<=this.max_tiles-3;
+		};
+	}
+	else{
+		condition= function(){
+			return metric>threshold;
+		}
+	}
 	
 	while((tile_list.size()>0)&&(tile_list.size()+finished_tiles<=this.max_tiles-3)){
 		var ret=tile_list.pop();
 		x=ret[0];
 		y=ret[1];
 		z=ret[2];
+		metric=ret[3];
 		//can we split up the tile?
 		
 		//todo: if not loaded, still count towards tile count to prevent poor loading patterns!
@@ -951,8 +927,7 @@ SortedTileList.prototype.size=function(){
 }
 
 SortedTileList.prototype.pop=function(){
-	this.error.pop();
-	return [this.x.pop(),this.y.pop(),this.z.pop()];
+	return [this.x.pop(),this.y.pop(),this.z.pop(),this.error.pop()];
 }
 
 
