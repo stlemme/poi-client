@@ -56,9 +56,9 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	//currently disabled!
 	this.max_preload_requests=20;
 	
-	this.max_tiles=200;
+	this.max_tiles=160;
 	
-	this.preload_range=[500000,75000];
+	this.preload_range=[750000];
 	
 };
 
@@ -419,49 +419,64 @@ XML3D.DynamicTerrain.prototype.generate_tiles_fixed_performance = function(x_min
 		//can we split up the tile?
 		
 		//todo: if not loaded, still count towards tile count to prevent poor loading patterns!
-		if(z-this.geo.level<=this.maxloddelta && this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
-			//split it
-			var delta=z-this.geo.level+1;
-			var tilesize=1/Math.pow(2,delta);
+		if(z-this.geo.level<=this.maxloddelta){
+			if(this.load_tile(x*2,y*2,z+1)&& this.load_tile(x*2+1,y*2,z+1)&& this.load_tile(x*2,y*2+1,z+1)&& this.load_tile(x*2+1,y*2+1,z+1)){
+				//split it
+				var delta=z-this.geo.level+1;
+				var tilesize=1/Math.pow(2,delta);
 			
-			var uri1=this.api_tiles + "/" + (z+1) + "/" + (x*2) + "/" + (y*2) + "-asset.xml";
-			var uri2=this.api_tiles + "/" + (z+1) + "/" + (x*2+1) + "/" + (y*2) + "-asset.xml";
-			var uri3=this.api_tiles + "/" + (z+1) + "/" + (x*2) + "/" + (y*2+1) + "-asset.xml";
-			var uri4=this.api_tiles + "/" + (z+1) + "/" + (x*2+1) + "/" + (y*2+1) + "-asset.xml";
+				//todo: frustum test
+				if(frustum.intersectRectangle(x*2*tilesize,y*2*tilesize,(x*2+1)*tilesize,(y*2+1)*tilesize)){
+					var uri1=this.api_tiles + "/" + (z+1) + "/" + (x*2) + "/" + (y*2) + "-asset.xml";
+					var metric1=this.metric[uri1];
+					var error1 = metric1/(get_distance_y_adjusted_bbox(2*x*tilesize,2*y*tilesize,(2*x+1)*tilesize,(2*y+1)*tilesize,camera_origin)*this.geo.tile_size);
+					tile_list.insert(x*2,y*2,z+1,error1);
+				}
 			
+				if(frustum.intersectRectangle((x*2+1)*tilesize,y*2*tilesize,(x*2+2)*tilesize,(y*2+1)*tilesize)){
+					var uri2=this.api_tiles + "/" + (z+1) + "/" + (x*2+1) + "/" + (y*2) + "-asset.xml";
+					var metric2=this.metric[uri2];
+					var error2 = metric2/(get_distance_y_adjusted_bbox((2*x+1)*tilesize,2*y*tilesize,(2*x+2)*tilesize,(2*y+1)*tilesize,camera_origin)*this.geo.tile_size);
+					tile_list.insert(x*2+1,y*2,z+1,error2);
+				}
 			
-			var metric1=this.metric[uri1];
-			var metric2=this.metric[uri2];
-			var metric3=this.metric[uri3];
-			var metric4=this.metric[uri4];
+				if(frustum.intersectRectangle(x*2*tilesize,(y*2+1)*tilesize,(x*2+1)*tilesize,(y*2+2)*tilesize)){
+					var uri3=this.api_tiles + "/" + (z+1) + "/" + (x*2) + "/" + (y*2+1) + "-asset.xml";
+					var metric3=this.metric[uri3];
+					var error3 = metric3/(get_distance_y_adjusted_bbox(2*x*tilesize,(2*y+1)*tilesize,(2*x+1)*tilesize,(2*y+2)*tilesize,camera_origin)*this.geo.tile_size);
+					tile_list.insert(x*2,y*2+1,z+1,error3);
+				}
+				
+				if(frustum.intersectRectangle((x*2+1)*tilesize,(y*2+1)*tilesize,(x*2+2)*tilesize,(y*2+2)*tilesize)){
+					var uri4=this.api_tiles + "/" + (z+1) + "/" + (x*2+1) + "/" + (y*2+1) + "-asset.xml";
+					var metric4=this.metric[uri4];
+					var error4 = metric4/(get_distance_y_adjusted_bbox((2*x+1)*tilesize,2*y*tilesize,(2*x+2)*tilesize,(2*y+1)*tilesize,camera_origin)*this.geo.tile_size);
+					tile_list.insert(x*2+1,y*2+1,z+1,error4);
+				}
+				continue;
+			}
+			else{
+				//we want to split but can't -> increase finished tiles to prevent other tiles from being split unnecessarily
+				//assume worst case(highest amounts of pre-loads) to avoid unnecessary requests.
+				finished_tiles+=Math.pow(2,this.maxloddelta-(z-this.geo.level))*4;
 			
-			var error1 = metric1/(get_distance_y_adjusted_bbox(2*x*tilesize,2*y*tilesize,(2*x+1)*tilesize,(2*y+1)*tilesize,camera_origin)*this.geo.tile_size);
-			var error2 = metric2/(get_distance_y_adjusted_bbox((2*x+1)*tilesize,2*y*tilesize,(2*x+2)*tilesize,(2*y+1)*tilesize,camera_origin)*this.geo.tile_size);
-			var error3 = metric3/(get_distance_y_adjusted_bbox(2*x*tilesize,(2*y+1)*tilesize,(2*x+1)*tilesize,(2*y+2)*tilesize,camera_origin)*this.geo.tile_size);
-			var error4 = metric4/(get_distance_y_adjusted_bbox((2*x+1)*tilesize,2*y*tilesize,(2*x+2)*tilesize,(2*y+1)*tilesize,camera_origin)*this.geo.tile_size);
-			
-			
-			//todo: frustum test
-			
-			tile_list.insert(x*2,y*2,z+1,error1);
-			tile_list.insert(x*2+1,y*2,z+1,error2);
-			tile_list.insert(x*2,y*2+1,z+1,error3);
-			tile_list.insert(x*2+1,y*2+1,z+1,error4);
+			}
 		
 		}
-		else{
-			var delta=z-this.geo.level;
-			var tile_uri = this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
-			//add to tiles map
-			if(tiles[delta]==null){
-			tiles[delta]=[];
-			}
-			var tile=tiles[delta];
-			//remember x/y/z coordinates to use them later on!
-			tile[tile_uri]=[x,y,z];
-			//we allready finished this tile!
-			finished_tiles++;
+		
+		//do not split up tile!
+		var delta=z-this.geo.level;
+		var tile_uri = this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+		//add to tiles map
+		if(tiles[delta]==null){
+		tiles[delta]=[];
 		}
+		var tile=tiles[delta];
+		//remember x/y/z coordinates to use them later on!
+		tile[tile_uri]=[x,y,z];
+		//we allready finished this tile!
+		finished_tiles++;
+		
 	}
 	
 	
