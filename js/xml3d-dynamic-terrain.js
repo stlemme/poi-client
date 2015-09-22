@@ -264,7 +264,7 @@ function intersect_ray_x_z_plane(camera_x,camera_y,camera_z,direction_x,directio
 
 
 function draw_map(required_tiles,imageData,map_center,maxloddelta,x_z_intersections){
-	var scale=2;
+	var scale=1;
 	var center_x= Math.floor(imageData.width/2);
 	var center_y= Math.floor(imageData.height/2);
 	for(delta in required_tiles){
