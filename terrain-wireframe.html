@@ -155,15 +155,19 @@
 			});
 			
 			var options={
+				"far_plane":500000,
+				"max_lod_delta":4,
+				"wireframe":true,
+				//"tile_selection":"constant_performance",
 				"layer":config.layer
 			}
 			
 			terrain = new XML3D.DynamicTerrain(geo, ground_group, ground_tf_scale, window.DemoCamera, config.api_tiles, options);
 			//reuse or delete old tiles?
 			terrain.set_mode(terrain.DELETE_OLD_TILES);
-			terrain.far_plane=500000;
-			terrain.maxloddelta=4;
-			terrain.wireframe=true;
+			//terrain.far_plane=500000;
+			//terrain.maxloddelta=4;
+			//terrain.wireframe=true;
 			
 			//var loader = document.getElementById("loader");
 

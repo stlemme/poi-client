@@ -12,7 +12,37 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	//optional information
 	this.bounds=options.bounds||null;
 	this.layer=options.layer||"all";
+	
+	this.far_plane=options.far_plane||150000;
+	this.maxloddelta=options.max_lod_delta||2;
+	this.terrain_min_height=options.min_height||0;
+	this.wireframe=options.wireframe||false;
+	this.draw_minimap=options.minimap||true;
+	
+	
+	this.use_preload=options.preload||false;
+	this.preload_range=options.preload_range||[750000];
 
+	
+	this.max_tiles=options.maximum_tiles||160;
+	this.screen_space_error=options.maximum_screen_space_error||1;
+	this.use_constant_tilepool=false;
+	
+	if(options.tile_selection=="constant_performance"){
+		this.use_constant_tilepool=true;
+		
+	}
+	if(options.tile_selection=="constant_quality"){
+		this.use_constant_tilepool=false;
+	}
+	
+	this.handle_invisible=this.handle_invisible_delete;
+	/*
+	if(options.tile_management!=null){
+		this.set_mode(tile_management);
+	}
+	*/
+	//statistics
 	this.tileCount = 0;
 	this.maxtileCount = 0;
 	this.tiles_in_bbox=0;
@@ -23,42 +53,26 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.removedtiles=0;
 	this.framecount=0;
 	
-	this.far_plane=150000;
+	
 	this.lodLayers=[];
-	this.maxloddelta=2;
+	
+	//only used in distance based approach!
 	this.grp_diameter=2;
 	
 	this.metric=[];
-	this.screen_space_error=1;
-	
-	this.terrain_min_height=0;
 	
 	//used for stitching
 	this.displayed_tiles=[];
 	
-	this.handle_invisible=this.handle_invisible_delete;
-	
 	//used in draw_tiles only!
 	this.freetiles=new Iterator(1);
-	
-	//used for wireframe rendering
-	this.wireframe=false;
 	
 	//used for pre-loading
 	this.cached_tiles=[];
 	
-	/*this.loading=XML3D.createElement("group");
-	this.loading.setAttribute("style", "transform: scale(0,0,0)");
-	this.loading.setAttribute("id", "loading");
-	this.ground.appendChild(this.loading);
-	*/
-	
 	//currently disabled!
 	this.max_preload_requests=20;
 	
-	this.max_tiles=160;
-	
-	this.preload_range=[750000];
 	
 };
 
@@ -78,16 +92,6 @@ XML3D.DynamicTerrain.prototype.set_mode = function(mode) {
 }
 
 XML3D.DynamicTerrain.prototype.render_tiles = function() {
-
-	// var ratio=Math.tan(this.camera.fieldOfView/2);
-
-	// var x_frustum=(this.camera.width)/this.camera.height*ratio;
-	// var y_frustum=(this.camera.height)/this.camera.height*ratio;
-			
-	// var f1=this.camera.getRayDirection(x_frustum,y_frustum);
-	// var f2=this.camera.getRayDirection(-x_frustum,y_frustum);
-	// var f3=this.camera.getRayDirection(-x_frustum,-y_frustum);
-	// var f4=this.camera.getRayDirection(x_frustum,-y_frustum);
 	
 	var r1 = this.camera.xml3d.generateRay(this.camera.width-1, this.camera.height-1);
 	var r2 = this.camera.xml3d.generateRay(                  0, this.camera.height-1);
@@ -98,42 +102,34 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	var f2 = r2.direction;
 	var f3 = r3.direction;
 	var f4 = r4.direction;
-	
-	//no intersection with xz-plane done since hight values can be negative!
-	/*
-	var p1 = this.camera.transformInterface.position.add(f1.scale(this.far_plane));
-	var p2 = this.camera.transformInterface.position.add(f2.scale(this.far_plane));
-	var p3 = this.camera.transformInterface.position.add(f3.scale(this.far_plane));
-	var p4 = this.camera.transformInterface.position.add(f4.scale(this.far_plane));
-	*/
-	
+
 	//intersection with xz-plane at height this.terrain_min_height with maximum distance of this.far_plane
-	var p1 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f1.x,f1.y,f1.z,this.far_plane,this.terrain_min_height);
-	var p2 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f2.x,f2.y,f2.z,this.far_plane,this.terrain_min_height);
-	var p3 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f3.x,f3.y,f3.z,this.far_plane,this.terrain_min_height);
-	var p4 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f4.x,f4.y,f4.z,this.far_plane,this.terrain_min_height);
+	var i1 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f1.x,f1.y,f1.z,this.far_plane,this.terrain_min_height);
+	var i2 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f2.x,f2.y,f2.z,this.far_plane,this.terrain_min_height);
+	var i3 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f3.x,f3.y,f3.z,this.far_plane,this.terrain_min_height);
+	var i4 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f4.x,f4.y,f4.z,this.far_plane,this.terrain_min_height);
 	
-	//create bounds of view frustum projection
+	//create bounds of view frustum
 			
-	var p1_tile=this.geo.backproject(p1.x,p1.z);
-	var p1_proj=this.geo.backproject(p1.x,p1.z);
-	p1_tile.x=Math.floor(p1_tile.x);
-	p1_tile.y=Math.floor(p1_tile.y);
+	var i1_tile=this.geo.backproject(i1.x,i1.z);
+	var i1_proj=this.geo.backproject(i1.x,i1.z);
+	i1_tile.x=Math.floor(i1_tile.x);
+	i1_tile.y=Math.floor(i1_tile.y);
 			
-	var p2_tile=this.geo.backproject(p2.x,p2.z);
-	var p2_proj=this.geo.backproject(p2.x,p2.z);
-	p2_tile.x=Math.floor(p2_tile.x);
-	p2_tile.y=Math.floor(p2_tile.y);
+	var i2_tile=this.geo.backproject(i2.x,i2.z);
+	var i2_proj=this.geo.backproject(i2.x,i2.z);
+	i2_tile.x=Math.floor(i2_tile.x);
+	i2_tile.y=Math.floor(i2_tile.y);
 			
-	var p3_tile=this.geo.backproject(p3.x,p3.z);
-	var p3_proj=this.geo.backproject(p3.x,p3.z);
-	p3_tile.x=Math.floor(p3_tile.x);
-	p3_tile.y=Math.floor(p3_tile.y);
+	var i3_tile=this.geo.backproject(i3.x,i3.z);
+	var i3_proj=this.geo.backproject(i3.x,i3.z);
+	i3_tile.x=Math.floor(i3_tile.x);
+	i3_tile.y=Math.floor(i3_tile.y);
 			
-	var p4_tile=this.geo.backproject(p4.x,p4.z);
-	var p4_proj=this.geo.backproject(p4.x,p4.z);
-	p4_tile.x=Math.floor(p4_tile.x);
-	p4_tile.y=Math.floor(p4_tile.y);
+	var i4_tile=this.geo.backproject(i4.x,i4.z);
+	var i4_proj=this.geo.backproject(i4.x,i4.z);
+	i4_tile.x=Math.floor(i4_tile.x);
+	i4_tile.y=Math.floor(i4_tile.y);
 			
 	var camera_tile=this.geo.backproject(this.camera.transformInterface.position.x,this.camera.transformInterface.position.z);
 	var camera_proj=this.geo.backproject(this.camera.transformInterface.position.x,this.camera.transformInterface.position.z);
@@ -162,13 +158,13 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	}
 	
 			
-	var projections=new Array(p1_proj,p2_proj,p3_proj,p4_proj);
-	var frustum=new XML3D.Frustum(camera_proj,projections);
+	var x_z_intersections=new Array(i1_proj,i2_proj,i3_proj,i4_proj);
+	var frustum=new XML3D.Frustum(camera_proj,x_z_intersections);
 			
-	var dynamicbbox=new XML3D.Bbox(p1_tile.x,p1_tile.y,p1_tile.x,p1_tile.y);
-	dynamicbbox.extend(p2_tile.x,p2_tile.y);
-	dynamicbbox.extend(p3_tile.x,p3_tile.y);
-	dynamicbbox.extend(p4_tile.x,p4_tile.y);
+	var dynamicbbox=new XML3D.Bbox(i1_tile.x,i1_tile.y,i1_tile.x,i1_tile.y);
+	dynamicbbox.extend(i2_tile.x,i2_tile.y);
+	dynamicbbox.extend(i3_tile.x,i3_tile.y);
+	dynamicbbox.extend(i4_tile.x,i4_tile.y);
 	dynamicbbox.extend(camera_tile.x,camera_tile.y);
 
 
@@ -192,33 +188,39 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 		max=dynamicbbox.max;
 	}
 	
-	//create image with same dimensions as canvas
-	var element = document.getElementById("map");
-    var c = element.getContext("2d");
-
-    var width = element.width;
-    var height = element.height;
-
-    var imageData = c.createImageData(width, height);
-	
 	this.tiles_in_bbox=(max.x-min.x+1)*(max.y-min.y+1);
 	
-	//this.preload_tiles(camera_origin);
-
+	if(this.use_preload){
+		this.preload_tiles(camera_origin);
+	}
 	//for all tiles in frustum: add to required tiles
 	var required_tiles=[];
-	this.generate_tiles_fixed_performance(min.x,min.y,max.x,max.y,camera_origin,frustum,required_tiles);
-	/*
-	for (var x = min.x; x <= max.x; x++){
-		for (var y = min.y; y <= max.y; y++){
-				this.generate_tiles (x,y,z,camera_origin,frustum,required_tiles,threshold);
+	
+	if(this.use_constant_tilepool){
+		this.generate_tiles_fixed_performance(min.x,min.y,max.x,max.y,camera_origin,frustum,required_tiles);
+	}
+	else{
+		for (var x = min.x; x <= max.x; x++){
+			for (var y = min.y; y <= max.y; y++){
+					this.generate_tiles (x,y,z,camera_origin,frustum,required_tiles,threshold);
+			}
 		}
 	}
-	*/
-	draw_map(required_tiles,imageData,map_center,this.maxloddelta,projections);
-	c.putImageData(imageData, 0, 0);
 	
-	this.draw_tiles(required_tiles);
+	if(this.draw_minimap){
+		//create image with same dimensions as canvas
+		var element = document.getElementById("map");
+		var c = element.getContext("2d");
+
+		var width = element.width;
+		var height = element.height;
+
+		var imageData = c.createImageData(width, height);
+		draw_map(required_tiles,imageData,map_center,this.maxloddelta,x_z_intersections);
+		c.putImageData(imageData, 0, 0);
+	
+		this.draw_tiles(required_tiles);
+	}
 	
 	if(this.framecount>0){
 		this.maxupdatedtiles=Math.max(this.maxupdatedtiles,this.updatedtiles);
@@ -259,7 +261,7 @@ function intersect_ray_x_z_plane(camera_x,camera_y,camera_z,direction_x,directio
 }
 
 
-function draw_map(required_tiles,imageData,map_center,maxloddelta,projections){
+function draw_map(required_tiles,imageData,map_center,maxloddelta,x_z_intersections){
 	var scale=2;
 	var center_x= Math.floor(imageData.width/2);
 	var center_y= Math.floor(imageData.height/2);
@@ -296,9 +298,9 @@ function draw_map(required_tiles,imageData,map_center,maxloddelta,projections){
 			setPixel(imageData, center_x+x, center_y+y, 127, 127, 255, 255);
 		}
 	}
-	for(var i=0;i<projections.length;i++){
-		var pos_x= Math.floor(projections[i].x*Math.pow(2,maxloddelta)-map_center['x'])*scale+center_x;
-		var pos_y= Math.floor(projections[i].y*Math.pow(2,maxloddelta)-map_center['y'])*scale+center_y;
+	for(var i=0;i<x_z_intersections.length;i++){
+		var pos_x= Math.floor(x_z_intersections[i].x*Math.pow(2,maxloddelta)-map_center['x'])*scale+center_x;
+		var pos_y= Math.floor(x_z_intersections[i].y*Math.pow(2,maxloddelta)-map_center['y'])*scale+center_y;
 		for(var x=-1;x<=1;x++){
 			for(var y=-1;y<=1;y++){
 				setPixel(imageData, pos_x+x, pos_y+y, 63, 63, 63, 255);
