@@ -378,12 +378,13 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x_min,y_min,x_max,y_max
 	
 	//dummy value to not exit loop instantly.
 	var metric=100;
+	var max_tiles=this.max_tiles
 	
 	var condition;
 	
 	if(this.use_constant_tilepool){
 		condition= function(){
-			return tile_list.size()+finished_tiles<=this.max_tiles-3;
+			return tile_list.size()+finished_tiles<=max_tiles-3;
 		};
 	}
 	else{
@@ -392,7 +393,7 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x_min,y_min,x_max,y_max
 		}
 	}
 	
-	while((tile_list.size()>0)&&(tile_list.size()+finished_tiles<=this.max_tiles-3)){
+	while((tile_list.size()>0)&&condition()){
 		var ret=tile_list.pop();
 		x=ret[0];
 		y=ret[1];
