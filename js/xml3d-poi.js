@@ -57,6 +57,12 @@ XML3D.POI.prototype.loadPOIDP = function ( api_poi, bbox )
 	});
 }
 
+XML3D.POI.prototype.loadStaticOverpass = function ( url )
+{
+	var req = $.getJSON(url);
+	req.done(this.handleOverpassData.bind(this));
+}
+
 XML3D.POI.prototype.loadOverpass = function ( bbox )
 {
 	var swne = bbox.south + "," + bbox.west + "," + bbox.north + "," + bbox.east;
@@ -71,28 +77,30 @@ XML3D.POI.prototype.loadOverpass = function ( bbox )
 			data: qlQuery
 		}
 	);
-		
+	
+	req.done(this.handleOverpassData.bind(this));
+}
+
+XML3D.POI.prototype.handleOverpassData = function( data ) {
 	var scope = this;
-	req.done(function( data ) {
-		// console.log(data);
-		$.each( data.elements, function( idx, node_data ) {
-			scope.addPOI(
-				node_data.id,
-				{
-					fw_core: {
-						category: node_data.tags.amenity,
-						location: {
-							wgs84: {
-								latitude: node_data.lat,
-								longitude: node_data.lon
-							}
+	// console.log(data);
+	$.each( data.elements, function( idx, node_data ) {
+		scope.addPOI(
+			node_data.id,
+			{
+				fw_core: {
+					category: node_data.tags.amenity,
+					location: {
+						wgs84: {
+							latitude: node_data.lat,
+							longitude: node_data.lon
 						}
 					}
 				}
-			);
-		});
-		// console.log(data.pois);
+			}
+		);
 	});
+	// console.log(data.pois);
 }
 
 

@@ -32,9 +32,7 @@
 				"south": 48.261953,
 				"east": 11.679954,
 				"north": 48.269359
-			},
-			
-			"api_poi": global.api.poi
+			}
 		};
 		
 		var geo, terrain, pois;
@@ -58,7 +56,7 @@
 			var pois_group = document.getElementById("pois");
 			pois = new XML3D.POI(geo, pois_group);
 			geo.registerMoveCallback(function (pos) {
-				pois.loadOverpass(config.bbox);
+				pois.loadStaticOverpass("dummy/overpass-tum.json");
 			});
 			
 			animator = new XML3D.Animator();
