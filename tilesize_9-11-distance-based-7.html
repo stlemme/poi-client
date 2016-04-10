@@ -5,14 +5,19 @@
 
 	<link rel="stylesheet" type="text/css" media="all" href="styles.css"/>
 
+	
 	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 	<script type="text/javascript" src="js/xml3d-dev.js"></script>
+	<!-- <script type="text/javascript" src="js/overlay-shader.js"></script> -->
 	<script type="text/javascript" src="js/xml3d-geo.js"></script>
+	<!-- <script type="text/javascript" src="js/xml3d-poi.js"></script> -->
+	<!-- <script type="text/javascript" src="js/xml3d-animation.js"></script> -->
     <script type="text/javascript" src="js/xml3d-dynamic-terrain.js"></script>
+    <!-- <script type="text/javascript" src="js/3d-map-tiles.js"></script> -->
 	<script type="text/javascript" src="js/2d-bbox.js"></script>
 	<script type="text/javascript" src="js/frustum.js"></script>
 	<script type="text/javascript" src="js/chart.js"></script>
-	<script type="text/javascript" src="js/shade-0.2.js"></script>
+	<!--<script type="text/javascript" src="js/shade-0.2.js"></script>-->
     <script type="text/javascript" src="config.js"></script>
 
 	<script type="text/javascript" src="tools/camera.js"></script>
@@ -108,7 +113,7 @@
 			},
 			"level": 9,
 			
-			"api_tiles": global.api.ground_tiles['terrain3'],
+			"api_tiles": global.api.ground_tiles['terrain-7'],
 			"layer": "terrain",
 			
 			"api_poi": global.api.poi
@@ -148,23 +153,22 @@
 			
 			var options={
 				"far_plane":500000,
-				"max_lod_delta":4,
-				"wireframe":true,
-				//"tile_selection":"constant_performance",
+				"max_lod_delta":2,
+				"tile_selection":"distance_based",
 				"layer":config.layer
 			}
 			
-			terrain = new XML3D.DynamicTerrain(geo, ground_group, ground_tf_scale, window.DemoCamera, config.api_tiles, options);
+			terrain = new XML3D.DynamicTerrain(geo, ground_group, ground_tf_scale,window.DemoCamera, config.api_tiles, options);
 			//reuse or delete old tiles?
 			terrain.set_mode(terrain.DELETE_OLD_TILES);
+			
+			var loader = document.getElementById("loader");
 
 			xml3d.addEventListener('framedrawn', function( evt ) {
 				//rotate();
 				updateTiles();
 				updateTileStatistics();
-				
 			}, false);
-			
 		}
 		
 		window.addEventListener('load', onload, false);
@@ -203,62 +207,25 @@
 		}
 		
 	</script>
-	
-	<script id="wireframe-script" type="application/javascript">
-		function shade(env) {
-			var bc = env.barycentric;
-			var eps = 0.02;
-			var normal = env.normal;
-			var color = env.color;
-
-			if (this.fwidth) {
-				var d = this.fwidth(bc);
-				var a = Math.smoothstep(new Vec3(0.0), d.mul(0.8), bc);
-				var s = Math.min(Math.min(a.x(), a.y()), a.z());
-				color = Math.mix(env.lineColor || color.mul(0.2), color.mul(0.8), s);
-			} else {
-				if (bc.x() < eps || bc.y() < eps || bc.z() < eps) {
-					color = color.mul(0.2);
-				} else {
-					color =  color.mul(0.8);
-				}
-			}
-			return Shade.diffuse(color, normal);
-		}
-	</script>
 </head>
 
 <body>
 	<div id="myxml3d">
-	
-		<xml3d id="myxml3dcanvas" view="#Camera" style="width: 100%; height: 80%;  background-color:A3FFFF;">
+		<xml3d id="myxml3dcanvas" view="#defaultView" style="width: 100%; height: 80%; background-color:A3FFFF;" >
 
-			<defs>
-				<material id="wireframe0" model="#wireframe-script">
-					<float3 name="color">0.8 0.2 0.2</float3>
-				</material>
-				<material id="wireframe1" model="#wireframe-script">
-					<float3 name="color">0.2 0.8 0.2</float3>
-				</material>
-				<material id="wireframe2" model="#wireframe-script">
-					<float3 name="color">0.2 0.2 0.8</float3>
-				</material>
-			</defs>
-			
 			<!-- Asset Instance -->
 			<transform id="geo_tf"></transform>
 			<transform id="ground_tf_scale"></transform>
 			
 			<group transform="#geo_tf">
-				<!--<group id="ground" transform="#ground_tf_scale" shader="#wireframe"></group>-->
 				<group id="ground" transform="#ground_tf_scale"></group>
 			</group>
 			
 			<!-- Light and View -->
-			<transform id="Camera_tf" translation="0 8000 0"></transform>
+			<transform id="Camera_tf" translation="1994.421142578125 14241.09375 16458.96875" rotation="-0.9997850060462952 -0.02027023956179619 -0.0009535845019854605 0.0940430611371994"></transform>
 			<view id="Camera" transform="#Camera_tf"></view>
 			
-			<group style="transform: rotate3d(-1, 0, 0, 60deg);">
+			<group style="transform: rotate3d(-1, 0, 0, 90deg);">
 				<light model="urn:xml3d:light:directional">
 					<float3 name="intensity">1 1 1</float3>
 				</light>

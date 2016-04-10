@@ -8,24 +8,26 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.tf_scale = tf_scale || null;
 	this.camera = camera || null;
 	this.api_tiles = api_tiles || null;
+	this.use_distance_based_tile_selection=false;
 	
 	//optional information
 	this.bounds=options.bounds||null;
 	this.layer=options.layer||"all";
 	
 	this.far_plane=options.far_plane||150000;
-	this.maxloddelta=options.max_lod_delta||2;
+	this.maxloddelta=options.max_lod_delta||0;
 	this.terrain_min_height=options.min_height||0;
 	this.wireframe=options.wireframe||false;
 	this.draw_minimap=options.minimap||true;
 	
 	
 	this.use_preload=options.preload||false;
-	this.preload_range=options.preload_range||[750000];
+	this.preload_range=options.preload_range||[650000];
 
+	this.preload_textures=options.preload_textures||[];
 	
-	this.max_tiles=options.maximum_tiles||160;
-	this.screen_space_error=options.maximum_screen_space_error||1;
+	this.max_tiles=options.maximum_tiles||100;
+	this.screen_space_error=options.maximum_screen_space_error||3;
 	this.use_constant_tilepool=false;
 	
 	if(options.tile_selection=="constant_performance"){
@@ -35,7 +37,9 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	if(options.tile_selection=="constant_quality"){
 		this.use_constant_tilepool=false;
 	}
-	
+	if(options.tile_selection=="distance_based"){
+		this.use_distance_based_tile_selection=true;
+	}
 	this.handle_invisible=this.handle_invisible_delete;
 	
 	if(options.tile_management=="reuse_old_tiles"){
@@ -57,13 +61,17 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.removedtiles=0;
 	this.framecount=0;
 	
+
+	
 	
 	this.lodLayers=[];
 	
 	//only used in distance based approach!
-	this.grp_diameter=2;
+	this.thickness_tile_rings=options.thickness_rings||4;
 	
 	this.metric=[];
+	
+	this.texturecount=[];
 	
 	this.tiles_being_loaded=0;
 	
@@ -77,7 +85,7 @@ XML3D.DynamicTerrain = function(geo, group, tf_scale, camera, api_tiles, options
 	this.cached_tiles=[];
 	
 	//currently disabled!
-	this.max_preload_requests=20;
+	this.max_preload_requests=options.max_preload_requests||20;
 	
 	
 };
@@ -115,6 +123,13 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	var i3 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f3.x,f3.y,f3.z,this.far_plane,this.terrain_min_height);
 	var i4 = intersect_ray_x_z_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f4.x,f4.y,f4.z,this.far_plane,this.terrain_min_height);
 	
+	if(i1==null||i2==null||i3==null||i4==null){
+		//can't cut off view frustum
+		i1 = intersect_ray_far_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f1.x,f1.y,f1.z,this.far_plane);
+		i2 = intersect_ray_far_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f2.x,f2.y,f2.z,this.far_plane);
+		i3 = intersect_ray_far_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f3.x,f3.y,f3.z,this.far_plane);
+		i4 = intersect_ray_far_plane(this.camera.transformInterface.position.x,this.camera.transformInterface.position.y,this.camera.transformInterface.position.z,f4.x,f4.y,f4.z,this.far_plane);
+	}
 	//create bounds of view frustum
 			
 	var i1_tile=this.geo.backproject(i1.x,i1.z);
@@ -141,14 +156,20 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	var camera_proj=this.geo.backproject(this.camera.transformInterface.position.x,this.camera.transformInterface.position.z);
 	camera_tile.x=Math.floor(camera_tile.x);
 	camera_tile.y=Math.floor(camera_tile.y);
-			
-	
-	var fov=this.camera.transformInterface.fieldOfView;
-	var ratio=Math.tan(fov);
+
+	//calculate angle for specified screen space error
 	var height=this.camera.height;
-	var threshold=ratio*this.screen_space_error*2/height;
-			
-			
+	var weight_1=1/height;
+	var weight_2=(height-1)/height;
+	var p_px={
+		"x":weight_2*f3.x+weight_1*f2.x,
+		"y":weight_2*f3.y+weight_1*f2.y,
+		"z":weight_2*f3.z+weight_1*f2.z
+	}
+	var angle=Math.acos((p_px.x*f3.x+p_px.y*f3.y+p_px.z*f3.z)/(Math.sqrt(p_px.x*p_px.x+p_px.y*p_px.y+p_px.z*p_px.z)*Math.sqrt(f3.x*f3.x+f3.y*f3.y+f3.z*f3.z)));
+	//console.log(angle*180/3.14);
+	var threshold=Math.tan(angle)*this.screen_space_error;
+	
 	//camera coordinates in tile space
 	//adjusted y value to improve behaviour of distance estimate
 	
@@ -202,9 +223,21 @@ XML3D.DynamicTerrain.prototype.render_tiles = function() {
 	//for all tiles in frustum: add to required tiles
 	var required_tiles=[];
 	
+	
+	if(this.use_distance_based_tile_selection==true){
+	
+		for(var x=min.x;x<=max.x;x++){
+			for(var y=min.y;y<=max.y;y++){
+				this.generate_tiles_distance_based(x,y,this.geo.level,camera_origin,frustum,required_tiles);
+			}
+		}
+	}
+	else{
 
 	this.generate_tiles(min.x,min.y,max.x,max.y,camera_origin,frustum,required_tiles,threshold);
 
+	}
+	
 	if(this.draw_minimap){
 		//create image with same dimensions as canvas
 		var element = document.getElementById("map");
@@ -238,7 +271,12 @@ function intersect_ray_x_z_plane(camera_x,camera_y,camera_z,direction_x,directio
 	var distance=far_plane;
 	var diff=camera_y-height;
 	if(diff>0&&direction_y<0){
-		var distance=Math.min(far_plane,-diff/direction_y);
+		if(-diff/direction_y<=far_plane){
+			distance=-diff/direction_y
+		}
+		else{
+			return null;
+		}
 	}
 	else if(diff<=0){
 		//below plane
@@ -249,7 +287,20 @@ function intersect_ray_x_z_plane(camera_x,camera_y,camera_z,direction_x,directio
 		}
 		return ret;
 	}
+	else if(direction_y>0){
+		return null;
+	}
 	
+	var ret={
+		"x":camera_x+distance*direction_x,
+		"y":camera_y+distance*direction_y,
+		"z":camera_z+distance*direction_z
+	}
+	return ret;
+}
+
+function intersect_ray_far_plane(camera_x,camera_y,camera_z,direction_x,direction_y,direction_z,far_plane){
+	var distance=far_plane;
 	var ret={
 		"x":camera_x+distance*direction_x,
 		"y":camera_y+distance*direction_y,
@@ -349,6 +400,41 @@ XML3D.DynamicTerrain.prototype.preload_tiles_recursive = function(x,y,delta,came
 
 
 
+XML3D.DynamicTerrain.prototype.generate_tiles_distance_based = function(x,y,z,camera_origin,frustum,tiles){
+	//camera origin is the 3d camera origin transformed into tile space
+	var delta=z-this.geo.level;
+	var tilesize=1/Math.pow(2,delta);
+	var bounds=new XML3D.Bbox(x*tilesize,y*tilesize,(x+1)*tilesize,(y+1)*tilesize);
+	var distance_squared=get_squared_distance((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin);
+	//distance test to avoid flickering at terrain boarder
+	if(!frustum.intersectBbox(bounds)||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))){
+		//no need to draw this!
+		return;
+	}
+	
+
+	if(get_squared_distance_y_adjusted((x+0.5)*tilesize,(y+0.5)*tilesize,camera_origin)<Math.pow(tilesize*this.thickness_tile_rings,2) && delta<this.maxloddelta &&this.load_tile(x*2,y*2,z+1,true)&&this.load_tile(x*2+1,y*2,z+1,true)&&this.load_tile(x*2,y*2+1,z+1,true)&&this.load_tile(x*2+1,y*2+1,z+1,true)){
+		//split up tile
+		
+		this.generate_tiles_distance_based(x*2,y*2,z+1,camera_origin,frustum,tiles);
+		this.generate_tiles_distance_based(x*2+1,y*2,z+1,camera_origin,frustum,tiles);
+		this.generate_tiles_distance_based(x*2,y*2+1,z+1,camera_origin,frustum,tiles);
+		this.generate_tiles_distance_based(x*2+1,y*2+1,z+1,camera_origin,frustum,tiles);
+	}
+	else{
+		//draw current tile
+		if(tiles[delta]==null){
+			tiles[delta]=[];
+		}
+		var tile=tiles[delta];
+		var tile_uri = this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
+		//remember x/y/z coordinates to use them later on!
+		tile[tile_uri]=[x,y,z];
+	}	
+}
+
+
+
 XML3D.DynamicTerrain.prototype.generate_tiles = function(x_min,y_min,x_max,y_max,camera_origin,frustum,tiles,threshold){
 	
 	var tile_list= new SortedTileList();
@@ -357,7 +443,7 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x_min,y_min,x_max,y_max
 	for (var x = x_min; x <= x_max; x++){
 		for (var y = y_min; y <= y_max; y++){
 			var distance_squared=get_squared_distance((x+0.5),(y+0.5),camera_origin);
-			//distance test to avoid flickering at terrain boarder
+			//distance test to avoid flickering at draw distance when rotating camera
 			if(!frustum.intersectRectangle(x,y,(x+1),(y+1))||(distance_squared>Math.pow(this.far_plane/this.geo.tile_size,2))||!this.load_tile(x,y,this.geo.level,false)){
 				//no need to draw this!
 				continue;
@@ -401,14 +487,14 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x_min,y_min,x_max,y_max
 		metric=ret[3];
 		//can we split up the tile?
 		
-		//todo: if not loaded, still count towards tile count to prevent poor loading patterns!
-		if(z-this.geo.level<=this.maxloddelta){
+
+		if(z-this.geo.level<this.maxloddelta){
 			if(this.load_tile(x*2,y*2,z+1,true)&& this.load_tile(x*2+1,y*2,z+1,true)&& this.load_tile(x*2,y*2+1,z+1,true)&& this.load_tile(x*2+1,y*2+1,z+1,true)){
 				//split it
 				var delta=z-this.geo.level+1;
 				var tilesize=1/Math.pow(2,delta);
 			
-				//todo: frustum test
+
 				if(frustum.intersectRectangle(x*2*tilesize,y*2*tilesize,(x*2+1)*tilesize,(y*2+1)*tilesize)){
 					var uri1=this.api_tiles + "/" + (z+1) + "/" + (x*2) + "/" + (y*2) + "-asset.xml";
 					var metric1=this.metric[uri1];
@@ -440,7 +526,7 @@ XML3D.DynamicTerrain.prototype.generate_tiles = function(x_min,y_min,x_max,y_max
 			}
 			else{
 				//we want to split but can't -> increase finished tiles to prevent other tiles from being split unnecessarily
-				//assume worst case(highest amounts of pre-loads) to avoid unnecessary requests.
+				//assume worst case(highest amounts of pre-loads) to avoid unnecessary requests when using constant performance.
 				finished_tiles+=Math.pow(2,this.maxloddelta-(z-this.geo.level))*4;
 			
 			}
@@ -497,7 +583,8 @@ XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z,optional){
 	//otherwise false; starts loading the tile
 	var key=this.api_tiles + "/" + z + "/" + x + "/" + y + "-asset.xml";
 	var lookup=this.cached_tiles[key];
-	if(lookup==true){
+	var lookup2=this.texturecount[key];
+	if(lookup==true&&(this.preload_textures.length==0||this.preload_textures.length==lookup2)){
 		//tile is ready to be displayed
 		return true;
 	}
@@ -510,24 +597,52 @@ XML3D.DynamicTerrain.prototype.load_tile= function (x,y,z,optional){
 
 		//load it!
 		var that = this;
+		//for qualitative tile-refinement
 		var callback = function(records, observer){
 				var node = records[0].target; // The node of which the result has changed
 				var result = records[0].result; // The data result of the observed node
 				var val = result.getValue('errormetric');
-				if(val==null){
-					console.log(key);
-				}
 				that.metric[key]=val[0];
 				that.tile_onload(key);
 				observer.disconnect();
 		}
 		this.tiles_being_loaded++;
-		var data = XML3D.createElement("data");
-		data.setAttribute("src",key+"#meta-data");
-		var observer = new XML3DDataObserver(callback, 'errormetric');
-		observer.observe(data);
-		
 
+		//for distance-based tile-refinement
+		var callback2= function(records, observer){
+				that.tile_onload(key);
+				observer.disconnect();
+			
+		};
+		
+		
+		
+		var data = XML3D.createElement("data");
+			data.setAttribute("src",key+"#meta-data");
+				
+		if(this.use_distance_based_tile_selection){
+			var observer = new XML3DDataObserver(callback2, '*');
+			observer.observe(data);
+		}
+		else{
+			var observer = new XML3DDataObserver(callback, 'errormetric');
+			observer.observe(data);
+		}
+		
+		//preload textures
+		for(var i=0;i<this.preload_textures.length;i++){
+			var texture=this.api_tiles + "/" + z + "/" + x + "/" + y + this.preload_textures[i];
+			var img = new Image();
+			img.src=texture;
+			img.onload=function(){
+				if(!that.texturecount[key]){
+					that.texturecount[key]=1;
+				}
+				else{
+					that.texturecount[key]=that.texturecount[key]+1;
+				}
+			}
+		}
 
 		
 		//remember we are allready attempting to load this tile
@@ -688,6 +803,7 @@ function get_distance_y_adjusted_bbox(x_min,y_min,x_max,y_max,camera_origin){
 	else{
 		y=y_max;
 	}
+	//prevent divide by zero
 	return Math.max(get_distance_y_adjusted(x,y,camera_origin),0.0001);
 }
 
@@ -765,6 +881,7 @@ XML3D.DynamicTerrain.prototype.draw_tiles = function(tiles){
 			tile.setAttribute("src", tile_key + "#" + this.layer);
 			tile.setAttribute("transform", tile_key + "#tf");
 			this.set_additional_attributes(tile,this.displayed_tiles[key][tile_key]);
+			
 		}
 
 		//delete remaining this.freetiles

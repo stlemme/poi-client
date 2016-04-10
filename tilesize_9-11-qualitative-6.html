@@ -113,7 +113,7 @@
 			},
 			"level": 9,
 			
-			"api_tiles": global.api.ground_tiles['terrain2'],
+			"api_tiles": global.api.ground_tiles['terrain-6'],
 			"layer": "terrain",
 			
 			"api_poi": global.api.poi
@@ -153,8 +153,9 @@
 			
 			var options={
 				"far_plane":500000,
-				"max_lod_delta":4,
-				//"tile_selection":"constant_performance",
+				"max_lod_delta":2,
+				"tile_selection":"constant_performance",
+				"maximum_tiles":130,
 				"layer":config.layer
 			}
 			
@@ -222,10 +223,10 @@
 			</group>
 			
 			<!-- Light and View -->
-			<transform id="Camera_tf" translation="0 8000 0"></transform>
+			<transform id="Camera_tf" translation="1994.421142578125 14241.09375 16458.96875" rotation="-0.9997850060462952 -0.02027023956179619 -0.0009535845019854605 0.0940430611371994"></transform>
 			<view id="Camera" transform="#Camera_tf"></view>
 			
-			<group style="transform: rotate3d(-1, 0, 0, 60deg);">
+			<group style="transform: rotate3d(-1, 0, 0, 90deg);">
 				<light model="urn:xml3d:light:directional">
 					<float3 name="intensity">1 1 1</float3>
 				</light>

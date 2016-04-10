@@ -10,6 +10,16 @@ var global = {
 			"terrain": "/api/3d-map-tiles/terrain",
 			"terrain2": "/api/3d-map-tiles/terrain-vertex-normals",
 			"terrain3": "/api/3d-map-tiles/terrain-wireframe",
+			"terrain-5-7": "/api/3d-map-tiles/terrain-a",
+			"terrain-5": "/api/3d-map-tiles/terrain-b",
+			"terrain-5w": "/api/3d-map-tiles/terrain-c",
+			"terrain-6": "/api/3d-map-tiles/terrain-d",
+			"terrain-6w": "/api/3d-map-tiles/terrain-e",
+			"terrain-7": "/api/3d-map-tiles/terrain-f",
+			"terrain-7w": "/api/3d-map-tiles/terrain-g",
+			
+			
+			
 			"sb": "http://130.206.80.175/api/3d-map-tiles/sb",
 			"gis-local": "/api/3d-map-tiles/oulu-terrain",
 			"sb-local": "/api/3d-map-tiles/sb",
